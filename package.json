@@ -1,0 +1,33 @@
+{
+  "name": "pet-joyful-backend",
+  "version": "1.0.0",
+  "description": "Backend em microsserviços para o projeto Pet Joyful (Java + Node.js + Express)",
+  "main": "backend/server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node backend/server.js",
+    "dev": "nodemon backend/server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JaoVitorz/Pet-Joyful-Backend.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/JaoVitorz/Pet-Joyful-Backend/issues"
+  },
+  "homepage": "https://github.com/JaoVitorz/Pet-Joyful-Backend#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "mongodb": "^6.20.0",
+    "mongoose": "^8.19.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
