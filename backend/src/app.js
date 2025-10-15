@@ -10,7 +10,7 @@ app.use(express.json());
 app.listen(3000, () => console.log('🚀 Servidor rodando na porta 3000'));
 
 // 🔹 Middlewares globais
-app.use(cors()); // libera acesso de outros domínios (como seu front em Next.js)
+app.use(cors()); // libera acesso de outros domínios (como o front em Next.js)
 app.use(express.json()); // permite trabalhar com JSON no corpo das requisições
 
 // 🔹 Rotas principais
