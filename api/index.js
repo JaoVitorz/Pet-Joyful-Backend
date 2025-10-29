@@ -9,6 +9,8 @@ import app from "../backend/src/app.js";
 
 dotenv.config();
 
+
+
 const router = express.Router();
 
 // Conecta com o banco (só se ainda não estiver conectado)
@@ -18,4 +20,7 @@ router.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 router.use("/", app); // usa suas rotas já configuradas no app.js
 
 export const handler = serverless(router);
-export default handler;
+export default async function (req, res) {
+  return handler(req, res);
+}
+

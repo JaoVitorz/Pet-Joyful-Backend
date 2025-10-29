@@ -5,8 +5,9 @@
   "main": "backend/server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js",
-    "dev": "node api/index.js"
+    "start": "node backend/src/server.js",
+  "swagger": "node backend/src/swagger.js",
+  "build": "npm run swagger"
   },
   "repository": {
     "type": "git",
