@@ -1,155 +1,266 @@
-# Pet-Joyful-Backend
+# 🐾 Pet Joyful - Backend API
 
-## Sobre o projeto
+## 👥 Integrantes do Grupo
+- João Vitor dos Santos de Jesus
+- Mateus Fernandes Alves  
+- Elton da Costa
 
-Pet Joyful — Backend é um microserviço em Node.js/Express responsável por oferecer a API REST para gerenciar usuários (adotantes, ONGs e veterinários) do ecossistema Pet Joyful. O objetivo principal é prover endpoints seguros e escaláveis para autenticação, cadastro, leitura, atualização e remoção de usuários, mantendo a persistência em MongoDB e facilitando a integração com outros serviços (frontend em Next.js, serviços Java, etc.).
+## 📝 Sobre o Projeto
 
-- Tecnologias principais: Node.js, Express, MongoDB, Mongoose, bcrypt.
-- Escopo: gerenciamento de usuários e integração via rotas REST (CRUD).
-- Objetivo: fornecer uma API limpa e reutilizável para o restante da plataforma Pet Joyful.
+O Pet Joyful é uma plataforma backend desenvolvida para conectar tutores de pets a serviços especializados. O sistema utiliza arquitetura de microsserviços e oferece uma API RESTful completa seguindo o padrão MVC.
 
-## Como este repositório está organizado (visão geral)
+## 🎯 Requisitos Implementados
 
-- backend/src/app.js — ponto de entrada do serviço e configuração das rotas.
-- backend/src/controllers — lógica das operações (ex.: criação e autenticação).
-- backend/src/models — esquemas e modelos do Mongoose (ex.: usuário).
-- backend/src/database — conexão com MongoDB.
-- backend/src/routes — definição das rotas da API.
+✅ API RESTful completa (GET, POST, PUT, DELETE)  
+✅ Arquitetura MVC (Models, Views, Controllers)  
+✅ Microsserviços (Auth Service + Pet Service)  
+✅ Documentação Swagger automática  
+✅ Hospedagem em Nuvem (Railway/Render)
 
-## Observações rápidas
+## 🏗️ Arquitetura - Microsserviços
 
-- Variáveis de ambiente: configure `MONGO_URL` para apontar ao MongoDB desejado.
-- Porta padrão: 5000 (configurada em `backend/src/app.js`).
+```
+┌─────────────────┐      ┌─────────────────┐
+│  Auth Service   │      │  Pet Service    │
+│   (Porta 5000)  │◄────►│  (Porta 5001)   │
+└────────┬────────┘      └────────┬────────┘
+         │                        │
+         └────────┬───────────────┘
+                  │
+         ┌────────▼────────┐
+         │    MongoDB      │
+         └─────────────────┘
+```
 
-## Começando
+### Microsserviços
+
+**Microsserviço 1: Auth Service**
+- Autenticação de usuários (JWT)
+- Gerenciamento de perfis (adotante, ONG, veterinário)
+- Endpoints: `/api/auth/register`, `/api/auth/login`, `/api/users/*`
+
+**Microsserviço 2: Pet Service**
+- Gerenciamento de pets
+- Vinculação pet ↔ proprietário
+- Endpoints: `/api/pets/*`
+
+## 🛠️ Tecnologias Utilizadas
+
+### Backend
+- Node.js v18+ com Express v5
+- MongoDB com Mongoose v8
+- JWT para autenticação
+- Bcryptjs para criptografia de senhas
+
+### DevOps
+- Docker e Docker Compose
+- Nginx como proxy reverso (opcional)
+- Railway/Render para hospedagem
+
+### Documentação
+- Swagger UI Express (OpenAPI 3.0)
+- Documentação disponível em: `/api-docs`
+
+## 🚀 Como Executar Localmente
 
 ### Pré-requisitos
+- Node.js 18+
+- MongoDB (local ou Atlas)
+- Git
 
-- Node.js 18.x ou superior
-- MongoDB instalado localmente ou string de conexão
-- NPM ou Yarn
-
-### Instalação e Execução
-
-1. Clone o repositório
-
+### 1️⃣ Clone o repositório
 ```bash
 git clone https://github.com/JaoVitorz/Pet-Joyful-Backend.git
 cd Pet-Joyful-Backend
 ```
 
-2. Instale as dependências
+### 2️⃣ Configure as variáveis de ambiente
 
-```bash
-npm install
-# ou
-yarn install
-```
-
-3. Configure as variáveis de ambiente
-
-```bash
-# Crie um arquivo .env na raiz do projeto
-MONGO_URL=sua_url_mongodb
+**Auth Service** (`.env` na pasta `auth-service/`)
+```env
 PORT=5000
+MONGO_URL=mongodb+srv://joaojesus:oULyKDlXfS0Stg4M@cluster0.hmlyx3e.mongodb.net/petjoyful?retryWrites=true&w=majority&appName=Cluster0
+JWT_SECRET=a2e6887fa57442d1040baa0393f31bcac2bfc15d486fed1e8e8dfaa197e3cc079d46c994790c8a871b404d49c54cf5e5d339a75befcd4860a5b4844a95fd7c83
+API_KEY=3e3c34efc8bcee95716a861494d89a9ddbdef722c0303e7b2b3de6a9e539d861
+PET_SERVICE_URL=http://pet-service:5001
 ```
 
-4. Execute o servidor de desenvolvimento
+**Pet Service** (`.env` na pasta `pet-service/`)
+```env
+PORT=5001
+MONGO_URL=mongodb+srv://<nome>:<senha>oULyKDlXfS0Stg4M@cluster0.hmlyx3e.mongodb.net/app? 
+JWT_SECRET= chave
+API_KEY=api
+AUTH_SERVICE_URL=http://auth-service:5000
+```
 
+### 3️⃣ Instale as dependências
 ```bash
+# Auth Service
+cd auth-service
+npm install
+
+# Pet Service
+cd ../pet-service
+npm install
+```
+
+### 4️⃣ Execute os serviços
+```bash
+# Auth Service (Terminal 1)
+cd auth-service
 npm run dev
-# ou
-yarn dev
+
+# Pet Service (Terminal 2)
+cd pet-service
+npm run dev
 ```
 
-### Usando Docker
+### 5️⃣ Acesse a documentação
+- **Auth Service**: http://localhost:5000/api-docs
+- **Pet Service**: http://localhost:5001/api-docs
 
+## 📡 Endpoints da API
+
+### Auth Service (http://localhost:5000)
+
+| Método | Endpoint | Descrição | Autenticação |
+|--------|----------|-----------|--------------|
+| POST | `/api/auth/register` | Cadastrar novo usuário | Não |
+| POST | `/api/auth/login` | Login (retorna JWT) | Não |
+| GET | `/api/users` | Listar todos os usuários | API Key |
+| GET | `/api/users/:id` | Buscar usuário por ID | API Key |
+| PUT | `/api/users/:id` | Atualizar usuário | API Key |
+| DELETE | `/api/users/:id` | Deletar usuário | API Key |
+
+### Pet Service (http://localhost:5001)
+
+| Método | Endpoint | Descrição | Autenticação |
+|--------|----------|-----------|--------------|
+| POST | `/api/pets` | Cadastrar novo pet | API Key |
+| GET | `/api/pets` | Listar todos os pets | API Key |
+| GET | `/api/pets/:id` | Buscar pet por ID | API Key |
+| GET | `/api/pets/owner/:ownerId` | Buscar pets por proprietário | API Key |
+| PUT | `/api/pets/:id` | Atualizar pet | API Key |
+| DELETE | `/api/pets/:id` | Deletar pet | API Key |
+
+## 🔐 Autenticação
+
+### API Key (Para comunicação entre serviços)
+Adicione o header em todas as requisições:
+```http
+x-api-key: petjoyful_api_key_2025
+```
+
+### JWT Token (Para endpoints protegidos - futuro)
+```http
+Authorization: Bearer <seu_token_jwt>
+```
+
+## 📋 Exemplos de Requisições
+
+### Registrar Usuário
 ```bash
-# Construir e executar os containers
-docker-compose up -d
-
-# Parar os containers
-docker-compose down
+curl -X POST http://localhost:5000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nome": "João Silva",
+    "email": "joao@example.com",
+    "senha": "senha123",
+    "tipo": "adotante"
+  }'
 ```
 
-O servidor estará rodando em `http://localhost:5000`
-# 🐾 Pet Joyful
+### Criar Pet
+```bash
+curl -X POST http://localhost:5001/api/pets \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: petjoyful_api_key_2025" \
+  -d '{
+    "name": "Rex",
+    "species": "dog",
+    "breed": "Golden Retriever",
+    "age": 3,
+    "ownerId": "673f8a1b2c3d4e5f6g7h8i9j"
+  }'
+```
 
-## Sobre o Projeto
-O Pet Joyful é uma plataforma inovadora desenvolvida para conectar tutores de pets a serviços especializados para seus animais de estimação. O sistema oferece uma API robusta que permite o gerenciamento de usuários e autenticação, sendo parte de uma arquitetura em microsserviços que visa facilitar o acesso a serviços pet de forma segura e eficiente.
+## 🌐 URLs de Produção
 
-## 📚 Documentação do Projeto
+- **Auth Service**: https://pet-joyful-auth.up.railway.app
+- **Pet Service**: https://pet-joyful-pets.up.railway.app
 
-### Funcionalidades Principais
-- Autenticação segura de usuários
-- Gerenciamento de perfis de usuários
-- Integração com serviços via API RESTful
-- Documentação automática via Swagger
+## 📁 Estrutura do Projeto
 
-### Requisitos Funcionais
-- Cadastro e autenticação de usuários
-- Gerenciamento de perfis
-- Controle de acesso via tokens JWT
-- Documentação de API acessível via Swagger UI
+```
+Pet-Joyful-Backend/
+├── auth-service/           # Microsserviço de Autenticação
+│   ├── src/
+│   │   ├── controllers/    # Lógica de negócio (Controller)
+│   │   ├── models/         # Schemas do MongoDB (Model)
+│   │   ├── routes/         # Definição de rotas
+│   │   ├── middlewares/    # API Key, JWT, etc.
+│   │   ├── config/         # Swagger, DB
+│   │   └── app.js          # Express App
+│   ├── Dockerfile
+│   └── package.json
+│
+├── pet-service/            # Microsserviço de Pets
+│   ├── src/
+│   │   ├── controllers/    # Lógica de negócio (Controller)
+│   │   ├── models/         # Schemas do MongoDB (Model)
+│   │   ├── routes/         # Definição de rotas
+│   │   └── app.js
+│   └── package.json
+│
+├── docker-compose.yml      # Orquestração dos serviços
+└── README.md
+```
 
 ## 📅 Entregas de Sprints
 
-| Sprint | Período | Entregas |
-|--------|---------|----------|
-| 1      | Out/2025| - Configuração inicial do projeto<br>- Implementação da estrutura base da API<br>- Setup do ambiente Docker |
-| 2      | Out/2025| - Implementação do sistema de autenticação<br>- Desenvolvimento dos endpoints de usuários<br>- Integração com MongoDB |
-| 3      | Out/2025| - Documentação da API com Swagger<br>- Implementação de middlewares de segurança<br>- Configuração do Nginx |
-
-## 👥 Integrantes
-- João Vitor (Owner do Repositório)
-- [Adicionar outros integrantes]
-
-## 🛠️ Tecnologias Utilizadas
-
-### Backend
-- Node.js com Express
-- MongoDB com Mongoose
-- JWT para autenticação
-- Bcrypt para criptografia
-
-### DevOps
-- Docker e Docker Compose
-- Nginx como proxy reverso
-
-### Documentação
-- Swagger UI Express
-- Swagger Autogen
-
-### Ferramentas de Desenvolvimento
-- Git para controle de versão
-- NPM para gerenciamento de pacotes
-- Nodemon para desenvolvimento
-
-## 🚀 Como Executar o Projeto
-
-1. Clone o repositório:
-```bash
-git clone https://github.com/JaoVitorz/Pet-Joyful-Backend.git
-```
-
-2. Instale as dependências:
-```bash
-npm install
-```
-
-3. Execute o projeto em modo de desenvolvimento:
-```bash
-npm run dev
-```
-
-4. Acesse a documentação da API:
-```
-http://localhost5000/api-docs
-```
-
-## 📝 Licença
-Este projeto está sob a licença ISC.
+| Sprint | Atividade | Início | Término |
+|--------|-----------|--------|---------|
+| 1 | Integração de Dados com Telas de Cadastro e Login | 10/09/2025 | 28/10/2025 |
+| 1 | Criação de Banco de Dados do Site | 10/09/2025 | 02/10/2025 |
+| 2 | Configuração do Banco no Projeto | 25/09/2025 | 28/10/2025 |
+| 2 | Configurar Conexão do Mongo no Back-End | 25/09/2025 | 21/10/2025 |
+| 3 | Implementar CRUD de Usuários, Veterinários e ONGs | 25/09/2025 | 28/10/2025 |
+| 3 | Endpoint de Registro | 25/09/2025 | 28/10/2025 |
+| 3 | Endpoint de Login | 25/09/2025 | 28/10/2025 |
+| 4 | Fazer Testes no Postman | 13/10/2025 | 21/10/2025 |
+| 4 | Implementação de Microsserviços | 28/10/2025 | 28/10/2025 |
+| 4 | Sprint Final do Backend | — | — |
 
 ---
 
-⌨️ com ❤️ por [Equipe Pet Joyful]
+📌 **Resumo:**
+- **Sprint 1:** Foco na criação do banco de dados e integração com telas
+- **Sprint 2:** Configuração do banco e conexão com o backend
+- **Sprint 3:** Implementação dos CRUDs e endpoints principais
+- **Sprint 4:** Testes, refino e finalização do backend com microsserviços
+
+## 🤝 Contribuindo
+
+1. Faça um fork do projeto
+2. Crie uma branch: `git checkout -b feature/nova-funcionalidade`
+3. Commit suas mudanças: `git commit -m 'feat: adiciona nova funcionalidade'`
+4. Push para a branch: `git push origin feature/nova-funcionalidade`
+5. Abra um Pull Request
+
+## 📝 Licença
+
+Este projeto está sob a licença ISC.
+
+## 📞 Contato
+
+**Emails:** 
+- joao.jesus18@fatec.sp.gov.br
+- mateus.alves10@fatec.sp.gov.br  
+- elton.costa@fatec.sp.gov.br
+
+**Documentação Swagger:** `/api-docs`
+
+---
+
+⌨️ Desenvolvido com ❤️ por [Equipe Pet Joyful]
