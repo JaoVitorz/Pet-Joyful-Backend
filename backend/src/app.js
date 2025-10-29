@@ -18,6 +18,7 @@ app.use(express.json());
 
 // Rotas principais
 app.use("/api", routes);
+app.use("/auth", routes); // Adicionando rota de autenticação direta
 
 // Rota base (teste)
 app.get("/", (req, res) => {
