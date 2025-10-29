@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "backend/src/app.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "backend/src/app.js"
+    }
+  ],
+  "env": {
+    "PORT": "5000",
+    "MONGO_URI": "mongodb+srv://joaojesus:oULyKDlXfS0Stg4M.mongodb.net/?appName=Cluster0",
+    "JWT_SECRET": "6b74aee1ebf4762c803ea221a46694c93865a03fe17c5244fd4ac96444ebb471",
+    "NODE_ENV": "production"
+  }
+}
