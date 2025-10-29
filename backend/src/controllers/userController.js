@@ -7,7 +7,9 @@ export const createUser = async (req, res) => {
     const { nome, email, senha, tipo } = req.body;
 
     if (!nome || !email || !senha || !tipo)
-      return res.status(400).json({ error: "Todos os campos são obrigatórios!" });
+      return res
+        .status(400)
+        .json({ error: "Todos os campos são obrigatórios!" });
 
     const existingUser = await User.findOne({ email });
     if (existingUser)
@@ -56,7 +58,21 @@ export const updateUser = async (req, res) => {
     // Se for alterar senha, criptografa
     if (senha) updateData.senha = await bcrypt.hash(senha, 10);
 
-    const user = await User.findByIdAndUpdate(req.params.id, updateData, { new: true });
+    // Authorization: only the owner (token userId) or a valid API key can update
+    const requesterId = req.userId;
+    const isApiKey = req.isApiKeyValid;
+    if (
+      !isApiKey &&
+      (!requesterId || requesterId.toString() !== req.params.id)
+    ) {
+      return res
+        .status(403)
+        .json({ error: "Não autorizado a atualizar este usuário." });
+    }
+
+    const user = await User.findByIdAndUpdate(req.params.id, updateData, {
+      new: true,
+    });
 
     if (!user)
       return res.status(404).json({ error: "Usuário não encontrado!" });
@@ -70,6 +86,18 @@ export const updateUser = async (req, res) => {
 // 🔹 DELETE
 export const deleteUser = async (req, res) => {
   try {
+    // Authorization: only the owner or a valid API key can delete
+    const requesterId = req.userId;
+    const isApiKey = req.isApiKeyValid;
+    if (
+      !isApiKey &&
+      (!requesterId || requesterId.toString() !== req.params.id)
+    ) {
+      return res
+        .status(403)
+        .json({ error: "Não autorizado a deletar este usuário." });
+    }
+
     const user = await User.findByIdAndDelete(req.params.id);
     if (!user)
       return res.status(404).json({ error: "Usuário não encontrado!" });

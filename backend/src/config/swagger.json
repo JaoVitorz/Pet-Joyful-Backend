@@ -6,18 +6,11 @@
     "description": "API documentation for PetJoyful backend"
   },
   "servers": [
-    {
-      "url": "http://localhost:5000",
-      "description": "Local server"
-    }
+    { "url": "http://localhost:5000", "description": "Local server" }
   ],
   "components": {
     "securitySchemes": {
-      "ApiKeyAuth": {
-        "type": "apiKey",
-        "in": "header",
-        "name": "x-api-key"
-      },
+      "ApiKeyAuth": { "type": "apiKey", "in": "header", "name": "x-api-key" },
       "BearerAuth": {
         "type": "http",
         "scheme": "bearer",
@@ -31,31 +24,37 @@
           "nome": { "type": "string" },
           "email": { "type": "string" },
           "senha": { "type": "string" },
-          "tipo": { "type": "string", "enum": ["adotante", "ong", "veterinario"] }
+          "tipo": {
+            "type": "string",
+            "enum": ["adotante", "ong", "veterinario"]
+          }
         },
-        "required": ["nome","email","senha","tipo"]
+        "required": ["nome", "email", "senha", "tipo"]
       },
-      "Pet": {
+      "PostMessage": {
         "type": "object",
         "properties": {
-          "name": {
-            "type": "string"
-          },
-          "age": {
-            "type": "number"
-          },
-          "species": {
-            "type": "string"
-          }
-        }
+          "nome": { "type": "string" },
+          "email": { "type": "string" },
+          "mensagem": { "type": "string" },
+          "postId": { "type": "string" }
+        },
+        "required": ["email", "mensagem"]
+      },
+      "DenunciaMessage": {
+        "type": "object",
+        "properties": {
+          "nome": { "type": "string" },
+          "email": { "type": "string" },
+          "descricao": { "type": "string" },
+          "alvoId": { "type": "string" },
+          "alvoTipo": { "type": "string", "enum": ["post", "usuario", "outro"] }
+        },
+        "required": ["email", "descricao"]
       }
     }
   },
-  "security": [
-    {
-      "ApiKeyAuth": []
-    }
-  ],
+  "security": [{ "ApiKeyAuth": [] }],
   "paths": {
     "/api/auth/register": {
       "post": {
@@ -63,17 +62,11 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/User"
-              }
+              "schema": { "$ref": "#/components/schemas/User" }
             }
           }
         },
-        "responses": {
-          "201": {
-            "description": "User created"
-          }
-        },
+        "responses": { "201": { "description": "User created" } },
         "security": []
       }
     },
@@ -89,54 +82,334 @@
                   "email": { "type": "string" },
                   "senha": { "type": "string" }
                 },
-                "required": ["email","senha"]
+                "required": ["email", "senha"]
               }
             }
           }
         },
-        "responses": {
-          "200": {
-            "description": "Token"
-          }
-        },
+        "responses": { "200": { "description": "Token" } },
         "security": []
       }
     },
-    "/api/pets": {
+    "/api/auth/me": {
       "get": {
-        "summary": "List pets (protected)",
+        "summary": "Get authenticated user's profile",
         "responses": {
-          "200": {
-            "description": "OK"
-          }
+          "200": { "description": "User profile" },
+          "401": { "description": "Unauthorized" }
         },
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ]
+        "security": [{ "BearerAuth": [] }]
       },
-      "post": {
-        "summary": "Create pet (protected)",
+      "put": {
+        "summary": "Update authenticated user's profile",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Pet"
+                "type": "object",
+                "properties": {
+                  "nome": { "type": "string" },
+                  "email": { "type": "string" },
+                  "senha": { "type": "string" },
+                  "tipo": {
+                    "type": "string",
+                    "enum": ["adotante", "ong", "veterinario"]
+                  }
+                }
               }
             }
           }
         },
         "responses": {
-          "201": {
-            "description": "Created"
+          "200": { "description": "Profile updated" },
+          "400": { "description": "Bad request" },
+          "401": { "description": "Unauthorized" }
+        },
+        "security": [{ "BearerAuth": [] }]
+      },
+      "delete": {
+        "summary": "Delete authenticated user's account",
+        "responses": {
+          "200": { "description": "Account deleted" },
+          "401": { "description": "Unauthorized" }
+        },
+        "security": [{ "BearerAuth": [] }]
+      }
+    },
+    "/api/users": {
+      "get": {
+        "summary": "List all users",
+        "responses": { "200": { "description": "List of users" } },
+        "security": [{ "BearerAuth": [] }]
+      },
+      "post": {
+        "summary": "Create a new user",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/User" }
+            }
           }
         },
-        "security": [
+        "responses": { "201": { "description": "User created" } },
+        "security": []
+      }
+    },
+    "/api/users/{id}": {
+      "get": {
+        "summary": "Get user by ID",
+        "parameters": [
           {
-            "BearerAuth": []
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
           }
-        ]
+        ],
+        "responses": {
+          "200": { "description": "User found" },
+          "404": { "description": "User not found" }
+        },
+        "security": [{ "BearerAuth": [] }]
+      },
+      "put": {
+        "summary": "Update user by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nome": { "type": "string" },
+                  "email": { "type": "string" },
+                  "senha": { "type": "string" },
+                  "tipo": {
+                    "type": "string",
+                    "enum": ["adotante", "ong", "veterinario"]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "User updated" },
+          "403": { "description": "Forbidden" }
+        },
+        "security": [{ "BearerAuth": [] }]
+      },
+      "delete": {
+        "summary": "Delete user by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "User deleted" },
+          "403": { "description": "Forbidden" }
+        },
+        "security": [{ "BearerAuth": [] }]
+      }
+    },
+    "/api/messages/post": {
+      "post": {
+        "summary": "Create a post message (via microservice)",
+        "description": "Envia uma mensagem de post para o microserviço de mensagens.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PostMessage" },
+              "example": {
+                "nome": "João",
+                "email": "joao@email.com",
+                "mensagem": "Olá, tenho interesse!",
+                "postId": "123abc"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Mensagem salva com sucesso" },
+          "400": { "description": "Dados inválidos" },
+          "502": { "description": "Erro ao comunicar com microserviço" }
+        },
+        "security": []
+      },
+      "get": {
+        "summary": "List post messages (protected, via microservice)",
+        "description": "Lista mensagens de post consultando o microserviço de mensagens.",
+        "responses": {
+          "200": {
+            "description": "Lista de mensagens",
+            "content": {
+              "application/json": {
+                "example": [
+                  {
+                    "nome": "João",
+                    "email": "joao@email.com",
+                    "mensagem": "Olá!",
+                    "postId": "123abc"
+                  }
+                ]
+              }
+            }
+          },
+          "502": { "description": "Erro ao comunicar com microserviço" }
+        },
+        "security": [{ "ApiKeyAuth": [] }, { "BearerAuth": [] }]
+      }
+    },
+    "/api/messages/post/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": { "type": "string" }
+        }
+      ],
+      "put": {
+        "summary": "Update a post message (admin, via microservice)",
+        "description": "Atualiza uma mensagem de post via microserviço.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PostMessage" },
+              "example": {
+                "nome": "João",
+                "email": "joao@email.com",
+                "mensagem": "Mensagem editada",
+                "postId": "123abc"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Mensagem atualizada" },
+          "403": { "description": "Não autorizado" },
+          "404": { "description": "Mensagem não encontrada" },
+          "502": { "description": "Erro ao comunicar com microserviço" }
+        },
+        "security": [{ "ApiKeyAuth": [] }]
+      },
+      "delete": {
+        "summary": "Delete a post message (admin, via microservice)",
+        "description": "Remove uma mensagem de post via microserviço.",
+        "responses": {
+          "200": { "description": "Mensagem deletada" },
+          "403": { "description": "Não autorizado" },
+          "404": { "description": "Mensagem não encontrada" },
+          "502": { "description": "Erro ao comunicar com microserviço" }
+        },
+        "security": [{ "ApiKeyAuth": [] }]
+      }
+    },
+    "/api/messages/denuncia": {
+      "post": {
+        "summary": "Create a denuncia/report (via microservice)",
+        "description": "Envia uma denúncia para o microserviço de denúncias.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/DenunciaMessage" },
+              "example": {
+                "nome": "Maria",
+                "email": "maria@email.com",
+                "descricao": "Conteúdo impróprio",
+                "alvoId": "post123",
+                "alvoTipo": "post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Denúncia registrada com sucesso" },
+          "400": { "description": "Dados inválidos" },
+          "502": { "description": "Erro ao comunicar com microserviço" }
+        },
+        "security": []
+      },
+      "get": {
+        "summary": "List denuncias (protected, via microservice)",
+        "description": "Lista denúncias consultando o microserviço de denúncias.",
+        "responses": {
+          "200": {
+            "description": "Lista de denúncias",
+            "content": {
+              "application/json": {
+                "example": [
+                  {
+                    "nome": "Maria",
+                    "email": "maria@email.com",
+                    "descricao": "Conteúdo impróprio",
+                    "alvoId": "post123",
+                    "alvoTipo": "post"
+                  }
+                ]
+              }
+            }
+          },
+          "502": { "description": "Erro ao comunicar com microserviço" }
+        },
+        "security": [{ "ApiKeyAuth": [] }, { "BearerAuth": [] }]
+      }
+    },
+    "/api/messages/denuncia/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": { "type": "string" }
+        }
+      ],
+      "put": {
+        "summary": "Update a denuncia (admin, via microservice)",
+        "description": "Atualiza uma denúncia via microserviço.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/DenunciaMessage" },
+              "example": {
+                "nome": "Maria",
+                "email": "maria@email.com",
+                "descricao": "Atualização da denúncia",
+                "alvoId": "post123",
+                "alvoTipo": "post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Denúncia atualizada" },
+          "403": { "description": "Não autorizado" },
+          "404": { "description": "Denúncia não encontrada" },
+          "502": { "description": "Erro ao comunicar com microserviço" }
+        },
+        "security": [{ "ApiKeyAuth": [] }]
+      },
+      "delete": {
+        "summary": "Delete a denuncia (admin, via microservice)",
+        "description": "Remove uma denúncia via microserviço.",
+        "responses": {
+          "200": { "description": "Denúncia deletada" },
+          "403": { "description": "Não autorizado" },
+          "404": { "description": "Denúncia não encontrada" },
+          "502": { "description": "Erro ao comunicar com microserviço" }
+        },
+        "security": [{ "ApiKeyAuth": [] }]
       }
     }
   }
