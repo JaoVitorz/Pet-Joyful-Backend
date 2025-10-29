@@ -1,20 +1,21 @@
+// api/index.js
 import express from "express";
+import serverless from "serverless-http";
 import swaggerUi from "swagger-ui-express";
 import swaggerDocument from "../swagger-output.json" assert { type: "json" };
-import serverless from "serverless-http";
+import dotenv from "dotenv";
+import connectDB from "../backend/src/database/connection.js";
+import app from "../backend/src/app.js";
 
-const app = express();
+dotenv.config();
 
-// Middleware padrão
-app.use(express.json());
+const router = express.Router();
 
-// Rota Swagger
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+// Conecta com o banco (só se ainda não estiver conectado)
+connectDB().then(() => console.log("✅ MongoDB conectado no ambiente Vercel"));
 
-// Exemplo de rota base
-app.get("/", (req, res) => {
-  res.send("🚀 API PetJoyful rodando no Vercel!");
-});
+router.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+router.use("/", app); // usa suas rotas já configuradas no app.js
 
-// Exporta como função Serverless
-export const handler = serverless(app);
+export const handler = serverless(router);
+export default handler;

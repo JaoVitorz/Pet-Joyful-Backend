@@ -20,6 +20,7 @@
     "url": "https://github.com/JaoVitorz/Pet-Joyful-Backend/issues"
   },
   "homepage": "https://github.com/JaoVitorz/Pet-Joyful-Backend#readme",
+  
   "dependencies": {
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
