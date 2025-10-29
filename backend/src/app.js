@@ -10,15 +10,19 @@ const app = express();
 
 // Middlewares globais
 app.use(cors({
-  origin: ['https://pet-joyful-backend.onrender.com', 'http://localhost:10000'],
+  origin: ['https://pet-joyful-backend-1.onrender.com', 'http://localhost:3000'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key']
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key', 'accept']
 }));
 app.use(express.json());
 
+// Pre-flight requests
+app.options('*', cors());
+
 // Rotas principais
 app.use("/api", routes);
+app.use("/auth", routes); // Rota direta para autenticação
 
 // Rota base (teste)
 app.get("/", (req, res) => {

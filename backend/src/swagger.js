@@ -11,7 +11,7 @@ const doc = {
     description: 'Documentação automática da API Pet Joyful',
     version: '1.0.0'
   },
-  host: 'pet-joyful-backend.onrender.com',
+  host: 'pet-joyful-backend-1.onrender.com',
   schemes: ['https'],
   securityDefinitions: {
     BearerAuth: {
