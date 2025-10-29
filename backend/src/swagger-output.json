@@ -3,7 +3,7 @@
   "info": {
     "title": "Pet Joyful API",
     "version": "1.0.0",
-    "description": "Documentação completa da **API Pet Joyful** — gerenciamento de usuários, autenticação, mensagens e denúncias."
+    "description": "Documentação completa da API Pet Joyful — gerenciamento de usuários, autenticação, mensagens e denúncias."
   },
   "servers": [
     {
@@ -25,98 +25,50 @@
         "type": "object",
         "required": ["nome", "email", "senha"],
         "properties": {
-          "nome": {
-            "type": "string",
-            "example": "João Silva"
-          },
-          "email": {
-            "type": "string",
-            "example": "joao@email.com"
-          },
-          "senha": {
-            "type": "string",
-            "example": "123456"
-          },
-          "tipo": {
-            "type": "string",
-            "example": "cliente"
-          }
+          "nome": { "type": "string", "example": "João Silva" },
+          "email": { "type": "string", "example": "joao@email.com" },
+          "senha": { "type": "string", "example": "123456" },
+          "tipo": { "type": "string", "example": "cliente" }
         }
       },
       "Login": {
         "type": "object",
         "required": ["email", "senha"],
         "properties": {
-          "email": {
-            "type": "string",
-            "example": "joao@email.com"
-          },
-          "senha": {
-            "type": "string",
-            "example": "123456"
-          }
+          "email": { "type": "string", "example": "joao@email.com" },
+          "senha": { "type": "string", "example": "123456" }
         }
       },
       "Message": {
         "type": "object",
         "required": ["nome", "email", "mensagem"],
         "properties": {
-          "nome": {
-            "type": "string",
-            "example": "Maria"
-          },
-          "email": {
-            "type": "string",
-            "example": "maria@email.com"
-          },
-          "mensagem": {
-            "type": "string",
-            "example": "Gostei do post!"
-          },
-          "postId": {
-            "type": "string",
-            "example": "65b8d7b2b9e"
-          }
+          "nome": { "type": "string", "example": "Maria" },
+          "email": { "type": "string", "example": "maria@email.com" },
+          "mensagem": { "type": "string", "example": "Gostei do post!" },
+          "postId": { "type": "string", "example": "65b8d7b2b9e" }
         }
       },
       "Report": {
         "type": "object",
         "required": ["descricao", "alvoId", "alvoTipo"],
         "properties": {
-          "nome": {
-            "type": "string",
-            "example": "Carlos"
-          },
-          "email": {
-            "type": "string",
-            "example": "carlos@email.com"
-          },
-          "descricao": {
-            "type": "string",
-            "example": "Conteúdo ofensivo detectado"
-          },
-          "alvoId": {
-            "type": "string",
-            "example": "123abc456"
-          },
-          "alvoTipo": {
-            "type": "string",
-            "example": "mensagem"
-          }
+          "nome": { "type": "string", "example": "Carlos" },
+          "email": { "type": "string", "example": "carlos@email.com" },
+          "descricao": { "type": "string", "example": "Conteúdo ofensivo detectado" },
+          "alvoId": { "type": "string", "example": "123abc456" },
+          "alvoTipo": { "type": "string", "example": "mensagem" }
         }
       }
     }
   },
-
   "security": [{ "BearerAuth": [] }],
-
   "tags": [
     { "name": "Auth", "description": "Autenticação e gerenciamento de sessão do usuário" },
     { "name": "Users", "description": "Operações relacionadas a usuários" },
     { "name": "Messages", "description": "Mensagens e comentários em postagens" },
     { "name": "Reports", "description": "Denúncias e moderação de conteúdo" }
   ],
-
   "paths": {
     "/auth/register": {
       "post": {
@@ -138,12 +90,11 @@
         }
       }
     },
-
     "/auth/login": {
       "post": {
         "tags": ["Auth"],
         "summary": "Login do usuário",
-        "description": "Autentica o usuário e retorna o token JWT para uso nas rotas protegidas.",
+        "description": "Autentica o usuário e retorna o token JWT.",
         "requestBody": {
           "required": true,
           "content": {
@@ -159,7 +110,6 @@
         }
       }
     },
-
     "/auth/me": {
       "get": {
         "tags": ["Auth"],
@@ -175,11 +125,7 @@
         "summary": "Atualizar dados do usuário autenticado",
         "security": [{ "BearerAuth": [] }],
         "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/User" }
-            }
-          }
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/User" } } }
         },
         "responses": {
           "200": { "description": "Dados atualizados com sucesso" },
@@ -197,7 +143,6 @@
         }
       }
     },
-
     "/users": {
       "get": {
         "tags": ["Users"],
@@ -211,11 +156,7 @@
         "tags": ["Users"],
         "summary": "Criar novo usuário (admin)",
         "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/User" }
-            }
-          }
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/User" } } }
         },
         "responses": {
           "201": { "description": "Usuário criado com sucesso" },
@@ -223,98 +164,100 @@
         }
       }
     },
-
     "/users/{id}": {
       "get": {
         "tags": ["Users"],
         "summary": "Buscar usuário por ID",
-        "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
-        ],
-        "responses": {
-          "200": { "description": "Usuário encontrado" },
-          "404": { "description": "Usuário não encontrado" }
-        }
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Usuário encontrado" }, "404": { "description": "Usuário não encontrado" } }
       },
       "put": {
         "tags": ["Users"],
         "summary": "Atualizar usuário por ID",
-        "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/User" }
-            }
-          }
-        },
-        "responses": {
-          "200": { "description": "Usuário atualizado" },
-          "404": { "description": "Usuário não encontrado" }
-        }
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/User" } } } },
+        "responses": { "200": { "description": "Usuário atualizado" }, "404": { "description": "Usuário não encontrado" } }
       },
       "delete": {
         "tags": ["Users"],
         "summary": "Excluir usuário por ID",
-        "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
-        ],
-        "responses": {
-          "200": { "description": "Usuário excluído" },
-          "404": { "description": "Usuário não encontrado" }
-        }
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Usuário excluído" }, "404": { "description": "Usuário não encontrado" } }
       }
     },
-
     "/messages/post": {
       "post": {
         "tags": ["Messages"],
         "summary": "Enviar mensagem em um post",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/Message" }
-            }
-          }
-        },
-        "responses": {
-          "201": { "description": "Mensagem criada com sucesso" },
-          "400": { "description": "Erro de validação" }
-        }
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Message" } } } },
+        "responses": { "201": { "description": "Mensagem criada com sucesso" }, "400": { "description": "Erro de validação" } }
       },
       "get": {
         "tags": ["Messages"],
         "summary": "Listar todas as mensagens",
+        "responses": { "200": { "description": "Mensagens retornadas" } }
+      }
+    },
+    "/messages/post/{id}": {
+      "put": {
+        "tags": ["Messages"],
+        "summary": "Atualizar mensagem por ID",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Message" } } } },
         "responses": {
-          "200": { "description": "Mensagens retornadas" }
+          "200": { "description": "Mensagem atualizada com sucesso" },
+          "403": { "description": "Acesso negado" },
+          "404": { "description": "Mensagem não encontrada" },
+          "500": { "description": "Erro interno do servidor" }
+        }
+      },
+      "delete": {
+        "tags": ["Messages"],
+        "summary": "Excluir mensagem por ID",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Mensagem excluída com sucesso" },
+          "403": { "description": "Acesso negado" },
+          "404": { "description": "Mensagem não encontrada" },
+          "500": { "description": "Erro interno do servidor" }
         }
       }
     },
-
     "/messages/denuncia": {
       "post": {
         "tags": ["Reports"],
         "summary": "Criar nova denúncia",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/Report" }
-            }
-          }
-        },
-        "responses": {
-          "201": { "description": "Denúncia registrada com sucesso" },
-          "400": { "description": "Erro nos dados enviados" }
-        }
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Report" } } } },
+        "responses": { "201": { "description": "Denúncia registrada com sucesso" }, "400": { "description": "Erro nos dados enviados" } }
       },
       "get": {
         "tags": ["Reports"],
         "summary": "Listar todas as denúncias",
+        "responses": { "200": { "description": "Lista de denúncias retornada" } }
+      }
+    },
+    "/messages/denuncia/{id}": {
+      "put": {
+        "tags": ["Reports"],
+        "summary": "Atualizar denúncia por ID",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Report" } } } },
         "responses": {
-          "200": { "description": "Lista de denúncias retornada" }
+          "200": { "description": "Denúncia atualizada com sucesso" },
+          "403": { "description": "Acesso negado" },
+          "404": { "description": "Denúncia não encontrada" },
+          "500": { "description": "Erro interno do servidor" }
+        }
+      },
+      "delete": {
+        "tags": ["Reports"],
+        "summary": "Excluir denúncia por ID",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Denúncia excluída com sucesso" },
+          "403": { "description": "Acesso negado" },
+          "404": { "description": "Denúncia não encontrada" },
+          "500": { "description": "Erro interno do servidor" }
         }
       }
     }
