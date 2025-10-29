@@ -476,6 +476,35 @@ Pet-Joyful-Backend/
 
 ---
 
+## Sprint Banco de Dados
+
+| Atividade                                         | Início              | Término             |
+|:--------------------------------------------------|:--------------------|:--------------------|
+| Integração de Dados Com Telas de Cadastro e Login | 2025-09-10 00:00:00 | 2025-10-28 00:00:00 |
+| Criação de Banco de Dados do Site                 | 2025-09-10 00:00:00 | 2025-10-02 00:00:00 |
+| Configuração do Banco no Projeto                  | 2025-09-25 00:00:00 | 2025-10-28 00:00:00 |
+| Configurar Conexão do Mongo no Back-End           | 2025-09-25 00:00:00 | 2025-10-21 00:00:00 |
+| Implementar CRUD de Usuários, Veterinários e ONGS | 2025-09-25 00:00:00 | 2025-10-28 00:00:00 |
+| Endpoint de Registro                              | 2025-09-25 00:00:00 | 2025-10-28 00:00:00 |
+| Endpoint de Login                                 | 2025-09-25 00:00:00 | 2025-10-28 00:00:00 |
+| Fazer Testes no Postman                           | 2025-10-13 00:00:00 | 2025-10-21 00:00:00 |
+| Microserviços                                     | 2025-10-28 00:00:00 | 2025-10-28 00:00:00 |
+
+## Sprint do Backend
+
+| Atividade                           | Início              | Término |
+|:------------------------------------|:--------------------|:--------|
+| Criação da Estrutura de Pastas Back-End | 2025-10-02 00:00:00 |         |
+| Configurar Docker e Containers      | 2025-10-20 00:00:00 |         |
+| Criar um Microserviço               | 2025-10-20 00:00:00 |         |
+
+## Sprint do Backlog
+
+| Atividade                | Início | Término |
+|:-------------------------|:-------|:--------|
+| Integração com Front-End |        |         |
+
+
 ## 🌐 Deploy
 
 ### URL de Produção
