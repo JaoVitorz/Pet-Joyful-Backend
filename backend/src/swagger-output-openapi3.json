@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "https://pet-joyful-backend-1.onrender.com",
+      "url": "https://pet-joyful-backend-1.onrender.com/api-docs/#/",
       "description": "Servidor de produção"
     }
   ],
