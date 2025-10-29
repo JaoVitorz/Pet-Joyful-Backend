@@ -88,9 +88,9 @@ PET_SERVICE_URL=http://pet-service:5001
 **Pet Service** (`.env` na pasta `pet-service/`)
 ```env
 PORT=5001
-MONGO_URL=mongodb+srv://joaojesus:oULyKDlXfS0Stg4M@cluster0.hmlyx3e.mongodb.net/petjoyful?retryWrites=true&w=majority&appName=Cluster0 
-JWT_SECRET=a2e6887fa57442d1040baa0393f31bcac2bfc15d486fed1e8e8dfaa197e3cc079d46c994790c8a871b404d49c54cf5e5d339a75befcd4860a5b4844a95fd7c83
-API_KEY=3e3c34efc8bcee95716a861494d89a9ddbdef722c0303e7b2b3de6a9e539d861
+MONGO_URL=mongodb+srv://<nome>:<senha>oULyKDlXfS0Stg4M@cluster0.hmlyx3e.mongodb.net/app? 
+JWT_SECRET= chave
+API_KEY=api
 AUTH_SERVICE_URL=http://auth-service:5000
 ```
 
