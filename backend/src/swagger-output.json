@@ -177,24 +177,18 @@
                 "nome": {
                   "example": "any"
                 },
-                "name": {
-                  "example": "any"
-                },
+                
                 "email": {
                   "example": "any"
                 },
                 "senha": {
                   "example": "any"
                 },
-                "password": {
-                  "example": "any"
-                },
+               
                 "tipo": {
                   "example": "any"
-                },
-                "type": {
-                  "example": "any"
                 }
+                
               }
             }
           }
@@ -227,10 +221,8 @@
                 },
                 "senha": {
                   "example": "any"
-                },
-                "password": {
-                  "example": "any"
                 }
+                
               }
             }
           }
