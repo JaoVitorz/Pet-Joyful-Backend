@@ -69,7 +69,7 @@ npm run dev
 
 4. Acesse a documentação da API:
 ```
-http://localhost:3000/api-docs
+http://localhost5000/api-docs
 ```
 
 ## 📝 Licença
