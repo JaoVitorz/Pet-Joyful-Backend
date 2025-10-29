@@ -81,8 +81,6 @@ O **Pet Joyful** é uma plataforma backend que conecta tutores de pets, ONGs e v
 
 <img width="882" height="379" alt="image" src="https://github.com/user-attachments/assets/9b6d4f32-5714-40b7-b422-ac5c4528b5a8" />
 
-### Descrição dos Casos de Uso
-
 ---
 
 ## 🧩 Caso de Uso: Cadastrar
