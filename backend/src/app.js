@@ -18,8 +18,7 @@ app.use(cors({
 app.use(express.json());
 
 // Pre-flight requests
-// Use '/*' instead of '*' — path-to-regexp não aceita '*' sozinho em algumas versões
-app.options('/*', cors());
+// Pre-flight requests removed to avoid path-to-regexp issues
 
 // Rotas principais
 app.use("/api", routes);
