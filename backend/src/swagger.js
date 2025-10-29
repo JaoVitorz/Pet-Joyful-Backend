@@ -11,8 +11,8 @@ const doc = {
     description: 'Documentação automática da API Pet Joyful',
     version: '1.0.0'
   },
-  host: process.env.RENDER_EXTERNAL_URL || 'petjoyful-backend.vercel.app',
-  schemes: ['https', 'http'],
+  host: 'pet-joyful-backend.onrender.com',
+  schemes: ['https'],
   securityDefinitions: {
     BearerAuth: {
       type: 'apiKey',
