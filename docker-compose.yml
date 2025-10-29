@@ -1,17 +1,6 @@
-services:
-  backend:
-    build: .
-    container_name: backend_petjoyful
-    ports:
-      - "5000:5000"
-    environment:
-      - PORT=5000
-      - MONGO_URL=mongodb://mongo:27017/petjoyful
-    depends_on:
-      - mongo
-    volumes:
-      - .:/app
+version: '3.8'
 
+services:
   mongo:
     image: mongo:6.0
     container_name: mongo_petjoyful
@@ -19,6 +8,50 @@ services:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
+    networks:
+      - petjoyful-network
+
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: auth_service
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - MONGO_URL=mongodb://mongo:27017/petjoyful_auth
+      - JWT_SECRET=seu_jwt_secret_aqui_mude_em_producao
+      - API_KEY=petjoyful_api_key_2025
+      - PET_SERVICE_URL=http://pet-service:5001
+    depends_on:
+      - mongo
+    networks:
+      - petjoyful-network
+    restart: unless-stopped
+
+  pet-service:
+    build:
+      context: ./pet-service
+      dockerfile: Dockerfile
+    container_name: pet_service
+    ports:
+      - "5001:5001"
+    environment:
+      - PORT=5001
+      - MONGO_URL=mongodb://mongo:27017/petjoyful_pets
+      - JWT_SECRET=seu_jwt_secret_aqui_mude_em_producao
+      - API_KEY=petjoyful_api_key_2025
+      - AUTH_SERVICE_URL=http://auth-service:5000
+    depends_on:
+      - mongo
+    networks:
+      - petjoyful-network
+    restart: unless-stopped
+
+networks:
+  petjoyful-network:
+    driver: bridge
 
 volumes:
   mongo_data:
