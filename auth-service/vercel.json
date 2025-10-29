@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "name": "pet-joyful-auth",
+  "builds": [
+    {
+      "src": "server.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "server.js"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
+}
