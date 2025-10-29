@@ -2,6 +2,15 @@ import express from "express";
 import cors from "cors";
 import routes from "./routes/index.js";
 
+import path from 'path';
+import { fileURLToPath } from 'url';
+import swaggerUi from 'swagger-ui-express';
+import express from 'express';
+import fs from 'fs';
+
+
+
+
 const app = express();
 
 // Middlewares globais
@@ -16,6 +25,17 @@ app.get("/", (req, res) => {
   res.send("🚀 API Pet Joyful funcionando!");
 });
 
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const swaggerDocument = JSON.parse(
+  fs.readFileSync(path.join(__dirname, 'swagger-output.json'), 'utf8')
+);
+
+;
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 // Tentativa de habilitar Swagger UI se a dependência estiver instalada
 // Tentativa de habilitar Swagger UI se a dependência estiver instalada
 (async () => {
