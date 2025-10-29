@@ -70,7 +70,7 @@
     { "name": "Reports", "description": "Denúncias e moderação de conteúdo" }
   ],
   "paths": {
-    "/auth/register": {
+    "/api/auth/register": {
       "post": {
         "tags": ["Auth"],
         "summary": "Registrar novo usuário",
@@ -90,7 +90,7 @@
         }
       }
     },
-    "/auth/login": {
+    "/api/auth/login": {
       "post": {
         "tags": ["Auth"],
         "summary": "Login do usuário",
@@ -110,7 +110,7 @@
         }
       }
     },
-    "/auth/me": {
+    "/api/auth/me": {
       "get": {
         "tags": ["Auth"],
         "summary": "Obter dados do usuário autenticado",
@@ -143,7 +143,7 @@
         }
       }
     },
-    "/users": {
+    "/api/users": {
       "get": {
         "tags": ["Users"],
         "summary": "Listar todos os usuários",
@@ -164,7 +164,7 @@
         }
       }
     },
-    "/users/{id}": {
+    "/api/users/{id}": {
       "get": {
         "tags": ["Users"],
         "summary": "Buscar usuário por ID",
@@ -185,7 +185,7 @@
         "responses": { "200": { "description": "Usuário excluído" }, "404": { "description": "Usuário não encontrado" } }
       }
     },
-    "/messages/post": {
+    "/api/messages/post": {
       "post": {
         "tags": ["Messages"],
         "summary": "Enviar mensagem em um post",
@@ -198,7 +198,7 @@
         "responses": { "200": { "description": "Mensagens retornadas" } }
       }
     },
-    "/messages/post/{id}": {
+    "/api/messages/post/{id}": {
       "put": {
         "tags": ["Messages"],
         "summary": "Atualizar mensagem por ID",
@@ -223,7 +223,7 @@
         }
       }
     },
-    "/messages/denuncia": {
+    "/api/messages/denuncia": {
       "post": {
         "tags": ["Reports"],
         "summary": "Criar nova denúncia",
@@ -236,7 +236,7 @@
         "responses": { "200": { "description": "Lista de denúncias retornada" } }
       }
     },
-    "/messages/denuncia/{id}": {
+    "/api/messages/denuncia/{id}": {
       "put": {
         "tags": ["Reports"],
         "summary": "Atualizar denúncia por ID",
