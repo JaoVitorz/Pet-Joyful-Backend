@@ -14,7 +14,15 @@ API RESTful completa para a plataforma Pet Joyful, desenvolvida com Node.js, Exp
 
 ## 📋 Sobre o Projeto
 
-O **Pet Joyful** é uma plataforma backend que conecta tutores de pets, ONGs e veterinários através de uma API RESTful moderna e escalável. O sistema oferece autenticação segura, gerenciamento completo de usuários e sistema de mensagens/denúncias.
+O **Pet Joyful** é uma plataforma que conecta tutores de pets, ONGs e veterinários através de uma API RESTful moderna e escalável. O sistema oferece autenticação segura, gerenciamento completo de usuários e sistema de mensagens/denúncias.
+
+## 🔗 Repositórios do Projeto
+
+**Backend:** https://github.com/JaoVitorz/Pet-Joyful-Backend (Este repositório)
+
+**Frontend:** https://github.com/davidagj/Pet-Joyful---Projeto-Integrador--NextJs
+
+
 
 ### 🎯 Funcionalidades Principais
 
