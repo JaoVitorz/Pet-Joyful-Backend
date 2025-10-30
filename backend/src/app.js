@@ -22,7 +22,8 @@ app.use(express.json());
 
 // Rotas principais
 app.use("/api", routes);
-app.use("/auth", routes); // Rota direta para autenticação
+// Não montar o mesmo router em /auth — as rotas de autenticação já estão em /api/auth
+// Isso evita rotas duplicadas e possíveis problemas de proteção indevida
 
 // Rota base (teste)
 app.get("/", (req, res) => {
