@@ -1,3 +1,4 @@
+import jwt from "jsonwebtoken";
 import User from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 
@@ -16,6 +17,28 @@ export const createUser = async (req, res) => {
       return res.status(400).json({ error: "Email já cadastrado!" });
 
     const hashedPassword = await bcrypt.hash(senha, 10);
+
+    // If trying to create an admin user, require admin key or an admin token
+    if (tipo === "admin") {
+      const adminKey = req.headers["x-admin-key"] || req.query.admin_key;
+      const auth = req.headers["authorization"];
+      let allowed = false;
+      if (adminKey && adminKey === process.env.ADMIN_KEY) allowed = true;
+      if (!allowed && auth && auth.startsWith("Bearer ")) {
+        const token = auth.split(" ")[1];
+        try {
+          const payload = jwt.verify(token, process.env.JWT_SECRET);
+          if (payload && (payload.tipo === "admin" || payload.role === "admin"))
+            allowed = true;
+        } catch (err) {
+          // invalid token -> not allowed
+        }
+      }
+      if (!allowed)
+        return res.status(403).json({
+          error: "Criação de usuário admin requer API key ou token admin",
+        });
+    }
 
     const user = new User({ nome, email, senha: hashedPassword, tipo });
     await user.save();
@@ -61,8 +84,10 @@ export const updateUser = async (req, res) => {
     // Authorization: only the owner (token userId) or a valid API key can update
     const requesterId = req.userId;
     const isApiKey = req.isApiKeyValid;
+    const isAdmin = req.userRole === "admin";
     if (
       !isApiKey &&
+      !isAdmin &&
       (!requesterId || requesterId.toString() !== req.params.id)
     ) {
       return res
@@ -89,8 +114,10 @@ export const deleteUser = async (req, res) => {
     // Authorization: only the owner or a valid API key can delete
     const requesterId = req.userId;
     const isApiKey = req.isApiKeyValid;
+    const isAdmin = req.userRole === "admin";
     if (
       !isApiKey &&
+      !isAdmin &&
       (!requesterId || requesterId.toString() !== req.params.id)
     ) {
       return res

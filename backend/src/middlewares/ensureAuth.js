@@ -1,11 +1,30 @@
 import jwt from "jsonwebtoken";
 
 export default function ensureAuth(req, res, next) {
-  // Allow API key to act as admin
-  const apiKey = req.headers["x-api-key"] || req.query.api_key;
-  if (apiKey && apiKey === process.env.API_KEY) {
+  // Allow admin key to act as admin
+  const adminKey = req.headers["x-admin-key"] || req.query.admin_key;
+  console.log("Headers recebidos:", req.headers);
+  console.log("Admin Key recebida:", adminKey);
+  console.log("Admin Key esperada:", process.env.ADMIN_KEY);
+  console.log("São iguais?", adminKey === process.env.ADMIN_KEY);
+
+  if (!adminKey) {
+    console.log("Nenhuma admin key fornecida");
+  }
+
+  if (adminKey && adminKey === process.env.ADMIN_KEY) {
+    console.log("Admin key válida - autorizando como admin");
     req.isApiKeyValid = true;
+    // when valid admin key is provided, treat requester as admin
+    req.userRole = "admin";
     return next();
+  } else if (adminKey) {
+    console.log("Admin key inválida fornecida");
+    return res.status(403).json({
+      error: "Admin key inválida",
+      message:
+        "A chave administrativa fornecida não corresponde à chave esperada",
+    });
   }
 
   const auth = req.headers["authorization"];
@@ -19,6 +38,8 @@ export default function ensureAuth(req, res, next) {
     // Token generated in authController contains { userId, email }
     req.userId = payload.userId || payload.id || null;
     req.userEmail = payload.email || null;
+    // set role if present in token (we sign tokens with 'tipo')
+    req.userRole = payload.tipo || payload.role || null;
     return next();
   } catch (err) {
     return res.status(401).json({ error: "Token inválido" });

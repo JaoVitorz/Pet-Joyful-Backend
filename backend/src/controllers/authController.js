@@ -65,11 +65,6 @@ export const login = async (req, res) => {
     console.log("Tentando login com email:", email);
     const user = await userModel.findOne({ email });
 
-    if (!user) {
-      console.log("Usuário não encontrado com email:", email);
-      return res.status(401).json({ error: "Credenciais inválidas" });
-    }
-
     console.log("Usuário encontrado:", { email: user.email, tipo: user.tipo });
 
     // Verificar senha
@@ -119,7 +114,6 @@ export const getProfile = async (req, res) => {
   }
 };
 
-// PUT /auth/me - atualiza dados do usuário autenticado
 export const updateProfile = async (req, res) => {
   try {
     const userId = req.userId;

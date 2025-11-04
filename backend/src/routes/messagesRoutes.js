@@ -10,25 +10,114 @@ import {
   deleteDenuncia,
 } from "../controllers/messagesController.js";
 import ensureAuth from "../middlewares/ensureAuth.js";
+import ensureAdminKey from "../middlewares/ensureAdminKey.js";
 
 const router = Router();
 
-// Rotas de mensagens (mounted at /api/messages)
-// Public: criar mensagem de post
+/* 
+   #swagger.tags = ['Messages']
+   #swagger.summary = 'Enviar mensagem em um post'
+   #swagger.requestBody = {
+     required: true,
+     content: {
+       "application/json": {
+         schema: { $ref: "#/components/schemas/Message" }
+       }
+     }
+   }
+*/
 router.post("/post", createPostMessage);
-// Protected: listar mensagens (Bearer token or API key)
-router.get("/post", ensureAuth, getPostMessages);
-// Admin-only (via ensureAuth -> req.isApiKeyValid checked in controller)
-router.put("/post/:id", ensureAuth, updatePostMessage);
-router.delete("/post/:id", ensureAuth, deletePostMessage);
 
-// Rotas de denúncias (mounted at /api/messages)
-// Public: criar denúncia
+/* 
+  #swagger.tags = ['Messages']
+  #swagger.summary = 'Listar todas as mensagens (apenas admin)'
+  #swagger.security = [{ "ApiKeyAuth": [] }]
+*/
+router.get("/post", ensureAdminKey, getPostMessages);
+
+/* 
+   #swagger.tags = ['Messages']
+   #swagger.summary = 'Atualizar mensagem por ID (apenas admin)'
+   #swagger.security = [{ "ApiKeyAuth": [] }]
+   #swagger.parameters['id'] = {
+     in: 'path',
+     required: true,
+     schema: { type: 'string' }
+   }
+   #swagger.requestBody = {
+     required: true,
+     content: {
+       "application/json": {
+         schema: { $ref: "#/components/schemas/Message" }
+       }
+     }
+   }
+*/
+router.put("/post/:id", ensureAdminKey, updatePostMessage);
+
+/* 
+   #swagger.tags = ['Messages']
+   #swagger.summary = 'Excluir mensagem por ID (apenas admin)'
+   #swagger.security = [{ "ApiKeyAuth": [] }]
+   #swagger.parameters['id'] = {
+     in: 'path',
+     required: true,
+     schema: { type: 'string' }
+   }
+*/
+router.delete("/post/:id", ensureAdminKey, deletePostMessage);
+
+/* 
+   #swagger.tags = ['Reports']
+   #swagger.summary = 'Criar nova denúncia'
+   #swagger.requestBody = {
+     required: true,
+     content: {
+       "application/json": {
+         schema: { $ref: "#/components/schemas/Report" }
+       }
+     }
+   }
+*/
 router.post("/denuncia", createDenuncia);
-// Protected: listar denúncias
-router.get("/denuncia", ensureAuth, getDenuncias);
-// Admin-only: atualizar/deletar denúncia
-router.put("/denuncia/:id", ensureAuth, updateDenuncia);
-router.delete("/denuncia/:id", ensureAuth, deleteDenuncia);
+
+/* 
+  #swagger.tags = ['Reports']
+  #swagger.summary = 'Listar todas as denúncias (apenas admin)'
+  #swagger.security = [{ "ApiKeyAuth": [] }]
+*/
+router.get("/denuncia", ensureAdminKey, getDenuncias);
+
+/* 
+   #swagger.tags = ['Reports']
+   #swagger.summary = 'Atualizar denúncia por ID (apenas admin)'
+   #swagger.security = [{ "ApiKeyAuth": [] }]
+   #swagger.parameters['id'] = {
+     in: 'path',
+     required: true,
+     schema: { type: 'string' }
+   }
+   #swagger.requestBody = {
+     required: true,
+     content: {
+       "application/json": {
+         schema: { $ref: "#/components/schemas/Report" }
+       }
+     }
+   }
+*/
+router.put("/denuncia/:id", ensureAdminKey, updateDenuncia);
+
+/* 
+   #swagger.tags = ['Reports']
+   #swagger.summary = 'Excluir denúncia por ID (apenas admin)'
+   #swagger.security = [{ "ApiKeyAuth": [] }]
+   #swagger.parameters['id'] = {
+     in: 'path',
+     required: true,
+     schema: { type: 'string' }
+   }
+*/
+router.delete("/denuncia/:id", ensureAdminKey, deleteDenuncia);
 
 export default router;

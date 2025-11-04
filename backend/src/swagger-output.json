@@ -18,6 +18,12 @@
         "scheme": "bearer",
         "bearerFormat": "JWT",
         "description": "Insira o token JWT no formato **Bearer {token}**"
+      },
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-admin-key",
+        "description": "Chave de admin para operações privilegiadas"
       }
     },
     "schemas": {
@@ -55,7 +61,10 @@
         "properties": {
           "nome": { "type": "string", "example": "Carlos" },
           "email": { "type": "string", "example": "carlos@email.com" },
-          "descricao": { "type": "string", "example": "Conteúdo ofensivo detectado" },
+          "descricao": {
+            "type": "string",
+            "example": "Conteúdo ofensivo detectado"
+          },
           "alvoId": { "type": "string", "example": "123abc456" },
           "alvoTipo": { "type": "string", "example": "mensagem" }
         }
@@ -64,9 +73,15 @@
   },
   "security": [{ "BearerAuth": [] }],
   "tags": [
-    { "name": "Auth", "description": "Autenticação e gerenciamento de sessão do usuário" },
+    {
+      "name": "Auth",
+      "description": "Autenticação e gerenciamento de sessão do usuário"
+    },
     { "name": "Users", "description": "Operações relacionadas a usuários" },
-    { "name": "Messages", "description": "Mensagens e comentários em postagens" },
+    {
+      "name": "Messages",
+      "description": "Mensagens e comentários em postagens"
+    },
     { "name": "Reports", "description": "Denúncias e moderação de conteúdo" }
   ],
   "paths": {
@@ -125,7 +140,11 @@
         "summary": "Atualizar dados do usuário autenticado",
         "security": [{ "BearerAuth": [] }],
         "requestBody": {
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/User" } } }
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/User" }
+            }
+          }
         },
         "responses": {
           "200": { "description": "Dados atualizados com sucesso" },
@@ -155,12 +174,34 @@
       "post": {
         "tags": ["Users"],
         "summary": "Criar novo usuário (admin)",
+        "security": [{ "ApiKeyAuth": [] }],
         "requestBody": {
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/User" } } }
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/User" }
+            }
+          }
         },
         "responses": {
           "201": { "description": "Usuário criado com sucesso" },
-          "400": { "description": "Erro de validação" }
+          "400": { "description": "Erro de validação" },
+          "403": {
+            "description": "Acesso negado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Criação de usuário admin requer API key ou token admin"
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -168,56 +209,198 @@
       "get": {
         "tags": ["Users"],
         "summary": "Buscar usuário por ID",
-        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
-        "responses": { "200": { "description": "Usuário encontrado" }, "404": { "description": "Usuário não encontrado" } }
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Usuário encontrado" },
+          "404": { "description": "Usuário não encontrado" }
+        }
       },
       "put": {
         "tags": ["Users"],
         "summary": "Atualizar usuário por ID",
-        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
-        "requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/User" } } } },
-        "responses": { "200": { "description": "Usuário atualizado" }, "404": { "description": "Usuário não encontrado" } }
+        "security": [{ "BearerAuth": [], "ApiKeyAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/User" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Usuário atualizado" },
+          "401": {
+            "description": "Unauthorized - Token JWT não fornecido ou inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Token não fornecido"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - Usuário não tem permissão",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Você não tem permissão para atualizar este usuário"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Usuário não encontrado" }
+        }
       },
       "delete": {
         "tags": ["Users"],
         "summary": "Excluir usuário por ID",
-        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
-        "responses": { "200": { "description": "Usuário excluído" }, "404": { "description": "Usuário não encontrado" } }
+        "security": [{ "BearerAuth": [], "ApiKeyAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Usuário excluído" },
+          "401": {
+            "description": "Unauthorized - Token JWT não fornecido ou inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Token não fornecido"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - Usuário não tem permissão",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Você não tem permissão para deletar este usuário"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Usuário não encontrado" }
+        }
       }
     },
     "/api/messages/post": {
       "post": {
         "tags": ["Messages"],
         "summary": "Enviar mensagem em um post",
-        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Message" } } } },
-        "responses": { "201": { "description": "Mensagem criada com sucesso" }, "400": { "description": "Erro de validação" } }
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Message" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Mensagem criada com sucesso" },
+          "400": { "description": "Erro de validação" }
+        }
       },
       "get": {
         "tags": ["Messages"],
-        "summary": "Listar todas as mensagens",
-        "responses": { "200": { "description": "Mensagens retornadas" } }
+        "summary": "Listar todas as mensagens (apenas admin)",
+        "security": [{ "ApiKeyAuth": [] }],
+        "responses": {
+          "200": { "description": "Mensagens retornadas" },
+          "401": { "description": "Admin key ausente" },
+          "403": { "description": "Admin key inválida" }
+        }
       }
     },
     "/api/messages/post/{id}": {
       "put": {
         "tags": ["Messages"],
-        "summary": "Atualizar mensagem por ID",
-        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
-        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Message" } } } },
+        "summary": "Atualizar mensagem por ID (apenas admin)",
+        "security": [{ "ApiKeyAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Message" }
+            }
+          }
+        },
         "responses": {
           "200": { "description": "Mensagem atualizada com sucesso" },
-          "403": { "description": "Acesso negado" },
+          "401": { "description": "Admin key ausente" },
+          "403": { "description": "Admin key inválida" },
           "404": { "description": "Mensagem não encontrada" },
           "500": { "description": "Erro interno do servidor" }
         }
       },
       "delete": {
         "tags": ["Messages"],
-        "summary": "Excluir mensagem por ID",
-        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "summary": "Excluir mensagem por ID (apenas admin)",
+        "security": [{ "ApiKeyAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
         "responses": {
           "200": { "description": "Mensagem excluída com sucesso" },
-          "403": { "description": "Acesso negado" },
+          "401": { "description": "Admin key ausente" },
+          "403": { "description": "Admin key inválida" },
           "404": { "description": "Mensagem não encontrada" },
           "500": { "description": "Erro interno do servidor" }
         }
@@ -227,35 +410,75 @@
       "post": {
         "tags": ["Reports"],
         "summary": "Criar nova denúncia",
-        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Report" } } } },
-        "responses": { "201": { "description": "Denúncia registrada com sucesso" }, "400": { "description": "Erro nos dados enviados" } }
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Report" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Denúncia registrada com sucesso" },
+          "400": { "description": "Erro nos dados enviados" }
+        }
       },
       "get": {
         "tags": ["Reports"],
-        "summary": "Listar todas as denúncias",
-        "responses": { "200": { "description": "Lista de denúncias retornada" } }
+        "summary": "Listar todas as denúncias (apenas admin)",
+        "security": [{ "ApiKeyAuth": [] }],
+        "responses": {
+          "200": { "description": "Lista de denúncias retornada" },
+          "401": { "description": "Admin key ausente" },
+          "403": { "description": "Admin key inválida" }
+        }
       }
     },
     "/api/messages/denuncia/{id}": {
       "put": {
         "tags": ["Reports"],
-        "summary": "Atualizar denúncia por ID",
-        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
-        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Report" } } } },
+        "summary": "Atualizar denúncia por ID (apenas admin)",
+        "security": [{ "ApiKeyAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Report" }
+            }
+          }
+        },
         "responses": {
           "200": { "description": "Denúncia atualizada com sucesso" },
-          "403": { "description": "Acesso negado" },
+          "401": { "description": "Admin key ausente" },
+          "403": { "description": "Admin key inválida" },
           "404": { "description": "Denúncia não encontrada" },
           "500": { "description": "Erro interno do servidor" }
         }
       },
       "delete": {
         "tags": ["Reports"],
-        "summary": "Excluir denúncia por ID",
-        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "summary": "Excluir denúncia por ID (apenas admin)",
+        "security": [{ "ApiKeyAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
         "responses": {
           "200": { "description": "Denúncia excluída com sucesso" },
-          "403": { "description": "Acesso negado" },
+          "401": { "description": "Admin key ausente" },
+          "403": { "description": "Admin key inválida" },
           "404": { "description": "Denúncia não encontrada" },
           "500": { "description": "Erro interno do servidor" }
         }

@@ -68,8 +68,8 @@ export const getDenuncias = async (req, res) => {
 // Update a post message (admin only - requires API key)
 export const updatePostMessage = async (req, res) => {
   try {
-    // allow only API key (admin) to update messages
-    if (!req.isApiKeyValid)
+    // allow only API key or admin token to update messages
+    if (!req.isApiKeyValid && req.userRole !== "admin")
       return res.status(403).json({ error: "Não autorizado" });
 
     const { id } = req.params;
@@ -90,7 +90,7 @@ export const updatePostMessage = async (req, res) => {
 // Delete a post message (admin only)
 export const deletePostMessage = async (req, res) => {
   try {
-    if (!req.isApiKeyValid)
+    if (!req.isApiKeyValid && req.userRole !== "admin")
       return res.status(403).json({ error: "Não autorizado" });
     const { id } = req.params;
     const removed = await PostMessage.findByIdAndDelete(id);
@@ -105,7 +105,7 @@ export const deletePostMessage = async (req, res) => {
 // Update a denuncia (admin only)
 export const updateDenuncia = async (req, res) => {
   try {
-    if (!req.isApiKeyValid)
+    if (!req.isApiKeyValid && req.userRole !== "admin")
       return res.status(403).json({ error: "Não autorizado" });
     const { id } = req.params;
     const { nome, email, descricao, alvoId, alvoTipo } = req.body;
@@ -124,7 +124,7 @@ export const updateDenuncia = async (req, res) => {
 // Delete a denuncia (admin only)
 export const deleteDenuncia = async (req, res) => {
   try {
-    if (!req.isApiKeyValid)
+    if (!req.isApiKeyValid && req.userRole !== "admin")
       return res.status(403).json({ error: "Não autorizado" });
     const { id } = req.params;
     const removed = await DenunciaMessage.findByIdAndDelete(id);

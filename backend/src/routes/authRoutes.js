@@ -62,78 +62,75 @@ const router = Router();
  *                       type: string
  */
 
-// Rotas de autenticação
-router.post(
-  "/register",
-  /* #swagger.tags = ['Auth']
-    #swagger.description = 'Endpoint para registrar um novo usuário.'
-    #swagger.requestBody = {
-      required: true,
-      content: {
-        "application/json": {
-          schema: { $ref: "#/definitions/RegisterInput" }
-        }
-      }
-    }
-    #swagger.responses[201] = {
-      description: "Usuário criado com sucesso",
-      schema: { $ref: "#/definitions/AuthResponse" }
-    }
-*/ register
-);
+/* 
+   #swagger.tags = ['Auth']
+   #swagger.summary = 'Registrar novo usuário'
+   #swagger.description = 'Cria uma nova conta de usuário na plataforma.'
+   #swagger.requestBody = {
+     required: true,
+     content: {
+       "application/json": {
+         schema: { $ref: "#/components/schemas/User" }
+       }
+     }
+   }
+   #swagger.responses[201] = { description: "Usuário criado com sucesso" }
+   #swagger.responses[400] = { description: "Erro de validação" }
+   #swagger.responses[500] = { description: "Erro interno do servidor" }
+*/
+router.post("/register", register);
 
-router.post(
-  "/login",
-  /* #swagger.tags = ['Auth']
-    #swagger.description = 'Endpoint para fazer login e obter token JWT.'
-    #swagger.requestBody = {
-      required: true,
-      content: {
-        "application/json": {
-          schema: { $ref: "#/definitions/LoginInput" }
-        }
-      }
-    }
-    #swagger.responses[200] = {
-      description: "Login realizado com sucesso",
-      schema: { $ref: "#/definitions/AuthResponse" }
-    }
-*/ login
-);
+/* 
+   #swagger.tags = ['Auth']
+   #swagger.summary = 'Login do usuário'
+   #swagger.description = 'Autentica o usuário e retorna o token JWT.'
+   #swagger.requestBody = {
+     required: true,
+     content: {
+       "application/json": {
+         schema: { $ref: "#/components/schemas/Login" }
+       }
+     }
+   }
+   #swagger.responses[200] = { description: "Login realizado com sucesso" }
+   #swagger.responses[400] = { description: "Credenciais inválidas" }
+   #swagger.responses[401] = { description: "Não autorizado" }
+*/
+router.post("/login", login);
 
-// Perfil do usuário autenticado
-router.get(
-  "/me",
-  /* #swagger.tags = ['Auth']
-    #swagger.description = 'Endpoint para obter dados do usuário autenticado.'
-    #swagger.security = [{ "BearerAuth": [] }]
-*/ ensureAuth,
-  getProfile
-);
+/* 
+   #swagger.tags = ['Auth']
+   #swagger.summary = 'Obter dados do usuário autenticado'
+   #swagger.security = [{ "BearerAuth": [] }]
+   #swagger.responses[200] = { description: "Usuário autenticado retornado" }
+   #swagger.responses[401] = { description: "Token inválido ou ausente" }
+*/
+router.get("/me", ensureAuth, getProfile);
 
-router.put(
-  "/me",
-  /* #swagger.tags = ['Auth']
-    #swagger.description = 'Endpoint para atualizar dados do usuário autenticado.'
-    #swagger.security = [{ "BearerAuth": [] }]
-    #swagger.requestBody = {
-      content: {
-        "application/json": {
-          schema: { $ref: "#/definitions/RegisterInput" }
-        }
-      }
-    }
-*/ ensureAuth,
-  updateProfile
-);
+/* 
+   #swagger.tags = ['Auth']
+   #swagger.summary = 'Atualizar dados do usuário autenticado'
+   #swagger.security = [{ "BearerAuth": [] }]
+   #swagger.requestBody = {
+     content: {
+       "application/json": {
+         schema: { $ref: "#/components/schemas/User" }
+       }
+     }
+   }
+   #swagger.responses[200] = { description: "Dados atualizados com sucesso" }
+   #swagger.responses[400] = { description: "Erro de validação" }
+   #swagger.responses[401] = { description: "Token inválido" }
+*/
+router.put("/me", ensureAuth, updateProfile);
 
-router.delete(
-  "/me",
-  /* #swagger.tags = ['Auth']
-    #swagger.description = 'Endpoint para deletar a conta do usuário autenticado.'
-    #swagger.security = [{ "BearerAuth": [] }]
-*/ ensureAuth,
-  deleteProfile
-);
+/* 
+   #swagger.tags = ['Auth']
+   #swagger.summary = 'Excluir conta do usuário autenticado'
+   #swagger.security = [{ "BearerAuth": [] }]
+   #swagger.responses[200] = { description: "Conta excluída com sucesso" }
+   #swagger.responses[401] = { description: "Token inválido" }
+*/
+router.delete("/me", ensureAuth, deleteProfile);
 
 export default router;
