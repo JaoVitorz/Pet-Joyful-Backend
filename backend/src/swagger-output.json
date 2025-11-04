@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:5000",
+      "url": "https://pet-joyful-backend-1.onrender.com",
       "description": "Servidor de teste"
     }
   ],
