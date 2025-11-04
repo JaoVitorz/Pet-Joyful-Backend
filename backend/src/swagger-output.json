@@ -165,9 +165,12 @@
     "/api/users": {
       "get": {
         "tags": ["Users"],
-        "summary": "Listar todos os usuários",
+        "summary": "Listar todos os usuários (apenas admin)",
+        "security": [{ "ApiKeyAuth": [] }],
         "responses": {
           "200": { "description": "Lista de usuários retornada" },
+          "401": { "description": "Admin key ausente" },
+          "403": { "description": "Admin key inválida" },
           "500": { "description": "Erro interno" }
         }
       },
@@ -186,29 +189,16 @@
         "responses": {
           "201": { "description": "Usuário criado com sucesso" },
           "400": { "description": "Erro de validação" },
-          "403": {
-            "description": "Acesso negado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "Criação de usuário admin requer API key ou token admin"
-                    }
-                  }
-                }
-              }
-            }
-          }
+          "401": { "description": "Admin key ausente" },
+          "403": { "description": "Admin key inválida" }
         }
       }
     },
     "/api/users/{id}": {
       "get": {
         "tags": ["Users"],
-        "summary": "Buscar usuário por ID",
+        "summary": "Buscar usuário por ID (apenas admin)",
+        "security": [{ "ApiKeyAuth": [] }],
         "parameters": [
           {
             "name": "id",
@@ -219,13 +209,15 @@
         ],
         "responses": {
           "200": { "description": "Usuário encontrado" },
+          "401": { "description": "Admin key ausente" },
+          "403": { "description": "Admin key inválida" },
           "404": { "description": "Usuário não encontrado" }
         }
       },
       "put": {
         "tags": ["Users"],
-        "summary": "Atualizar usuário por ID",
-        "security": [{ "BearerAuth": [], "ApiKeyAuth": [] }],
+        "summary": "Atualizar usuário por ID (apenas admin)",
+        "security": [{ "ApiKeyAuth": [] }],
         "parameters": [
           {
             "name": "id",
@@ -243,45 +235,15 @@
         },
         "responses": {
           "200": { "description": "Usuário atualizado" },
-          "401": {
-            "description": "Unauthorized - Token JWT não fornecido ou inválido",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "Token não fornecido"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden - Usuário não tem permissão",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "Você não tem permissão para atualizar este usuário"
-                    }
-                  }
-                }
-              }
-            }
-          },
+          "401": { "description": "Admin key ausente" },
+          "403": { "description": "Admin key inválida" },
           "404": { "description": "Usuário não encontrado" }
         }
       },
       "delete": {
         "tags": ["Users"],
-        "summary": "Excluir usuário por ID",
-        "security": [{ "BearerAuth": [], "ApiKeyAuth": [] }],
+        "summary": "Excluir usuário por ID (apenas admin)",
+        "security": [{ "ApiKeyAuth": [] }],
         "parameters": [
           {
             "name": "id",
@@ -292,38 +254,8 @@
         ],
         "responses": {
           "200": { "description": "Usuário excluído" },
-          "401": {
-            "description": "Unauthorized - Token JWT não fornecido ou inválido",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "Token não fornecido"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden - Usuário não tem permissão",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "Você não tem permissão para deletar este usuário"
-                    }
-                  }
-                }
-              }
-            }
-          },
+          "401": { "description": "Admin key ausente" },
+          "403": { "description": "Admin key inválida" },
           "404": { "description": "Usuário não encontrado" }
         }
       }

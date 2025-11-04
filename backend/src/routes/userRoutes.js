@@ -7,6 +7,7 @@ import {
   deleteUser,
 } from "../controllers/userController.js";
 import ensureAuth from "../middlewares/ensureAuth.js";
+import ensureAdminKey from "../middlewares/ensureAdminKey.js";
 
 const router = Router();
 
@@ -39,13 +40,14 @@ const router = Router();
      }
    }
 */
-router.post("/", ensureAuth, createUser); // Adicionado ensureAuth para verificar admin_key
+router.post("/", ensureAdminKey, createUser); // Apenas admin via x-admin-key
 
 /*
-   #swagger.tags = ['Users']
-   #swagger.summary = 'Listar todos os usuários'
+  #swagger.tags = ['Users']
+  #swagger.summary = 'Listar todos os usuários (apenas admin)'
+  #swagger.security = [{ "ApiKeyAuth": [] }]
 */
-router.get("/", getUsers);
+router.get("/", ensureAdminKey, getUsers);
 
 /*
    #swagger.tags = ['Users']
@@ -56,7 +58,7 @@ router.get("/", getUsers);
      schema: { type: 'string' }
    }
 */
-router.get("/:id", getUserById);
+router.get("/:id", ensureAdminKey, getUserById);
 
 /* 
    #swagger.tags = ['Users']
@@ -75,7 +77,7 @@ router.get("/:id", getUserById);
      }
    }
 */
-router.put("/:id", ensureAuth, updateUser);
+router.put("/:id", ensureAdminKey, updateUser);
 
 /* #swagger.tags = ['Users']
    #swagger.summary = 'Deletar usuário por ID'
@@ -118,6 +120,6 @@ router.put("/:id", ensureAuth, updateUser);
      }
    }
 */
-router.delete("/:id", ensureAuth, deleteUser); // DELETE - requer JWT ou chave de admin
+router.delete("/:id", ensureAdminKey, deleteUser); // DELETE - apenas admin via x-admin-key
 
 export default router;
