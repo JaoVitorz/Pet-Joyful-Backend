@@ -7,8 +7,8 @@
   },
   "servers": [
     {
-      "url": "https://pet-joyful-backend-1.onrender.com",
-      "description": "Servidor de produção"
+      "url": "http://localhost:5000",
+      "description": "Servidor de teste"
     }
   ],
   "components": {

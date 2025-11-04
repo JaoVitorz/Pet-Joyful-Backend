@@ -27,9 +27,23 @@ export const register = async (req, res) => {
     user = new userModel({ nome, email, senha, tipo });
     await user.save();
 
-    return res
-      .status(201)
-      .json({ message: "Usuário criado com sucesso", user });
+    // 🔑 Gerar token JWT automaticamente após o registro
+    const token = jwt.sign(
+      { userId: user._id, email: user.email, tipo: user.tipo },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    return res.status(201).json({
+      message: "Usuário criado com sucesso",
+      token: `Bearer ${token}`,
+      user: {
+        id: user._id,
+        nome: user.nome,
+        email: user.email,
+        tipo: user.tipo,
+      },
+    });
   } catch (error) {
     console.error("Erro no registro:", error);
     return res.status(500).json({ error: error.message });
@@ -69,13 +83,13 @@ export const login = async (req, res) => {
 
     // Gerar token JWT
     const token = jwt.sign(
-      { userId: user._id, email: user.email },
+      { userId: user._id, email: user.email, tipo: user.tipo },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
     return res.json({
-      token,
+      token: `Bearer ${token}`,
       user: {
         id: user._id,
         nome: user.nome,
@@ -119,7 +133,7 @@ export const updateProfile = async (req, res) => {
     if (tipo) updateData.tipo = tipo;
     if (senha) updateData.senha = await bcrypt.hash(senha, 10);
 
-    // If changing email, ensure it's not already used
+    // Verificar se o email já está sendo usado por outro usuário
     if (email) {
       const other = await userModel.findOne({ email });
       if (other && other._id.toString() !== userId.toString()) {
