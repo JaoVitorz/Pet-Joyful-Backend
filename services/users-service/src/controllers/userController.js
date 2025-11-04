@@ -1,0 +1,136 @@
+import jwt from "jsonwebtoken";
+import User from "../models/userModel.js";
+import bcrypt from "bcryptjs";
+
+// 🔹 CREATE
+export const createUser = async (req, res) => {
+  try {
+    const { nome, email, senha, tipo } = req.body;
+
+    if (!nome || !email || !senha || !tipo)
+      return res
+        .status(400)
+        .json({ error: "Todos os campos são obrigatórios!" });
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser)
+      return res.status(400).json({ error: "Email já cadastrado!" });
+
+    const hashedPassword = await bcrypt.hash(senha, 10);
+
+    // If trying to create an admin user, require admin key or an admin token
+    if (tipo === "admin") {
+      const adminKey = req.headers["x-admin-key"] || req.query.admin_key;
+      const auth = req.headers["authorization"];
+      let allowed = false;
+      if (adminKey && adminKey === process.env.ADMIN_KEY) allowed = true;
+      if (!allowed && auth && auth.startsWith("Bearer ")) {
+        const token = auth.split(" ")[1];
+        try {
+          const payload = jwt.verify(token, process.env.JWT_SECRET);
+          if (payload && (payload.tipo === "admin" || payload.role === "admin"))
+            allowed = true;
+        } catch (err) {
+          // invalid token -> not allowed
+        }
+      }
+      if (!allowed)
+        return res.status(403).json({
+          error: "Criação de usuário admin requer API key ou token admin",
+        });
+    }
+
+    const user = new User({ nome, email, senha: hashedPassword, tipo });
+    await user.save();
+
+    res.status(201).json({ message: "Usuário criado com sucesso!", user });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 🔹 READ ALL
+export const getUsers = async (req, res) => {
+  try {
+    const users = await User.find();
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 🔹 READ BY ID
+export const getUserById = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user)
+      return res.status(404).json({ error: "Usuário não encontrado!" });
+
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 🔹 UPDATE
+export const updateUser = async (req, res) => {
+  try {
+    const { nome, email, senha, tipo } = req.body;
+    const updateData = { nome, email, tipo };
+
+    // Se for alterar senha, criptografa
+    if (senha) updateData.senha = await bcrypt.hash(senha, 10);
+
+    // Authorization: only the owner (token userId) or a valid API key can update
+    const requesterId = req.userId;
+    const isApiKey = req.isApiKeyValid;
+    const isAdmin = req.userRole === "admin";
+    if (
+      !isApiKey &&
+      !isAdmin &&
+      (!requesterId || requesterId.toString() !== req.params.id)
+    ) {
+      return res
+        .status(403)
+        .json({ error: "Não autorizado a atualizar este usuário." });
+    }
+
+    const user = await User.findByIdAndUpdate(req.params.id, updateData, {
+      new: true,
+    });
+
+    if (!user)
+      return res.status(404).json({ error: "Usuário não encontrado!" });
+
+    res.json({ message: "Usuário atualizado com sucesso!", user });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 🔹 DELETE
+export const deleteUser = async (req, res) => {
+  try {
+    // Authorization: only the owner or a valid API key can delete
+    const requesterId = req.userId;
+    const isApiKey = req.isApiKeyValid;
+    const isAdmin = req.userRole === "admin";
+    if (
+      !isApiKey &&
+      !isAdmin &&
+      (!requesterId || requesterId.toString() !== req.params.id)
+    ) {
+      return res
+        .status(403)
+        .json({ error: "Não autorizado a deletar este usuário." });
+    }
+
+    const user = await User.findByIdAndDelete(req.params.id);
+    if (!user)
+      return res.status(404).json({ error: "Usuário não encontrado!" });
+
+    res.json({ message: "Usuário deletado com sucesso!" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

@@ -1,0 +1,18 @@
+{
+  "name": "auth-service",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Serviço de autenticação (registro / login / JWT)",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.0",
+    "express": "^4.18.2",
+    "mongoose": "^7.0.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.0"
+  }
+}
