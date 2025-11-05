@@ -327,6 +327,17 @@ O **Pet Joyful** é uma plataforma que conecta tutores de pets, ONGs e veteriná
 
 ## 🛠️ Stack Tecnológica
 
+### Frontend 🚀
+- **Next.js**
+- **React**
+- **Bootstrap**
+- **React-Bootstrap**
+- **React Icons**
+- **Express**
+- **Node.js**
+- **Formik**
+- **Yup**
+
 ### Backend
 - **Node.js 18+** com Express 5
 - **MongoDB Atlas** (Mongoose 8)
@@ -335,11 +346,10 @@ O **Pet Joyful** é uma plataforma que conecta tutores de pets, ONGs e veteriná
 
 ### DevOps & Tools
 - **Docker** e Docker Compose
-- **Vercel** para deploy
+- **Vercel e Render** para deploy
 - **Swagger UI** para documentação
 - **Nodemon** para desenvolvimento
 
----
 
 ## 🚀 Instalação
 
