@@ -299,22 +299,7 @@ O **Pet Joyful** é uma plataforma que conecta tutores de pets, ONGs e veteriná
 
 **Restrições/Validações:**  
 - CNPJ deve estar ativo e válido na Receita Federal.
-
----
-
-## 🧩 Caso de Uso: Adotar
-
-**Atores:** Usuário (Adotante), Sistema  
-**Resumo:** O usuário adota um animal disponível na plataforma.  
-**Pré-condição:** Usuário logado e animal disponível.  
-**Pós-condição:** Animal marcado como adotado e confirmação enviada.  
-
-**Fluxo Principal:**  
-1. Clicar em "Adotar" no post.  
-2. Sistema exibe formulário.  
-3. Usuário preenche formulário.  
-4. Sistema valida e confirma adoção.  
-
+- 
 ---
 
 ## 🧩 Caso de Uso: Curtir Post
