@@ -30,10 +30,9 @@ router.post("/post", createPostMessage);
 
 /* 
   #swagger.tags = ['Messages']
-  #swagger.summary = 'Listar todas as mensagens (apenas admin)'
-  #swagger.security = [{ "ApiKeyAuth": [] }]
+  #swagger.summary = 'Listar todas as mensagens'
 */
-router.get("/post", ensureAdminKey, getPostMessages);
+router.get("/post", getPostMessages);
 
 /* 
    #swagger.tags = ['Messages']

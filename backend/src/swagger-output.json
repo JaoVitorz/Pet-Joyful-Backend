@@ -8,7 +8,7 @@
   "servers": [
     {
       "url": "https://pet-joyful-backend-1.onrender.com",
-      "description": "Servidor de teste"
+      "description": "Servidor de produção"
     }
   ],
   "components": {
@@ -279,12 +279,9 @@
       },
       "get": {
         "tags": ["Messages"],
-        "summary": "Listar todas as mensagens (apenas admin)",
-        "security": [{ "ApiKeyAuth": [] }],
+        "summary": "Listar todas as mensagens",
         "responses": {
-          "200": { "description": "Mensagens retornadas" },
-          "401": { "description": "Admin key ausente" },
-          "403": { "description": "Admin key inválida" }
+          "200": { "description": "Mensagens retornadas" }
         }
       }
     },
