@@ -528,17 +528,40 @@ Pet-Joyful-Backend/
 
 ## Sprint do Backend
 
-| Atividade                           | Início              | Término |
-|:------------------------------------|:--------------------|:--------|
-| Criação da Estrutura de Pastas Back-End | 2025-10-02 00:00:00 |         |
-| Configurar Docker e Containers      | 2025-10-20 00:00:00 |         |
-| Criar um Microserviço               | 2025-10-20 00:00:00 |         |
+ | Atividade                                          | Início              | Término                 |
+| :------------------------------------------------- | :------------------ | :---------------------- |
+| Criação da Estrutura de Pastas do Back-End         | 2025-10-02 00:00:00 | 2025-10-05 00:00:00     |
+| Configurar Docker e Containers                     | 2025-10-06 00:00:00 | 2025-10-08 00:00:00     |
+| Implementar Conexão com Banco de Dados             | 2025-10-09 00:00:00 | 2025-10-10 00:00:00     |
+| Criar um Microserviço (ex: Usuários /)        | 2025-10-10 00:00:00 | 2025-10-12 00:00:00     |
+| Implementar Middleware de Autenticação JWT         | 2025-10-12 00:00:00 | 2025-10-13 00:00:00     |
+| Implementar Middleware de Autorização (checkAdmin) | 2025-10-13 00:00:00 | 2025-10-14 00:00:00     |
+| Criar Documentação da API com Swagger              | 2025-10-14 00:00:00 | 2025-10-15 00:00:00     |
+| Testar Endpoints com Insomnia / Postman            | 2025-10-15 00:00:00 | 2025-10-17 00:00:00     |
+| Deploy do Backend na Vercel                        | 2025-10-17 00:00:00 | 2025-10-19 00:00:00     |
+| Ajustar CORS e Variáveis de Ambiente               | 2025-10-19 00:00:00 | 2025-10-20 00:00:00     |
+| Revisão Final e Apresentação do Swagger UI         | 2025-10-20 00:00:00 | **2025-10-22 00:00:00** |
 
 ## Sprint do Backlog
 
-| Atividade                | Início | Término |
-|:-------------------------|:-------|:--------|
-| Integração com Front-End |        |         |
+| Atividade                                             | Início | Término |
+| :---------------------------------------------------- | :----- | :------ |
+| Integração com Front-End                              |        |         |
+| Upload de Imagens de Pets                             |        |         |
+| Sistema de Notificações (E-mail ou Push)              |        |         |
+| Recuperação de Senha (Esqueci minha senha)            |        |         |
+| Filtros e Paginação de Pets                           |        |         |
+| Dashboard Administrativo                              |        |         |
+| Logs de Adoção                                        |        |         |
+| Testes Automatizados (Jest / Supertest)               |        |         |
+| Cache de Requisições (Redis)                          |        |         |
+| Monitoramento e Health Check                          |        |         |
+| Integração com Serviços Externos (ex: Geolocalização) |        |         |
+| Sistema de Favoritos (Pets Favoritados por Usuário)   |        |         |
+| API de Feedback / Avaliação de Adoções                |        |         |
+| Melhorias de Segurança e Rate Limiting                |        |         |
+| Criação de Microserviço de Relatórios                 |        |         |
+
 
 
 ## 🌐 Deploy
