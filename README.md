@@ -26,13 +26,13 @@ O **Pet Joyful** é uma plataforma que conecta tutores de pets, ONGs e veteriná
 
 ### 🎯 Funcionalidades Principais
 
-- ✅ **Autenticação JWT** - Sistema seguro de login e registro
+- ✅ **Autenticação JWT e Admin-Key** - Sistema seguro de login e registro
 - ✅ **CRUD Completo** - Gerenciamento de usuários, mensagens e denúncias
 - ✅ **Múltiplos Perfis** - Adotantes, ONGs e Veterinários
 - ✅ **Sistema de Mensagens** - Comentários em posts
 - ✅ **Sistema de Denúncias** - Moderação de conteúdo
 - ✅ **Documentação Swagger** - API totalmente documentada
-- ✅ **Deploy em Nuvem** - Hospedado na Vercel
+- ✅ **Deploy em Nuvem** - Hospedado no Render
 
 ---
 
@@ -388,29 +388,29 @@ cd Pet-Joyful-Backend
 
 | Método | Endpoint | Descrição | Auth |
 |--------|----------|-----------|------|
-| GET | `/api/users` | Listar todos os usuários | Bearer Token |
-| GET | `/api/users/:id` | Buscar usuário por ID | Bearer Token |
-| POST | `/api/users` | Criar usuário (admin) | Não |
-| PUT | `/api/users/:id` | Atualizar usuário | Bearer Token |
-| DELETE | `/api/users/:id` | Deletar usuário | Bearer Token |
+| GET | `/api/users` | Listar todos os usuários | Admin Key |
+| GET | `/api/users/:id` | Buscar usuário por ID | Admin Key |
+| POST | `/api/users` | Criar usuário | Admin Key |
+| PUT | `/api/users/:id` | Atualizar usuário | Admin Key |
+| DELETE | `/api/users/:id` | Deletar usuário | Admin Key |
 
 ### 💬 Mensagens
 
 | Método | Endpoint | Descrição | Auth |
 |--------|----------|-----------|------|
 | POST | `/api/messages/post` | Criar mensagem | Não |
-| GET | `/api/messages/post` | Listar mensagens | Bearer Token |
-| PUT | `/api/messages/post/:id` | Atualizar mensagem | Bearer Token |
-| DELETE | `/api/messages/post/:id` | Deletar mensagem | Bearer Token |
+| GET | `/api/messages/post` | Listar mensagens | Não |
+| PUT | `/api/messages/post/:id` | Atualizar mensagem | Admin Key |
+| DELETE | `/api/messages/post/:id` | Deletar mensagem | Admin Key |
 
 ### 🚨 Denúncias
 
 | Método | Endpoint | Descrição | Auth |
 |--------|----------|-----------|------|
 | POST | `/api/messages/denuncia` | Criar denúncia | Não |
-| GET | `/api/messages/denuncia` | Listar denúncias | Bearer Token |
-| PUT | `/api/messages/denuncia/:id` | Atualizar denúncia | Bearer Token |
-| DELETE | `/api/messages/denuncia/:id` | Deletar denúncia | Bearer Token |
+| GET | `/api/messages/denuncia` | Listar denúncias | Admin Key |
+| PUT | `/api/messages/denuncia/:id` | Atualizar denúncia | Admin Key |
+| DELETE | `/api/messages/denuncia/:id` | Deletar denúncia | Admin Key |
 
 ---
 
@@ -420,6 +420,34 @@ cd Pet-Joyful-Backend
 ```http
 Authorization: Bearer {token}
 ```
+
+### Admin Key (Operações Administrativas)
+```http
+x-admin-key: {admin_key_from_env}
+```
+
+**Nota:** A Admin Key permite acesso total às operações protegidas. No código, o middleware `ensureAuth` aceita **tanto Bearer Token quanto Admin Key**.
+
+---
+
+### 🔐 Sistema de Autenticação
+
+O projeto utiliza **dois mecanismos de autenticação**:
+
+#### Bearer Token (JWT)
+- Gerado no registro e login
+- Validade de 7 dias
+- Usado em rotas de perfil (`/api/auth/me`)
+
+#### Admin Key
+- Header: `x-admin-key`
+- Requerida para operações administrativas:
+  - Gerenciamento de usuários
+  - Atualização/exclusão de mensagens
+  - Gerenciamento de denúncias
+- Definida na variável de ambiente `ADMIN_KEY`
+
+**Importante:** O middleware `ensureAuth` aceita ambos os métodos.
 
 ---
 
@@ -516,10 +544,8 @@ Pet-Joyful-Backend/
 ## 🌐 Deploy
 
 ### URL de Produção
-**🔗 https://petjoyful-backend.vercel.app**
-
-### Swagger Docs
-**📚 https://petjoyful-backend.vercel.app/api-docs**
+- **API:** https://pet-joyful-backend-1.onrender.com
+- **Swagger Docs:** https://pet-joyful-backend-1.onrender.com/api-docs
 
 ---
 
