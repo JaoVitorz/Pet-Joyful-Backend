@@ -20,7 +20,7 @@ O **Pet Joyful** é uma plataforma que conecta tutores de pets, ONGs e veteriná
 
 **Backend:** https://github.com/JaoVitorz/Pet-Joyful-Backend (Este repositório)
 
-**Frontend:** https://github.com/davidagj/Pet-Joyful---Projeto-Integrador--NextJs
+**Frontend:** https://pet-joyful-projeto-integrador-next-nu.vercel.app/Home
 
 
 
@@ -573,7 +573,7 @@ Este projeto está sob a licença **ISC**.
 
 ## 📞 Contato & Suporte
 
-- **Documentação**: [Swagger Docs](https://petjoyful-backend.vercel.app/api-docs)
+- **Documentação**: [Swagger Docs](https://pet-joyful-backend-1.onrender.com/api-docs/#/Auth/post_api_auth_login)
 - **Repositório**: [GitHub](https://github.com/JaoVitorz/Pet-Joyful-Backend)
 - **Issues**: [GitHub Issues](https://github.com/JaoVitorz/Pet-Joyful-Backend/issues)
 
