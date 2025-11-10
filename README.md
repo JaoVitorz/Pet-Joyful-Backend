@@ -1,266 +1,598 @@
 # 🐾 Pet Joyful - Backend API
 
-## 👥 Integrantes do Grupo
-- João Vitor dos Santos de Jesus
-- Mateus Fernandes Alves  
-- Elton da Costa
+API RESTful completa para a plataforma Pet Joyful, desenvolvida com Node.js, Express e MongoDB. Sistema de gerenciamento de usuários, autenticação JWT e mensagens com arquitetura escalável.
 
-## 📝 Sobre o Projeto
+---
 
-O Pet Joyful é uma plataforma backend desenvolvida para conectar tutores de pets a serviços especializados. O sistema utiliza arquitetura de microsserviços e oferece uma API RESTful completa seguindo o padrão MVC.
+## 👥 Equipe de Desenvolvimento
 
-## 🎯 Requisitos Implementados
+- **João Vitor dos Santos de Jesus** - joao.jesus18@fatec.sp.gov.br
+- **Mateus Fernandes Alves** - mateus.alves10@fatec.sp.gov.br
+- **Elton da Costa** - elton.costa@fatec.sp.gov.br
 
-✅ API RESTful completa (GET, POST, PUT, DELETE)  
-✅ Arquitetura MVC (Models, Views, Controllers)  
-✅ Microsserviços (Auth Service + Pet Service)  
-✅ Documentação Swagger automática  
-✅ Hospedagem em Nuvem (Railway/Render)
+---
 
-## 🏗️ Arquitetura - Microsserviços
+## 📋 Sobre o Projeto
 
-```
-┌─────────────────┐      ┌─────────────────┐
-│  Auth Service   │      │  Pet Service    │
-│   (Porta 5000)  │◄────►│  (Porta 5001)   │
-└────────┬────────┘      └────────┬────────┘
-         │                        │
-         └────────┬───────────────┘
-                  │
-         ┌────────▼────────┐
-         │    MongoDB      │
-         └─────────────────┘
-```
+O **Pet Joyful** é uma plataforma que conecta tutores de pets, ONGs e veterinários através de uma API RESTful moderna e escalável. O sistema oferece autenticação segura, gerenciamento completo de usuários e sistema de mensagens/denúncias.
 
-### Microsserviços
+## 🔗 Repositórios do Projeto
 
-**Microsserviço 1: Auth Service**
-- Autenticação de usuários (JWT)
-- Gerenciamento de perfis (adotante, ONG, veterinário)
-- Endpoints: `/api/auth/register`, `/api/auth/login`, `/api/users/*`
+**Backend:** https://github.com/JaoVitorz/Pet-Joyful-Backend (Este repositório)
 
-**Microsserviço 2: Pet Service**
-- Gerenciamento de pets
-- Vinculação pet ↔ proprietário
-- Endpoints: `/api/pets/*`
+**Frontend:** https://pet-joyful-projeto-integrador-next-nu.vercel.app/Home
 
-## 🛠️ Tecnologias Utilizadas
+
+
+### 🎯 Funcionalidades Principais
+
+- ✅ **Autenticação JWT e Admin-Key** - Sistema seguro de login e registro
+- ✅ **CRUD Completo** - Gerenciamento de usuários, mensagens e denúncias
+- ✅ **Múltiplos Perfis** - Adotantes, ONGs e Veterinários
+- ✅ **Sistema de Mensagens** - Comentários em posts
+- ✅ **Sistema de Denúncias** - Moderação de conteúdo
+- ✅ **Documentação Swagger** - API totalmente documentada
+- ✅ **Deploy em Nuvem** - Hospedado no Render
+
+---
+
+## 📊 Requisitos do Sistema
+
+### Requisitos Funcionais
+
+| Nº    | Nome                         | Descrição                                                                 |
+|-------|------------------------------|---------------------------------------------------------------------------|
+| RF01  | Login                        | Fazer login na rede social                                                |
+| RF02  | Email de confirmação         | Enviar email de confirmação para validar conta do usuário                 |
+| RF03  | Adicionar/Remover Amigos     | Adicionar amigos na rede social ou remover                                |
+| RF04  | Preferências de usuário      | Alteração das preferências do usuário                                     |
+| RF05  | Bloquear usuários            | Bloquear usuários que descumprirem as políticas do site                   |
+| RF06  | Sistema de Doações           | Permitir que usuários façam e recebam doações pela plataforma             |
+| RF07  | Filtros de Busca             | Barra de pesquisa com filtros para doadores, pets para adoção e ONGs      |
+| RF08  | Notificações                 | Enviar notificações para usuários sobre interações relevantes             |
+| RF09  | Perfil de Pet                | Criar perfis para pets com nome, raça, idade e fotos                      |
+| RF10  | Feedback e Avaliações        | Permitir avaliações sobre doações para promover confiança                 |
+| RF11  | Criar Álbum (Agrupamento)    | Criar agrupamento de fotos para exibição                                  |
+| RF12  | Gerenciar Postagem           | Permitir incluir, alterar e excluir postagens feitas pelos usuários       |
+| RF13  | Comentar                     | Realizar comentários em conteúdos e postagens                             |
+| RF14  | Chat (Comentar)              | Interação entre usuários via texto                                        |
+| RF15  | Adicionar/Remover Fotos      | Adicionar ou remover fotos no conteúdo principal da página                |
+| RF16  | Editar Perfil                | Configurar perfil pessoal para editar informações e dados                 |
+| RF17  | Adicionar e criar Post       | Adicionar e criar postagens no conteúdo principal e no perfil pessoal     |
+
+---
+### Requisitos Não Funcionais
+
+| Nº     | Nome                          | Descrição                                                                 |
+|--------|-------------------------------|---------------------------------------------------------------------------|
+| RNF01  | Tempo de resposta             | O tempo de resposta deve ser menor que 2 segundos                         |
+| RNF02  | Compatibilidade com Navegadores| Deve ser compatível com Firefox, Chrome, Safari e outros navegadores      |
+| RNF03  | Criptografia dos dados        | Dados do usuário devem ser criptografados ao serem armazenados            |
+| RNF04  | Escalabilidade                | O sistema deve ser escalável para suportar grande número de usuários      |
+| RNF05  | Disponibilidade               | Alta disponibilidade (99,9%) para evitar quedas do sistema                |
+| RNF06  | Acessibilidade                | Conformidade com WCAG 2.1 para garantir acessibilidade                    |
+| RNF07  | Responsividade                | Ajustar-se a diferentes tamanhos de tela (computador, tablet, smartphone) |
+| RNF08  | Backup de Dados               | Implementar política de backup regular dos dados do usuário               |
+| RNF09  | Monitoramento e Logs          | Implementar mecanismo de monitoramento e geração de logs                  |
+| RNF10  | Segurança de Autenticação     | Suportar autenticação via OAuth 2.0 ou métodos seguros (ex.: redes sociais)|
+| RNF11  | Tolerância a Falhas           | Garantir operação contínua mesmo em caso de falhas parciais              |
+| RNF12  | Tempo de Recuperação          | Em caso de falha, recuperação deve ser inferior a 5 minutos               |
+| RNF13  | Consumo de Recursos           | Aplicação otimizada para minimizar consumo de CPU, memória e banda        |
+| RNF14  | Conformidade com LGPD         | Estar em conformidade com a LGPD e regulamentos similares                 |
+| RNF15  | Gerenciamento de Sessões      | Sessões devem ter timeouts automáticos e serem gerenciadas com segurança  |
+| RNF16  | Verificação de duas etapas    | Implementar autenticação em duas etapas para segurança do usuário         |
+
+
+## 🎭 Casos de Uso
+
+### Diagrama de Casos de Uso
+
+<img width="882" height="379" alt="image" src="https://github.com/user-attachments/assets/9b6d4f32-5714-40b7-b422-ac5c4528b5a8" />
+
+---
+
+## 🧩 Caso de Uso: Cadastrar
+
+**Atores:** Usuário  
+**Resumo:** O usuário realiza o cadastro no sistema, fornecendo as informações necessárias para criar uma conta.  
+**Pré-condição:** O usuário deve fornecer dados válidos para o cadastro.  
+**Pós-condição:** O usuário está registrado no sistema e pode realizar login.  
+
+**Fluxo Principal:**  
+1. Usuário insere dados do cadastro.  
+2. Sistema valida as informações.  
+3. Sistema confirma o cadastro e cria a conta no sistema.  
+
+**Restrições/Validações:**  
+- O email deve ser único e válido.
+
+---
+
+## 🧩 Caso de Uso: Logoff
+
+**Atores:** Usuário  
+**Resumo:** O usuário encerra sua sessão no sistema, garantindo que suas credenciais não fiquem ativas.  
+**Pré-condição:** O usuário deve estar autenticado.  
+**Pós-condição:** O usuário é desconectado e precisará realizar login novamente.  
+
+**Fluxo Principal:**  
+1. Usuário seleciona opção de logoff.  
+2. Sistema exibe confirmação de saída.  
+3. Usuário confirma logoff.  
+4. Sistema encerra sessão e redireciona para tela de login.  
+
+**Restrições/Validações:**  
+- O usuário deve estar logado.  
+- Após o logoff, as credenciais são removidas da sessão.
+
+---
+
+## 🧩 Caso de Uso: Fazer Login
+
+**Atores:** Usuário  
+**Resumo:** O usuário insere suas credenciais para acessar o sistema.  
+**Pré-condição:** O usuário deve possuir cadastro válido.  
+**Pós-condição:** O usuário estará autenticado no sistema.  
+
+**Fluxo Principal:**  
+1. Inserir email e senha.  
+2. Sistema valida credenciais.  
+3. Sistema concede acesso ao sistema.  
+
+**Restrições/Validações:**  
+- Email e senha devem ser válidos.
+
+---
+
+## 🧩 Caso de Uso: Redefinir Senha
+
+**Atores:** Usuário  
+**Resumo:** O usuário solicita redefinição de senha e recebe link ou código para alteração.  
+**Pré-condição:** O usuário deve ter email cadastrado.  
+**Pós-condição:** A senha é alterada com sucesso.  
+
+**Fluxo Principal:**  
+1. Usuário solicita redefinição e insere email válido.  
+2. Sistema envia link/código de verificação.  
+3. Usuário insere nova senha.  
+4. Sistema atualiza senha.  
+
+**Restrições/Validações:**  
+- Senha deve atender aos critérios de segurança.
+
+---
+
+## 🧩 Caso de Uso: Visualizar Post
+
+**Atores:** Usuário  
+**Resumo:** O usuário visualiza um post e pode interagir com ele.  
+**Pré-condição:** O post deve estar disponível.  
+**Pós-condição:** O usuário vê o conteúdo do post.  
+
+**Fluxo Principal:**  
+1. Usuário acessa o feed.  
+2. Sistema exibe posts em ordem decrescente.
+
+---
+
+## 🧩 Caso de Uso: Criar Post
+
+**Atores:** Usuário  
+**Resumo:** O usuário cria um post com informações sobre adoção ou doação.  
+**Pré-condição:** O usuário deve estar logado.  
+**Pós-condição:** O post é publicado.  
+
+**Fluxo Principal:**  
+1. Inserir informações do post.  
+2. Sistema valida informações.  
+3. Confirmar criação.  
+4. Sistema publica o post.  
+
+**Restrições/Validações:**  
+- Conteúdo deve seguir as diretrizes do sistema.
+
+---
+
+## 🧩 Caso de Uso: Comentar
+
+**Atores:** Usuário  
+**Resumo:** O usuário comenta em um post.  
+**Pré-condição:** O post deve permitir comentários.  
+**Pós-condição:** O comentário é adicionado.  
+
+**Fluxo Principal:**  
+1. Selecionar post.  
+2. Exibir post.  
+3. Inserir comentário.  
+4. Sistema publica comentário.  
+
+**Restrições/Validações:**  
+- O usuário deve estar autenticado.
+
+---
+
+## 🧩 Caso de Uso: Gerenciar Post
+
+**Atores:** Usuário  
+**Resumo:** O usuário pode incluir, alterar ou excluir postagens criadas.  
+**Pré-condição:** O post deve existir e o usuário deve ter permissão.  
+**Pós-condição:** O post é atualizado ou removido.  
+
+**Fluxo Principal:**  
+1. Selecionar post.  
+2. Escolher ação (editar ou excluir).  
+3. Sistema processa ação.  
+4. Sistema salva alterações ou remove post.  
+
+**Restrições/Validações:**  
+- Apenas criador ou administrador pode gerenciar o post.
+
+---
+
+## 🧩 Caso de Uso: Bloquear Usuários
+
+**Atores:** Administrador  
+**Resumo:** O administrador bloqueia usuários que violem as regras.  
+**Pré-condição:** Usuário infrator deve existir no sistema.  
+**Pós-condição:** Usuário bloqueado perde acesso.  
+
+**Fluxo Principal:**  
+1. Administrador acessa painel.  
+2. Seleciona usuário.  
+3. Sistema verifica permissões.  
+4. Confirmar bloqueio.  
+5. Sistema atualiza status e notifica o usuário.  
+
+**Restrições/Validações:**  
+- Somente administradores podem executar esta ação.
+
+---
+
+## 🧩 Caso de Uso: Denunciar Post
+
+**Atores:** Usuário  
+**Resumo:** O usuário denuncia um post que viola as regras da plataforma.  
+**Pré-condição:** O post deve estar visível e ativo.  
+**Pós-condição:** Denúncia registrada para análise.  
+
+**Fluxo Principal:**  
+1. Selecionar post.  
+2. Escolher "Denunciar".  
+3. Preencher motivo.  
+4. Sistema registra e notifica administradores.  
+
+**Restrições/Validações:**  
+- Usuário deve estar autenticado.  
+- Motivo da denúncia deve ser válido.
+
+---
+
+## 🧩 Caso de Uso: Validar CRMV
+
+**Atores:** Veterinário, Sistema  
+**Resumo:** O sistema valida o CRMV informado pelo veterinário durante o cadastro.  
+**Pré-condição:** O veterinário deve fornecer CRMV válido.  
+**Pós-condição:** Acesso liberado somente se CRMV for validado.  
+
+**Fluxo Principal:**  
+1. Inserir número do CRMV.  
+2. Sistema valida via API.  
+3. Sistema retorna confirmação.  
+
+**Restrições/Validações:**  
+- CRMV deve ser consultado em base oficial.  
+
+---
+
+## 🧩 Caso de Uso: Validar CNPJ
+
+**Atores:** Representante da ONG, Sistema  
+**Resumo:** O sistema valida o CNPJ da ONG no momento do cadastro.  
+**Pré-condição:** ONG deve fornecer CNPJ válido.  
+**Pós-condição:** Cadastro liberado após validação.  
+
+**Fluxo Principal:**  
+1. Inserir número do CNPJ.  
+2. Sistema consulta base oficial.  
+3. Exibir resultado.  
+4. Continuar cadastro ou exibir erro.  
+
+**Restrições/Validações:**  
+- CNPJ deve estar ativo e válido na Receita Federal.
+- 
+---
+
+## 🧩 Caso de Uso: Curtir Post
+
+**Atores:** Usuário, Sistema  
+**Resumo:** O usuário curte um post, registrando interesse no conteúdo.  
+**Pré-condição:** Usuário deve estar logado e o post visível.  
+**Pós-condição:** O número de curtidas é atualizado.  
+
+**Fluxo Principal:**  
+1. Visualizar post.  
+2. Clicar em "Curtir".  
+3. Sistema registra curtida e atualiza contador.  
+
+**Fluxo Alternativo (Descurtir):**  
+1. Clicar novamente em "Curtir".  
+2. Sistema remove curtida e atualiza contador.  
+
+**Restrições/Validações:**  
+- Um usuário só pode curtir uma vez.  
+- Sistema impede curtidas de usuários não logados.
+
+
+---
+
+## 🛠️ Stack Tecnológica
+
+### Frontend 🚀
+- **Next.js**
+- **React**
+- **Bootstrap**
+- **React-Bootstrap**
+- **React Icons**
+- **Express**
+- **Node.js**
+- **Formik**
+- **Yup**
 
 ### Backend
-- Node.js v18+ com Express v5
-- MongoDB com Mongoose v8
-- JWT para autenticação
-- Bcryptjs para criptografia de senhas
+- **Node.js 18+** com Express 5
+- **MongoDB Atlas** (Mongoose 8)
+- **JWT** para autenticação
+- **Bcryptjs** para criptografia
 
-### DevOps
-- Docker e Docker Compose
-- Nginx como proxy reverso (opcional)
-- Railway/Render para hospedagem
+### DevOps & Tools
+- **Docker** e Docker Compose
+- **Vercel e Render** para deploy
+- **Swagger UI** para documentação
+- **Nodemon** para desenvolvimento
 
-### Documentação
-- Swagger UI Express (OpenAPI 3.0)
-- Documentação disponível em: `/api-docs`
 
-## 🚀 Como Executar Localmente
+## 🚀 Instalação
 
-### Pré-requisitos
-- Node.js 18+
-- MongoDB (local ou Atlas)
-- Git
-
-### 1️⃣ Clone o repositório
 ```bash
+# Clone o repositório
 git clone https://github.com/JaoVitorz/Pet-Joyful-Backend.git
 cd Pet-Joyful-Backend
 ```
 
-### 2️⃣ Configure as variáveis de ambiente
+### 📚 Acesse a Documentação
 
-**Auth Service** (`.env` na pasta `auth-service/`)
-```env
-PORT=5000
-MONGO_URL=mongodb+srv://joaojesus:oULyKDlXfS0Stg4M@cluster0.hmlyx3e.mongodb.net/petjoyful?retryWrites=true&w=majority&appName=Cluster0
-JWT_SECRET=a2e6887fa57442d1040baa0393f31bcac2bfc15d486fed1e8e8dfaa197e3cc079d46c994790c8a871b404d49c54cf5e5d339a75befcd4860a5b4844a95fd7c83
-API_KEY=3e3c34efc8bcee95716a861494d89a9ddbdef722c0303e7b2b3de6a9e539d861
-PET_SERVICE_URL=http://pet-service:5001
-```
+- **Swagger Docs**: https://petjoyful-backend.vercel.app/api-docs
 
-**Pet Service** (`.env` na pasta `pet-service/`)
-```env
-PORT=5001
-MONGO_URL=mongodb+srv://joaojesus:oULyKDlXfS0Stg4M@cluster0.hmlyx3e.mongodb.net/petjoyful?retryWrites=true&w=majority&appName=Cluster0 
-JWT_SECRET=a2e6887fa57442d1040baa0393f31bcac2bfc15d486fed1e8e8dfaa197e3cc079d46c994790c8a871b404d49c54cf5e5d339a75befcd4860a5b4844a95fd7c83
-API_KEY=3e3c34efc8bcee95716a861494d89a9ddbdef722c0303e7b2b3de6a9e539d861
-AUTH_SERVICE_URL=http://auth-service:5000
-```
+> **Nota**: A documentação Swagger é gerada automaticamente a partir do código usando `swagger-autogen`
 
-### 3️⃣ Instale as dependências
-```bash
-# Auth Service
-cd auth-service
-npm install
-
-# Pet Service
-cd ../pet-service
-npm install
-```
-
-### 4️⃣ Execute os serviços
-```bash
-# Auth Service (Terminal 1)
-cd auth-service
-npm run dev
-
-# Pet Service (Terminal 2)
-cd pet-service
-npm run dev
-```
-
-### 5️⃣ Acesse a documentação
-- **Auth Service**: http://localhost:5000/api-docs
-- **Pet Service**: http://localhost:5001/api-docs
+---
 
 ## 📡 Endpoints da API
 
-### Auth Service (http://localhost:5000)
+### 🔐 Autenticação
 
-| Método | Endpoint | Descrição | Autenticação |
-|--------|----------|-----------|--------------|
+| Método | Endpoint | Descrição | Auth |
+|--------|----------|-----------|------|
 | POST | `/api/auth/register` | Cadastrar novo usuário | Não |
 | POST | `/api/auth/login` | Login (retorna JWT) | Não |
-| GET | `/api/users` | Listar todos os usuários | API Key |
-| GET | `/api/users/:id` | Buscar usuário por ID | API Key |
-| PUT | `/api/users/:id` | Atualizar usuário | API Key |
-| DELETE | `/api/users/:id` | Deletar usuário | API Key |
+| GET | `/api/auth/me` | Perfil do usuário autenticado | Bearer Token |
+| PUT | `/api/auth/me` | Atualizar perfil | Bearer Token |
+| DELETE | `/api/auth/me` | Deletar conta | Bearer Token |
 
-### Pet Service (http://localhost:5001)
+### 👤 Usuários
 
-| Método | Endpoint | Descrição | Autenticação |
-|--------|----------|-----------|--------------|
-| POST | `/api/pets` | Cadastrar novo pet | API Key |
-| GET | `/api/pets` | Listar todos os pets | API Key |
-| GET | `/api/pets/:id` | Buscar pet por ID | API Key |
-| GET | `/api/pets/owner/:ownerId` | Buscar pets por proprietário | API Key |
-| PUT | `/api/pets/:id` | Atualizar pet | API Key |
-| DELETE | `/api/pets/:id` | Deletar pet | API Key |
+| Método | Endpoint | Descrição | Auth |
+|--------|----------|-----------|------|
+| GET | `/api/users` | Listar todos os usuários | Admin Key |
+| GET | `/api/users/:id` | Buscar usuário por ID | Admin Key |
+| POST | `/api/users` | Criar usuário | Admin Key |
+| PUT | `/api/users/:id` | Atualizar usuário | Admin Key |
+| DELETE | `/api/users/:id` | Deletar usuário | Admin Key |
 
-## 🔐 Autenticação
+### 💬 Mensagens
 
-### API Key (Para comunicação entre serviços)
-Adicione o header em todas as requisições:
+| Método | Endpoint | Descrição | Auth |
+|--------|----------|-----------|------|
+| POST | `/api/messages/post` | Criar mensagem | Não |
+| GET | `/api/messages/post` | Listar mensagens | Não |
+| PUT | `/api/messages/post/:id` | Atualizar mensagem | Admin Key |
+| DELETE | `/api/messages/post/:id` | Deletar mensagem | Admin Key |
+
+### 🚨 Denúncias
+
+| Método | Endpoint | Descrição | Auth |
+|--------|----------|-----------|------|
+| POST | `/api/messages/denuncia` | Criar denúncia | Não |
+| GET | `/api/messages/denuncia` | Listar denúncias | Admin Key |
+| PUT | `/api/messages/denuncia/:id` | Atualizar denúncia | Admin Key |
+| DELETE | `/api/messages/denuncia/:id` | Deletar denúncia | Admin Key |
+
+---
+
+## 🔑 Autenticação
+
+### Bearer Token (JWT)
 ```http
-x-api-key: petjoyful_api_key_2025
+Authorization: Bearer {token}
 ```
 
-### JWT Token (Para endpoints protegidos - futuro)
+### Admin Key (Operações Administrativas)
 ```http
-Authorization: Bearer <seu_token_jwt>
+x-admin-key: {admin_key_from_env}
 ```
 
-## 📋 Exemplos de Requisições
+**Nota:** A Admin Key permite acesso total às operações protegidas. No código, o middleware `ensureAuth` aceita **tanto Bearer Token quanto Admin Key**.
+
+---
+
+### 🔐 Sistema de Autenticação
+
+O projeto utiliza **dois mecanismos de autenticação**:
+
+#### Bearer Token (JWT)
+- Gerado no registro e login
+- Validade de 7 dias
+- Usado em rotas de perfil (`/api/auth/me`)
+
+#### Admin Key
+- Header: `x-admin-key`
+- Requerida para operações administrativas:
+  - Gerenciamento de usuários
+  - Atualização/exclusão de mensagens
+  - Gerenciamento de denúncias
+- Definida na variável de ambiente `ADMIN_KEY`
+
+**Importante:** O middleware `ensureAuth` aceita ambos os métodos.
+
+---
+
+## 💡 Exemplos de Uso
 
 ### Registrar Usuário
 ```bash
-curl -X POST http://localhost:5000/api/auth/register \
+curl -X POST https://petjoyful-backend.vercel.app/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "nome": "João Silva",
-    "email": "joao@example.com",
+    "email": "joao@email.com",
     "senha": "senha123",
     "tipo": "adotante"
   }'
 ```
 
-### Criar Pet
+### Login
 ```bash
-curl -X POST http://localhost:5001/api/pets \
+curl -X POST https://petjoyful-backend.vercel.app/api/auth/login \
   -H "Content-Type: application/json" \
-  -H "x-api-key: petjoyful_api_key_2025" \
   -d '{
-    "name": "Rex",
-    "species": "dog",
-    "breed": "Golden Retriever",
-    "age": 3,
-    "ownerId": "673f8a1b2c3d4e5f6g7h8i9j"
+    "email": "joao@email.com",
+    "senha": "senha123"
   }'
 ```
 
-## 🌐 URLs de Produção
+### Criar Mensagem
+```bash
+curl -X POST https://petjoyful-backend.vercel.app/api/messages/post \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nome": "Maria",
+    "email": "maria@email.com",
+    "mensagem": "Gostei muito do post!",
+    "postId": "123abc"
+  }'
+```
 
-- **Auth Service**: https://pet-joyful-auth.up.railway.app
-- **Pet Service**: https://pet-joyful-pets.up.railway.app
+---
 
 ## 📁 Estrutura do Projeto
 
 ```
 Pet-Joyful-Backend/
-├── auth-service/           # Microsserviço de Autenticação
-│   ├── src/
-│   │   ├── controllers/    # Lógica de negócio (Controller)
-│   │   ├── models/         # Schemas do MongoDB (Model)
-│   │   ├── routes/         # Definição de rotas
-│   │   ├── middlewares/    # API Key, JWT, etc.
-│   │   ├── config/         # Swagger, DB
-│   │   └── app.js          # Express App
-│   ├── Dockerfile
-│   └── package.json
-│
-├── pet-service/            # Microsserviço de Pets
-│   ├── src/
-│   │   ├── controllers/    # Lógica de negócio (Controller)
-│   │   ├── models/         # Schemas do MongoDB (Model)
-│   │   ├── routes/         # Definição de rotas
-│   │   └── app.js
-│   └── package.json
-│
-├── docker-compose.yml      # Orquestração dos serviços
-└── README.md
+├── backend/
+│   └── src/
+│       ├── controllers/       # Lógica de negócio
+│       ├── models/            # Schemas MongoDB
+│       ├── routes/            # Definição de rotas
+│       ├── middlewares/       # Auth, validações
+│       ├── database/          # Conexão DB
+│       ├── app.js             # Express App
+│       └── swagger-output.json
+├── api/
+│   └── index.js               # Vercel Serverless
+├── docker-compose.yml
+├── Dockerfile
+├── server.js                  # Entry point
+└── package.json
 ```
-
-## 📅 Entregas de Sprints
-
-| Sprint | Atividade | Início | Término |
-|--------|-----------|--------|---------|
-| 1 | Integração de Dados com Telas de Cadastro e Login | 10/09/2025 | 28/10/2025 |
-| 1 | Criação de Banco de Dados do Site | 10/09/2025 | 02/10/2025 |
-| 2 | Configuração do Banco no Projeto | 25/09/2025 | 28/10/2025 |
-| 2 | Configurar Conexão do Mongo no Back-End | 25/09/2025 | 21/10/2025 |
-| 3 | Implementar CRUD de Usuários, Veterinários e ONGs | 25/09/2025 | 28/10/2025 |
-| 3 | Endpoint de Registro | 25/09/2025 | 28/10/2025 |
-| 3 | Endpoint de Login | 25/09/2025 | 28/10/2025 |
-| 4 | Fazer Testes no Postman | 13/10/2025 | 21/10/2025 |
-| 4 | Implementação de Microsserviços | 28/10/2025 | 28/10/2025 |
-| 4 | Sprint Final do Backend | — | — |
 
 ---
 
-📌 **Resumo:**
-- **Sprint 1:** Foco na criação do banco de dados e integração com telas
-- **Sprint 2:** Configuração do banco e conexão com o backend
-- **Sprint 3:** Implementação dos CRUDs e endpoints principais
-- **Sprint 4:** Testes, refino e finalização do backend com microsserviços
+## Sprint Banco de Dados
 
-## 🤝 Contribuindo
+| Atividade                                         | Início              | Término             |
+|:--------------------------------------------------|:--------------------|:--------------------|
+| Integração de Dados Com Telas de Cadastro e Login | 2025-09-10 00:00:00 | 2025-10-28 00:00:00 |
+| Criação de Banco de Dados do Site                 | 2025-09-10 00:00:00 | 2025-10-02 00:00:00 |
+| Configuração do Banco no Projeto                  | 2025-09-25 00:00:00 | 2025-10-28 00:00:00 |
+| Configurar Conexão do Mongo no Back-End           | 2025-09-25 00:00:00 | 2025-10-21 00:00:00 |
+| Implementar CRUD de Usuários, Veterinários e ONGS | 2025-09-25 00:00:00 | 2025-10-28 00:00:00 |
+| Endpoint de Registro                              | 2025-09-25 00:00:00 | 2025-10-28 00:00:00 |
+| Endpoint de Login                                 | 2025-09-25 00:00:00 | 2025-10-28 00:00:00 |
+| Fazer Testes no Postman                           | 2025-10-13 00:00:00 | 2025-10-21 00:00:00 |
+| Microserviços                                     | 2025-10-28 00:00:00 | 2025-10-28 00:00:00 |
 
-1. Faça um fork do projeto
-2. Crie uma branch: `git checkout -b feature/nova-funcionalidade`
-3. Commit suas mudanças: `git commit -m 'feat: adiciona nova funcionalidade'`
-4. Push para a branch: `git push origin feature/nova-funcionalidade`
-5. Abra um Pull Request
+## Sprint do Backend
+
+ | Atividade                                          | Início              | Término                 |
+| :------------------------------------------------- | :------------------ | :---------------------- |
+| Criação da Estrutura de Pastas do Back-End         | 2025-10-02 00:00:00 | 2025-10-05 00:00:00     |
+| Configurar Docker e Containers                     | 2025-10-06 00:00:00 | 2025-10-08 00:00:00     |
+| Implementar Conexão com Banco de Dados             | 2025-10-09 00:00:00 | 2025-10-10 00:00:00     |
+| Criar um Microserviço (ex: Usuários /)        | 2025-10-10 00:00:00 | 2025-10-12 00:00:00     |
+| Implementar Middleware de Autenticação JWT         | 2025-10-12 00:00:00 | 2025-10-13 00:00:00     |
+| Implementar Middleware de Autorização (checkAdmin) | 2025-10-13 00:00:00 | 2025-10-14 00:00:00     |
+| Criar Documentação da API com Swagger              | 2025-10-14 00:00:00 | 2025-10-15 00:00:00     |
+| Testar Endpoints com Insomnia / Postman            | 2025-10-15 00:00:00 | 2025-10-17 00:00:00     |
+| Deploy do Backend na Vercel                        | 2025-10-17 00:00:00 | 2025-10-19 00:00:00     |
+| Ajustar CORS e Variáveis de Ambiente               | 2025-10-19 00:00:00 | 2025-10-20 00:00:00     |
+| Revisão Final e Apresentação do Swagger UI         | 2025-10-20 00:00:00 | **2025-10-22 00:00:00** |
+
+## Sprint do Backlog
+
+| Atividade                                             | Início | Término |
+| :---------------------------------------------------- | :----- | :------ |
+| Integração com Front-End                              |        |         |
+| Upload de Imagens de Pets                             |        |         |
+| Sistema de Notificações (E-mail ou Push)              |        |         |
+| Recuperação de Senha (Esqueci minha senha)            |        |         |
+| Filtros e Paginação de Pets                           |        |         |
+| Dashboard Administrativo                              |        |         |
+| Logs de Adoção                                        |        |         |
+| Testes Automatizados (Jest / Supertest)               |        |         |
+| Cache de Requisições (Redis)                          |        |         |
+| Monitoramento e Health Check                          |        |         |
+| Integração com Serviços Externos (ex: Geolocalização) |        |         |
+| Sistema de Favoritos (Pets Favoritados por Usuário)   |        |         |
+| API de Feedback / Avaliação de Adoções                |        |         |
+| Melhorias de Segurança e Rate Limiting                |        |         |
+| Criação de Microserviço de Relatórios                 |        |         |
+
+
+
+## 🌐 Deploy
+
+### URL de Produção
+- **API:** https://pet-joyful-backend-1.onrender.com
+- **Swagger Docs:** https://pet-joyful-backend-1.onrender.com/api-docs
+
+---
+
+## 🧪 Testes
+
+Utilize o Postman ou Insomnia importando a documentação Swagger:
+- Collection disponível em `/api-docs`
+- Exemplos de requisições incluídos
+
+---
 
 ## 📝 Licença
 
-Este projeto está sob a licença ISC.
-
-## 📞 Contato
-
-**Emails:** 
-- joao.jesus18@fatec.sp.gov.br
-- mateus.alves10@fatec.sp.gov.br  
-- elton.costa@fatec.sp.gov.br
-
-**Documentação Swagger:** `/api-docs`
+Este projeto está sob a licença **ISC**.
 
 ---
 
-⌨️ Desenvolvido com ❤️ por [Equipe Pet Joyful]
+## 📞 Contato & Suporte
+
+- **Documentação**: [Swagger Docs](https://pet-joyful-backend-1.onrender.com/api-docs/#/Auth/post_api_auth_login)
+- **Repositório**: [GitHub](https://github.com/JaoVitorz/Pet-Joyful-Backend)
+- **Issues**: [GitHub Issues](https://github.com/JaoVitorz/Pet-Joyful-Backend/issues)
+
+---
+
+<div align="center">
+
+**Desenvolvido com ❤️ pela Equipe Pet Joyful**
+
+⭐ Se este projeto foi útil, considere dar uma estrela!
+
+</div>
