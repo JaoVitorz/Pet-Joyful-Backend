@@ -36,7 +36,7 @@ export const register = async (req, res) => {
 
     return res.status(201).json({
       message: "Usuário criado com sucesso",
-      token: `Bearer ${token}`,
+      token: token,
       user: {
         id: user._id,
         nome: user.nome,
@@ -84,7 +84,7 @@ export const login = async (req, res) => {
     );
 
     return res.json({
-      token: `Bearer ${token}`,
+      token: token,
       user: {
         id: user._id,
         nome: user.nome,
