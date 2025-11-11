@@ -20,19 +20,19 @@ O **Pet Joyful** é uma plataforma que conecta tutores de pets, ONGs e veteriná
 
 **Backend:** https://github.com/JaoVitorz/Pet-Joyful-Backend (Este repositório)
 
-**Frontend:** https://github.com/davidagj/Pet-Joyful---Projeto-Integrador--NextJs
+**Frontend:** https://pet-joyful-projeto-integrador-next-nu.vercel.app/Home
 
 
 
 ### 🎯 Funcionalidades Principais
 
-- ✅ **Autenticação JWT** - Sistema seguro de login e registro
+- ✅ **Autenticação JWT e Admin-Key** - Sistema seguro de login e registro
 - ✅ **CRUD Completo** - Gerenciamento de usuários, mensagens e denúncias
 - ✅ **Múltiplos Perfis** - Adotantes, ONGs e Veterinários
 - ✅ **Sistema de Mensagens** - Comentários em posts
 - ✅ **Sistema de Denúncias** - Moderação de conteúdo
 - ✅ **Documentação Swagger** - API totalmente documentada
-- ✅ **Deploy em Nuvem** - Hospedado na Vercel
+- ✅ **Deploy em Nuvem** - Hospedado no Render
 
 ---
 
@@ -299,22 +299,7 @@ O **Pet Joyful** é uma plataforma que conecta tutores de pets, ONGs e veteriná
 
 **Restrições/Validações:**  
 - CNPJ deve estar ativo e válido na Receita Federal.
-
----
-
-## 🧩 Caso de Uso: Adotar
-
-**Atores:** Usuário (Adotante), Sistema  
-**Resumo:** O usuário adota um animal disponível na plataforma.  
-**Pré-condição:** Usuário logado e animal disponível.  
-**Pós-condição:** Animal marcado como adotado e confirmação enviada.  
-
-**Fluxo Principal:**  
-1. Clicar em "Adotar" no post.  
-2. Sistema exibe formulário.  
-3. Usuário preenche formulário.  
-4. Sistema valida e confirma adoção.  
-
+- 
 ---
 
 ## 🧩 Caso de Uso: Curtir Post
@@ -342,6 +327,17 @@ O **Pet Joyful** é uma plataforma que conecta tutores de pets, ONGs e veteriná
 
 ## 🛠️ Stack Tecnológica
 
+### Frontend 🚀
+- **Next.js**
+- **React**
+- **Bootstrap**
+- **React-Bootstrap**
+- **React Icons**
+- **Express**
+- **Node.js**
+- **Formik**
+- **Yup**
+
 ### Backend
 - **Node.js 18+** com Express 5
 - **MongoDB Atlas** (Mongoose 8)
@@ -350,11 +346,10 @@ O **Pet Joyful** é uma plataforma que conecta tutores de pets, ONGs e veteriná
 
 ### DevOps & Tools
 - **Docker** e Docker Compose
-- **Vercel** para deploy
+- **Vercel e Render** para deploy
 - **Swagger UI** para documentação
 - **Nodemon** para desenvolvimento
 
----
 
 ## 🚀 Instalação
 
@@ -388,29 +383,29 @@ cd Pet-Joyful-Backend
 
 | Método | Endpoint | Descrição | Auth |
 |--------|----------|-----------|------|
-| GET | `/api/users` | Listar todos os usuários | Bearer Token |
-| GET | `/api/users/:id` | Buscar usuário por ID | Bearer Token |
-| POST | `/api/users` | Criar usuário (admin) | Não |
-| PUT | `/api/users/:id` | Atualizar usuário | Bearer Token |
-| DELETE | `/api/users/:id` | Deletar usuário | Bearer Token |
+| GET | `/api/users` | Listar todos os usuários | Admin Key |
+| GET | `/api/users/:id` | Buscar usuário por ID | Admin Key |
+| POST | `/api/users` | Criar usuário | Admin Key |
+| PUT | `/api/users/:id` | Atualizar usuário | Admin Key |
+| DELETE | `/api/users/:id` | Deletar usuário | Admin Key |
 
 ### 💬 Mensagens
 
 | Método | Endpoint | Descrição | Auth |
 |--------|----------|-----------|------|
 | POST | `/api/messages/post` | Criar mensagem | Não |
-| GET | `/api/messages/post` | Listar mensagens | Bearer Token |
-| PUT | `/api/messages/post/:id` | Atualizar mensagem | Bearer Token |
-| DELETE | `/api/messages/post/:id` | Deletar mensagem | Bearer Token |
+| GET | `/api/messages/post` | Listar mensagens | Não |
+| PUT | `/api/messages/post/:id` | Atualizar mensagem | Admin Key |
+| DELETE | `/api/messages/post/:id` | Deletar mensagem | Admin Key |
 
 ### 🚨 Denúncias
 
 | Método | Endpoint | Descrição | Auth |
 |--------|----------|-----------|------|
 | POST | `/api/messages/denuncia` | Criar denúncia | Não |
-| GET | `/api/messages/denuncia` | Listar denúncias | Bearer Token |
-| PUT | `/api/messages/denuncia/:id` | Atualizar denúncia | Bearer Token |
-| DELETE | `/api/messages/denuncia/:id` | Deletar denúncia | Bearer Token |
+| GET | `/api/messages/denuncia` | Listar denúncias | Admin Key |
+| PUT | `/api/messages/denuncia/:id` | Atualizar denúncia | Admin Key |
+| DELETE | `/api/messages/denuncia/:id` | Deletar denúncia | Admin Key |
 
 ---
 
@@ -420,6 +415,34 @@ cd Pet-Joyful-Backend
 ```http
 Authorization: Bearer {token}
 ```
+
+### Admin Key (Operações Administrativas)
+```http
+x-admin-key: {admin_key_from_env}
+```
+
+**Nota:** A Admin Key permite acesso total às operações protegidas. No código, o middleware `ensureAuth` aceita **tanto Bearer Token quanto Admin Key**.
+
+---
+
+### 🔐 Sistema de Autenticação
+
+O projeto utiliza **dois mecanismos de autenticação**:
+
+#### Bearer Token (JWT)
+- Gerado no registro e login
+- Validade de 7 dias
+- Usado em rotas de perfil (`/api/auth/me`)
+
+#### Admin Key
+- Header: `x-admin-key`
+- Requerida para operações administrativas:
+  - Gerenciamento de usuários
+  - Atualização/exclusão de mensagens
+  - Gerenciamento de denúncias
+- Definida na variável de ambiente `ADMIN_KEY`
+
+**Importante:** O middleware `ensureAuth` aceita ambos os métodos.
 
 ---
 
@@ -500,26 +523,47 @@ Pet-Joyful-Backend/
 
 ## Sprint do Backend
 
-| Atividade                           | Início              | Término |
-|:------------------------------------|:--------------------|:--------|
-| Criação da Estrutura de Pastas Back-End | 2025-10-02 00:00:00 |         |
-| Configurar Docker e Containers      | 2025-10-20 00:00:00 |         |
-| Criar um Microserviço               | 2025-10-20 00:00:00 |         |
+ | Atividade                                          | Início              | Término                 |
+| :------------------------------------------------- | :------------------ | :---------------------- |
+| Criação da Estrutura de Pastas do Back-End         | 2025-10-02 00:00:00 | 2025-10-05 00:00:00     |
+| Configurar Docker e Containers                     | 2025-10-06 00:00:00 | 2025-10-08 00:00:00     |
+| Implementar Conexão com Banco de Dados             | 2025-10-09 00:00:00 | 2025-10-10 00:00:00     |
+| Criar um Microserviço (ex: Usuários /)        | 2025-10-10 00:00:00 | 2025-10-12 00:00:00     |
+| Implementar Middleware de Autenticação JWT         | 2025-10-12 00:00:00 | 2025-10-13 00:00:00     |
+| Implementar Middleware de Autorização (checkAdmin) | 2025-10-13 00:00:00 | 2025-10-14 00:00:00     |
+| Criar Documentação da API com Swagger              | 2025-10-14 00:00:00 | 2025-10-15 00:00:00     |
+| Testar Endpoints com Insomnia / Postman            | 2025-10-15 00:00:00 | 2025-10-17 00:00:00     |
+| Deploy do Backend na Vercel                        | 2025-10-17 00:00:00 | 2025-10-19 00:00:00     |
+| Ajustar CORS e Variáveis de Ambiente               | 2025-10-19 00:00:00 | 2025-10-20 00:00:00     |
+| Revisão Final e Apresentação do Swagger UI         | 2025-10-20 00:00:00 | **2025-10-22 00:00:00** |
 
 ## Sprint do Backlog
 
-| Atividade                | Início | Término |
-|:-------------------------|:-------|:--------|
-| Integração com Front-End |        |         |
+| Atividade                                             | Início | Término |
+| :---------------------------------------------------- | :----- | :------ |
+| Integração com Front-End                              |        |         |
+| Upload de Imagens de Pets                             |        |         |
+| Sistema de Notificações (E-mail ou Push)              |        |         |
+| Recuperação de Senha (Esqueci minha senha)            |        |         |
+| Filtros e Paginação de Pets                           |        |         |
+| Dashboard Administrativo                              |        |         |
+| Logs de Adoção                                        |        |         |
+| Testes Automatizados (Jest / Supertest)               |        |         |
+| Cache de Requisições (Redis)                          |        |         |
+| Monitoramento e Health Check                          |        |         |
+| Integração com Serviços Externos (ex: Geolocalização) |        |         |
+| Sistema de Favoritos (Pets Favoritados por Usuário)   |        |         |
+| API de Feedback / Avaliação de Adoções                |        |         |
+| Melhorias de Segurança e Rate Limiting                |        |         |
+| Criação de Microserviço de Relatórios                 |        |         |
+
 
 
 ## 🌐 Deploy
 
 ### URL de Produção
-**🔗 https://petjoyful-backend.vercel.app**
-
-### Swagger Docs
-**📚 https://petjoyful-backend.vercel.app/api-docs**
+- **API:** https://pet-joyful-backend-1.onrender.com
+- **Swagger Docs:** https://pet-joyful-backend-1.onrender.com/api-docs
 
 ---
 
@@ -539,7 +583,7 @@ Este projeto está sob a licença **ISC**.
 
 ## 📞 Contato & Suporte
 
-- **Documentação**: [Swagger Docs](https://petjoyful-backend.vercel.app/api-docs)
+- **Documentação**: [Swagger Docs](https://pet-joyful-backend-1.onrender.com/api-docs/#/Auth/post_api_auth_login)
 - **Repositório**: [GitHub](https://github.com/JaoVitorz/Pet-Joyful-Backend)
 - **Issues**: [GitHub Issues](https://github.com/JaoVitorz/Pet-Joyful-Backend/issues)
 
