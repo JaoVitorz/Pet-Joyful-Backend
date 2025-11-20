@@ -65,6 +65,12 @@ export const login = async (req, res) => {
     console.log("Tentando login com email:", email);
     const user = await userModel.findOne({ email });
 
+    // Verificar se o usuário existe
+    if (!user) {
+      console.log("Usuário não encontrado para o email:", email);
+      return res.status(401).json({ error: "Credenciais inválidas" });
+    }
+
     console.log("Usuário encontrado:", { email: user.email, tipo: user.tipo });
 
     // Verificar senha
