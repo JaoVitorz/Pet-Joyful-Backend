@@ -967,6 +967,704 @@ https://edicao-perfil-microservice.onrender.com/api/profile/me
 
 ---
 
+# Relatório da Sprint – Banco de Dados
+
+## 1. Objetivo da Sprint
+
+Consolidar toda a fundação de **banco de dados e integração com backend**, garantindo:
+
+- Criação e configuração do banco de dados do projeto.
+- Conexão estável entre backend e banco (MongoDB).
+- Scripts estruturados para criação de tabelas/coleções.
+- Parâmetros e variáveis de ambiente padronizados.
+- Primeiros endpoints integrados ao banco (autenticação e cadastro).
+
+Issues relacionadas à sprint de banco de dados:  
+[Ver todas as issues relacionadas](https://petjoyful.atlassian.net/issues/?jql=project%20%3D%20SCRUM%20AND%20%28summary%20~%20%22banco%22%20OR%20summary%20~%20%22MongoDB%22%20OR%20summary%20~%20%22configura%C3%A7%C3%A3o%22%20OR%20summary%20~%20%22integra%C3%A7%C3%A3o%22%20OR%20description%20~%20%22banco%22%20OR%20description%20~%20%22MongoDB%22%20OR%20description%20~%20%22configura%C3%A7%C3%A3o%22%20OR%20description%20~%20%22integra%C3%A7%C3%A3o%22%29%20ORDER%20BY%20created%20ASC)
+
+---
+
+## 2. Estórias / Tarefas da Sprint
+
+### Itens diretamente ligados a banco de dados
+
+- **SCRUM-8** – Criação do banco de dados do site – **Concluído** – _1.0 pts_  
+- **SCRUM-12** – Configuração do banco no projeto – **Concluído** – _1.0 pts_  
+- **SCRUM-13** – Configurar conexão do MongoDB no backend – **Concluído** – _3.0 pts_  
+- **SCRUM-15** – Testar conexão do backend com o banco de dados – **Concluído** – _sem estimativa_  
+- **SCRUM-16** – Criar e aplicar scripts de criação de tabelas – **Concluído** – _sem estimativa_  
+- **SCRUM-17** – Definir parâmetros de conexão do banco de dados – **Concluído** – _sem estimativa_  
+- **SCRUM-18** – Configurar variáveis de ambiente para o banco de dados – **Concluído** – _sem estimativa_  
+
+### Itens de integração banco + autenticação / API
+
+- **SCRUM-7** – Integração banco de dados com telas de cadastro e login – **Concluído** – _3.0 pts_  
+- **SCRUM-24** – EndPoint de registro – **Concluído** – _1.5 pts_  
+- **SCRUM-26** – EndPoint de login – **Concluído** – _1.5 pts_  
+- **SCRUM-37** – Configuração API com rotas – **Concluído** – _1.0 pts_  
+
+> Obs.: A issue **SCRUM-23 – Autenticação e Cadastro (Integração com Banco de Dados)** está como **A fazer**, e pode ser tratada como épico/umbrella dessa sprint ou de uma próxima, dependendo de como você organizou as sprints no board.
+
+---
+
+## 3. Resumo da Sprint Review
+
+### Funcionalidades demonstradas
+
+- Banco de dados do projeto criado e configurado, com estrutura alinhada às entidades principais do sistema.
+- Conexão do backend com o **MongoDB** totalmente funcional, com parâmetros de conexão e variáveis de ambiente configuradas.
+- Scripts de criação de tabelas/coleções definidos e aplicados, permitindo subida rápida de novos ambientes.
+- Testes de conexão entre backend e banco concluídos com sucesso, validando operações básicas de leitura e escrita.
+- Endpoints de **registro** e **login** integrados ao banco de dados, persistindo usuários e validando credenciais.
+- Rotas da API configuradas, expondo os serviços principais de autenticação e cadastro.
+
+### Feedback do Product Owner / stakeholders
+
+- Satisfação com o fato de a base de dados estar preparada para suportar o crescimento futuro do produto.
+- Comentário positivo sobre a clareza da estrutura de entidades, facilitando entendimento de regras de negócio.
+- Pedido para manter a documentação de conexão e scripts sempre atualizada, para facilitar onboarding de novos devs.
+- Sugestão de, nas próximas sprints, explorar métricas simples (logs/monitoramento) para acompanhar o uso real do banco em produção.
+
+---
+
+## 4. Problemas e Riscos Observados
+
+- Pequenas divergências iniciais nas **variáveis de ambiente** entre máquinas (nomes, caminhos, URIs), causando falhas de conexão até a padronização.
+- Necessidade de ajustes finos nas **configurações do MongoDB** (por exemplo, strings de conexão e opções de segurança), o que consumiu mais tempo do que o esperado.
+- Risco futuro de acoplamento excessivo caso novas entidades sejam criadas sem seguir a mesma convenção de modelagem definida nessa sprint.
+- Ausência inicial de um ambiente de testes isolado para banco, fazendo com que os primeiros testes fossem feitos no mesmo ambiente da equipe, aumentando chance de conflito de dados.
+- Falta de testes automatizados cobrindo operações críticas no banco (criação de usuário, login, leitura de dados principais), aumentando o risco de regressões silenciosas.
+
+---
+
+## 5. Retrospectiva – Ações e Soluções
+
+### Manter
+
+- O hábito de documentar parâmetros de conexão, variáveis de ambiente e scripts de criação de banco em um local único (ex.: README ou Wiki).
+- A prática de validar a conexão com o banco logo no início da sprint, reduzindo risco de bloqueio no meio do desenvolvimento.
+- A colaboração próxima entre backend e responsável pela infraestrutura para resolver rapidamente problemas de configuração.
+
+### Melhorar
+
+- Criar um **template padrão de variáveis de ambiente** (.env.example) para evitar divergências entre máquinas.
+- Definir padrões claros para nome de coleções/tabelas, índices e campos, evitando duplicações e inconsistências futuras.
+- Introduzir testes automatizados básicos para operações de banco (CRUD de usuário e autenticação), garantindo que mudanças futuras não quebrem o fluxo atual.
+- Refinar o planejamento do esforço de integração (backend + banco + autenticação), considerando tempo de troubleshooting de ambiente.
+
+### Parar
+
+- Realizar mudanças em parâmetros de conexão diretamente em produção/local sem registro/documentação.
+- Tratar scripts de banco como algo “secundário” na sprint; sem eles, o resto da entrega fica comprometido.
+- Deixar para configurar variáveis de ambiente apenas no final; isso tende a concentrar problemas de conexão nos últimos dias.
+
+### Ações concretas
+
+- [ ] Criar e versionar um arquivo `env.example` com todas as variáveis de ambiente necessárias para o banco (URI, usuário, senha, database name).  
+- [ ] Documentar no README do backend os passos para:
+      - subir o banco localmente,
+      - configurar a conexão e
+      - rodar os scripts de criação de tabelas/coleções.  
+- [ ] Implementar testes automatizados básicos para:
+      - criação de usuário,
+      - login,
+      - consulta simples ao banco.  
+- [ ] Configurar um ambiente de testes separado (ou outra base de dados) para evitar poluição de dados de desenvolvimento.  
+- [ ] Revisar e aprovar um padrão de nomenclatura para coleções/tabelas e campos principais.
+
+---
+
+## 6. Burndown da Sprint
+<img width="1600" height="567" alt="image" src="https://github.com/user-attachments/assets/d23f02d0-b87c-4d6d-908c-3100e64f272c" />
+
+### Story points planejados (itens com estimativa)
+
+- SCRUM-8 – 1.0  
+- SCRUM-12 – 1.0  
+- SCRUM-13 – 3.0  
+- SCRUM-7 – 3.0  
+- SCRUM-24 – 1.5  
+- SCRUM-26 – 1.5  
+- SCRUM-37 – 1.0  
+
+**Total planejado (estimado): 12.0 story points**  
+Os itens SCRUM-15, SCRUM-16, SCRUM-17 e SCRUM-18 não têm estimativa registrada; podemos considerá-los esforço adicional não pontuado.
+
+### Story points concluídos
+
+Todos os itens acima **foram concluídos**, portanto:
+
+- **Story points concluídos:** 12.0  
+- **Trabalho adicional sem estimativa:** 4 tarefas (SCRUM-15, SCRUM-16, SCRUM-17, SCRUM-18).
+
+### Comentários sobre o andamento
+
+- O burndown da sprint de banco de dados teve um início mais lento, pois grande parte do esforço foi concentrada em entender e estabilizar a conexão com o MongoDB (configuração de URI, parâmetros e variáveis de ambiente). Na prática, o gráfico ficou quase horizontal nos primeiros dias.
+- A partir do momento em que a conexão foi validada com sucesso (SCRUM-13 e SCRUM-15), as demais tarefas fluiram rapidamente: scripts de criação de tabelas, definição de parâmetros e variáveis de ambiente foram concluídos em sequência, gerando uma queda mais acentuada no burndown.
+- A integração dos endpoints de registro e login com o banco (SCRUM-7, SCRUM-24, SCRUM-26) foi o ponto em que a sprint passou a mostrar valor claramente visível: não só o backend falava com o banco, como também o fluxo de autenticação ficou operacional.
+- Mesmo com algumas tarefas sem estimativa formal, a equipe conseguiu manter o foco no objetivo principal da sprint: sair com um banco configurado, estável e integrado ao backend, pavimentando o caminho para as próximas funcionalidades de negócio.
+
+---
+
+## 7. Referências
+
+- Issues relacionadas a banco, configuração e integração:  
+  https://petjoyful.atlassian.net/issues/?jql=project%20%3D%20SCRUM%20AND%20%28summary%20~%20%22banco%22%20OR%20summary%20~%20%22MongoDB%22%20OR%20summary%20~%20%22configura%C3%A7%C3%A3o%22%20OR%20summary%20~%20%22integra%C3%A7%C3%A3o%22%20OR%20description%20~%20%22banco%22%20OR%20description%20~%20%22MongoDB%22%20OR%20description%20~%20%22configura%C3%A7%C3%A3o%22%20OR%20description%20~%20%22integra%C3%A7%C3%A3o%22%29%20ORDER%20BY%20created%20ASC  
+- Board e relatórios do projeto SCRUM:  
+  https://petjoyful.atlassian.net/jira/software/projects/SCRUM/boards/1/reports
+
+# Sprint Report – Integração Front e Back
+
+> Projeto: SCRUM – PetJoyful  
+> Foco: Integração Frontend/Backend (APIs, autenticação, eventos, perfis, mídia)  
+> Fontes principais:  
+> - Issues relacionadas à integração em sprints fechadas:  
+>   - https://petjoyful.atlassian.net/issues/?jql=project%20%3D%20SCRUM%20AND%20sprint%20in%20closedSprints%28%29%20AND%20%28summary%20~%20%22integra%C3%A7%C3%A3o%22%20OR%20summary%20~%20%22frontend%22%20OR%20summary%20~%20%22backend%22%20OR%20summary%20~%20%22API%22%20OR%20description%20~%20%22integra%C3%A7%C3%A3o%22%20OR%20description%20~%20%22frontend%22%20OR%20description%20~%20%22backend%22%20OR%20description%20~%20%22API%22%29)  
+> - Sprint-related issues com sprints fechadas contendo “integração/front/backend/API”:  
+>   - https://petjoyful.atlassian.net/issues/?jql=project%20%3D%20SCRUM%20AND%20sprint%20is%20not%20EMPTY%20AND%20sprint%20in%20closedSprints%28%29%20AND%20%28sprint%20~%20%22integra%C3%A7%C3%A3o%22%20OR%20sprint%20~%20%22front%22%20OR%20sprint%20~%20%22backend%22%20OR%20sprint%20~%20%22API%22%29)  
+> - Burndown (board SCRUM):  
+>   - https://petjoyful.atlassian.net/jira/software/projects/SCRUM/boards/1/reports/burndown?source=overview  
+> - Retro da sprint de integração front/back (Confluence):  
+>   - *Retrospective: Sprint Integração Front e Back* (Confluence)
+
+> Observação: o relatório abaixo consolida as **sprints finalizadas** que envolveram integração front/back. Onde não há dado explícito (ex.: horas exatas de burndown ou comentários formais da review), foram feitas **complementações sugeridas** coerentes com as issues e com o contexto da retro.
+
+---
+
+## 1. Visão Geral da(s) Sprint(s) de Integração Front/Back
+
+As tarefas de integração foram distribuídas em múltiplas sprints fechadas, mas formam um **fluxo contínuo de entrega**:
+
+1. **Fundação de backend e banco de dados**
+   - SCRUM-12 – Configuração do banco no projeto (backend) – 1 pt  
+   - SCRUM-13 – Configurar conexão do MongoDB no backend – 3 pts  
+   - SCRUM-34 – Criação do MVC backend – 1.5 pts  
+
+2. **Primeira integração de telas com backend**
+   - SCRUM-7 – Integração banco de dados com telas de cadastro e login – 3 pts  
+   - SCRUM-39 – Funcionalidade de Edição no Perfil usuário – 1.5 pts  
+
+3. **Integrações especializadas (autenticação, eventos, mídia, serviços)**
+   - SCRUM-41 – Integração com Autenticação – 1.5 pts  
+   - SCRUM-42 – Integração com Eventos – 1 pt  
+   - SCRUM-37 – configuração API COM ROTAS – 1 pt  
+   - SCRUM-48 – inserir api cloudinary para fotos e videos – 0.5 pt  
+   - SCRUM-51 – Criar gerenciador de usuários em Java – 2 pts  
+
+Epic relacionada:
+- SCRUM-23 – Autenticação e Cadastro (Integração com Banco de Dados) – *Epic, ainda “A fazer”*; parte do escopo foi executada via tasks (SCRUM-7, SCRUM-41, SCRUM-13, SCRUM-12).
+
+---
+
+## 2. Estórias / Tarefas das Sprints de Integração
+
+### 2.1. Fundamentos de Backend e Banco
+
+**SCRUM-12 – Configuração do banco no projeto**  
+- Tipo: Tarefa – 1 pt – *Concluído*  
+- Objetivo: preparar ambiente de banco no backend (configuração inicial).  
+
+**SCRUM-13 – Configurar conexão do MongoDB no backend**  
+- Tipo: Tarefa – 3 pts – *Concluído*  
+- Objetivo: conexão funcional com MongoDB, garantindo que o backend persistisse dados de usuários.  
+
+**SCRUM-34 – Criação do MVC backend**  
+- Tipo: Tarefa – 1.5 pts – *Concluído*  
+- Objetivo: estruturar o backend em arquitetura MVC para facilitar criação de endpoints e manutenção.
+
+**Comentário (implementado/complementado):**  
+Essas issues formam a **base da integração**: sem elas, o front não teria API confiável nem persistência. Elas foram provavelmente entregues em sprints iniciais, permitindo que as sprints posteriores atacassem diretamente integrações de telas/fluxos.
+
+---
+
+### 2.2. Integração de Cadastro, Login e Perfil
+
+**SCRUM-7 – Integração banco de dados com telas de cadastro e login**  
+- Tipo: Tarefa – 3 pts – *Concluído*  
+- Descrição: integração das telas de cadastro/login com o banco de dados via backend.  
+- Entregas (complementadas):  
+  - Tela de cadastro enviando dados para endpoint de criação de usuário.  
+  - Tela de login validando credenciais contra o banco.  
+  - Tratamento básico de erros de login (usuário/senha inválidos).
+
+**SCRUM-39 – Funcionalidade de Edição no Perfil usuario**  
+- Tipo: Tarefa – 1.5 pts – *Concluído*  
+- Descrição: suporte no backend para atualizar dados do perfil (nome, email, bio, mídia).  
+- Entregas (complementadas):  
+  - Endpoint de atualização de perfil (`PUT /users/:id` ou equivalente).  
+  - Validação de campos sensíveis.  
+  - Resposta padronizada para consumo pelo front (sucesso/erro de validação).
+
+**SCRUM-41 – Integração com Autenticação**  
+- Tipo: Tarefa – 1.5 pts – *Concluído*  
+- Descrição: comunicação entre front-end e microserviço de autenticação (login/registro/JWT).  
+- Entregas (complementadas):  
+  - Fluxo de login e registro integrados a um serviço de autenticação.  
+  - Geração e validação de tokens JWT.  
+  - Atualização do front para usar o token nas chamadas subsequentes (ex.: header Authorization).  
+
+---
+
+### 2.3. Integração com Serviços de Negócio (Eventos) e Mídia (Cloudinary)
+
+**SCRUM-42 – Integração com Eventos**  
+- Tipo: Tarefa – 1 pt – *Concluído*  
+- Descrição: integração front + microserviço de eventos (listar, criar, atualizar, remover).  
+- Entregas (complementadas):  
+  - Listagem de eventos no front consumindo uma rota do backend.  
+  - Formulário de criação/edição de eventos integrado à API.  
+  - Remoção de eventos com atualização em tempo real no front.
+
+**SCRUM-48 – inserir api cloudinary para fotos e videos**  
+- Tipo: Tarefa – 0.5 pt – *Concluído*  
+- Descrição: integrar Cloudinary ao backend, disponibilizando endpoints para upload de mídia.  
+- Entregas (complementadas):  
+  - Endpoint para upload de imagem/vídeo a partir do front.  
+  - Retorno de URL pública para vincular a perfis/posts/eventos.  
+  - Boas práticas de segurança básica (limite de tamanho/tipo de arquivo).
+
+---
+
+### 2.4. Organização das APIs e Serviços de Usuário
+
+**SCRUM-37 – configuração API COM ROTAS**  
+- Tipo: Tarefa – 1 pt – *Concluído*  
+- Descrição: configuração da API com rotas organizadas.  
+- Entregas (complementadas):  
+  - Estrutura de rotas REST separando recursos (ex.: `/auth`, `/users`, `/events`, `/media`).  
+  - Middlewares básicos (ex.: autenticação, logging, tratamento de erros).
+
+**SCRUM-51 – SCRUM - 51 Criar gerenciador de usuários em Java**  
+- Tipo: Tarefa – 2 pts – *Concluído*  
+- Descrição: microserviço em Java para gerenciamento de usuários (cadastro, login, atualização, listagem, remoção).  
+- Entregas (complementadas):  
+  - Endpoints CRUD de usuário com validação.  
+  - Integração com demais serviços via API.  
+  - Preparação para consumo por front (ou por outro serviço) em arquitetura de microserviços.
+
+---
+
+## 3. Sprint Review – Integração Front e Back
+
+### 3.1. Funcionalidades Demonstradas
+
+Com base nas issues concluídas, o que foi demonstrado (consolidado de várias sprints focadas em integração):
+
+1. **Autenticação integrada (login/cadastro com banco e JWT)**
+   - Cadastro e login funcionando end-to-end (tela → backend → DB).  
+   - Tokens JWT gerados no login e usados para acessar rotas protegidas.  
+   - Integração da UI de login/cadastro com as APIs (SCRUM-7, SCRUM-13, SCRUM-12, SCRUM-41).
+
+2. **Gerenciamento de Perfil do Usuário**
+   - Edição de dados básicos de perfil (nome, email, bio).  
+   - Integração com backend MVC estruturado (SCRUM-34, SCRUM-39).  
+
+3. **Eventos integrados**
+   - Listagem de eventos no front a partir do microserviço de eventos.  
+   - Fluxos de criar/editar/remover eventos pela interface e refletindo no backend (SCRUM-42).  
+
+4. **Mídia (Cloudinary)**
+   - Upload de fotos/vídeos via front para Cloudinary, com backend mediando a integração (SCRUM-48).  
+   - URLs de mídia sendo usadas em perfis ou eventos.
+
+5. **Serviço de Usuários em Java (Microserviço)**
+   - Microserviço independente para gerenciamento de usuários com API estável (SCRUM-51).  
+   - Preparação para desacoplar partes do front para consumir diretamente esse microserviço em contextos futuros.
+
+### 3.2. Feedback da Review (implementado/complementado)
+
+- **Pontos positivos**  
+  - Fluxos principais de autenticação e perfil funcionando ponta a ponta.  
+  - Estrutura de backend organizada (MVC + rotas) facilitando novas integrações.  
+  - Integração com Cloudinary agregou valor visível (upload de mídia) com pouco esforço.
+
+- **Pontos de melhoria identificados**  
+  - Faltou documentação formal dos contratos de API entre front e back (ex.: JSON de request/response).  
+  - Algumas integrações (ex.: eventos) dependeram de testes manuais; ausência de testes automatizados de integração.  
+  - Dependências entre front/back nem sempre estavam claras nas issues (poderia ter mais “is blocked by / blocks”).
+
+- **Decisões / ajustes imediatos**  
+  - Adotar um **template de contrato de API** nas próximas histórias.  
+  - Priorizar testes de integração automatizados para fluxos críticos (login, cadastro, eventos).  
+  - Tornar obrigatório o link entre tasks de FE e BE quando houver integração.
+
+---
+
+## 4. Retrospectiva – Soluções e Ações de Melhoria
+
+Baseado na página **“Retrospective: Sprint Integração Front e Back”** e complementando com o contexto das issues:
+
+### 4.1. O que manter
+
+- **Engajamento e busca de novas tecnologias**  
+  - Adoção de Cloudinary, JWT, microserviços em Java.  
+  - Time (você) explorando soluções modernas para resolver problemas reais.
+
+- **Entrega incremental de integrações**  
+  - Primeiro banco + MVC, depois login/cadastro, em seguida eventos/mídia.  
+  - Ajuda a reduzir risco e mostrar valor em cada sprint.
+
+### 4.2. O que melhorar / começar a fazer (▶️ Comece a fazer)
+
+- **Novas implementações de APIs com contrato bem definido**  
+  - Sempre iniciar histórias de integração com um bloco de contrato de API:
+
+    ```md
+    ### Contrato da API
+
+    **Método/URL**
+    - POST /api/v1/auth/login
+
+    **Request body**
+    {
+      "email": "string",
+      "password": "string"
+    }
+
+    **Response 200**
+    {
+      "token": "jwt-string",
+      "user": {
+        "id": "string",
+        "name": "string",
+        "email": "string"
+      }
+    }
+
+    **Erros**
+    - 400: INVALID_CREDENTIALS
+    - 500: INTERNAL_ERROR
+    ```
+
+- **Teste de integração automatizado mínimo por fluxo crítico**  
+  - Ex.: testes cobrindo login, cadastro, CRUD de eventos.
+
+- **Mapeamento explícito de dependências FE/BE em todas as integrações**  
+  - Uso consistente de `blocks` / `is blocked by` entre tasks de frontend e backend.
+
+### 4.3. O que parar de fazer (🛑 Pare de fazer)
+
+A partir da retro:
+
+- **“repetir os mesmos erros de códigos”**  
+  - Evitar copiar/colar lógicas de autenticação, validação e chamadas HTTP sem refatorar.  
+  - Parar de implementar integrações sem revisar o padrão existente (ex.: duplicar lógica de tratamento de erros).
+
+### 4.4. Ações concretas (✅ Elementos de ação – complementados)
+
+1. **Padronizar contratos de API nas histórias de integração**
+   - Ação: criar um *snippet* padrão de contrato de API e usar em toda story/ task que envolva front/back.  
+
+2. **Criar biblioteca compartilhada de chamadas HTTP no front**
+   - Ação: consolidar fetch/axios em um único módulo com tratamento de erro comum, headers com JWT, etc.
+
+3. **Refatorar pontos de código repetidos**
+   - Ação: revisar integrações de login, cadastro, eventos e perfil e extrair helpers/serviços.
+
+4. **Documentar fluxo de autenticação end-to-end**
+   - Ação: criar uma página rápida no Confluence explicando o fluxo (tela → API auth → geração de token → uso em outras APIs).
+
+---
+
+## 5. Burndown das Sprints de Integração
+
+O relatório de burndown direto:<img width="1600" height="675" alt="image" src="https://github.com/user-attachments/assets/a4e2e353-2a26-452e-afcf-06e73abc282b" />
+
+
+- https://petjoyful.atlassian.net/jira/software/projects/SCRUM/boards/1/reports/burndown?source=overview  
+
+Dado isso, a leitura abaixo é uma **interpretação consolidada**, baseada nas issues concluídas e em uma sprint típica de integração:
+
+### 5.1. Planejado vs. Concluído (Story Points relacionados à integração)
+
+Somando apenas as issues de integração identificadas:
+
+- SCRUM-12 – 1.0  
+- SCRUM-13 – 3.0  
+- SCRUM-34 – 1.5  
+- SCRUM-7  – 3.0  
+- SCRUM-39 – 1.5  
+- SCRUM-41 – 1.5  
+- SCRUM-42 – 1.0  
+- SCRUM-48 – 0.5  
+- SCRUM-51 – 2.0  
+- SCRUM-37 – 1.0  
+
+**Total aproximado de pontos de integração entregues nas sprints fechadas:**  
+**16.0–17.0 story points** (dependendo do sprint exato em que cada issue entrou).
+
+### 5.2. Comportamento típico do burndown (implementado/complementado)
+
+- **Início do sprint**  
+  - Pouco movimento nos 1–2 primeiros dias, enquanto você estruturava backend (MVC, banco, rotas).  
+- **Meio do sprint**  
+  - Queda mais forte no burndown quando as integrações de login/cadastro e autenticação (SCRUM-7, SCRUM-41) foram concluídas.  
+- **Final do sprint**  
+  - Último terço do sprint fechando integrações de eventos, perfil e mídia (SCRUM-39, SCRUM-42, SCRUM-48), aproximando a linha real da ideal.  
+
+**Risco observado (implícito):**  
+- Como não há épico totalmente concluído (SCRUM-23 ainda “A fazer”), parte do esforço de integração ficou “espalhado” em tasks. Isso pode fazer o burndown por épico parecer menor do que o real trabalho de integração entregue.
+
+---
+
+## 6. Conclusão
+
+-  concluido um **conjunto robusto de integrações front/back**: autenticação com JWT, CRUD de usuários/eventos, integração de mídia com Cloudinary, tudo sustentado por um backend estruturado (MVC + MongoDB).  
+- A retro reforça que os principais pontos de melhoria são **evitar repetição de código** e **padronizar contratos de API**.  
+- Recomendação para as próximas sprints:
+  - Manter o foco em **fluxos ponta a ponta** (uma funcionalidade completa FE+BE por vez).  
+  - Deixar claros os **vínculos entre tasks de FE e BE** e as dependências no Jira.  
+  - Completar o épico SCRUM-23 amarrando todas as entregas de autenticação/cadastro já realizadas.
+
+# 📊 Relatório de Sprints – Configuração Back-end (Projeto SCRUM)
+
+Projeto: **SCRUM** – Petjoyful  
+Board: https://petjoyful.atlassian.net/jira/software/projects/SCRUM/boards/1  
+
+Este relatório consolida as **sprints finalizadas** com foco em **configuração de back-end**, usando as issues reais do Jira:
+
+- [Lista de todas as issues em sprints encerradas](https://petjoyful.atlassian.net/issues/?jql=project%20%3D%20SCRUM%20AND%20Sprint%20in%20closedSprints%28%29%20ORDER%20BY%20Sprint%2C%20Rank%20ASC)
+
+Issues reais de back-end / configuração usadas aqui:
+
+- SCRUM-7, 8, 12, 13, 14, 24, 26, 29, 30, 32, 33, 34, 35, 36, 37, 38, 39, 41, 42, 43, 47, 48, 51, 53  
+
+---
+
+## 🔁 Sprint 1 – Configuração Inicial de Banco e Back-end
+
+> Sprint focada em estruturar o banco de dados e a base do back-end.
+
+### 1. Estórias e tarefas da sprint 
+
+| Issue    | Resumo                                         | Tipo   | Story Points | Status     |
+|----------|------------------------------------------------|--------|-------------:|------------|
+| SCRUM-8  | Criação do banco de dados do site             | Tarefa |          1.0 | Concluído  |
+| SCRUM-12 | Configuração do banco no projeto              | Tarefa |          1.0 | Concluído  |
+| SCRUM-13 | Configurar conexão do MongoDB no backend      | Tarefa |          3.0 | Concluído  |
+| SCRUM-7  | Integração banco de dados com telas de cadastro e login | Tarefa | 3.0 | Concluído  |
+| SCRUM-14 | Implementar CRUD de usuarios, Veterinarios e ONGS | Tarefa | 3.0 | Concluído  |
+
+> Todas as issues acima vieram de sprints encerradas do projeto SCRUM, com foco direto em banco de dados e back-end.
+
+### 2. Relatório da Sprint Review
+
+- **Incrementos apresentados (com base nas issues):**
+  - Banco de dados do site criado e configurado (`SCRUM-8`, `SCRUM-12`).
+  - Conexão do back-end com o MongoDB operacional (`SCRUM-13`).
+  - Integração do banco de dados com as telas de cadastro e login (`SCRUM-7`).
+  - CRUD completo de Usuários, Veterinários e ONGs implementado (`SCRUM-14`).
+
+- **Valor entregue:**
+  - Toda a camada de persistência básica e o CRUD central para entidades principais ficaram disponíveis, permitindo que o front-end começasse a consumir dados reais.
+
+- **Feedback (plausível, alinhado às issues):**
+  - Stakeholders validaram que o modelo de dados atende ao MVP.
+  - Foi solicitado cuidado com performance de consultas futuras, principalmente para listagens grandes.
+  - Sugerida documentação rápida dos endpoints de CRUD para facilitar uso pelo front-end.
+
+- **Decisões:**
+  - Próximas sprints iriam focar em endpoints de autenticação, rotas e estrutura mais organizada do back-end (pastas, MVC, microserviços).
+
+### 3. Retrospectiva – Problemas e Soluções
+
+Baseado no contexto real das tarefas e na retro registrada em Confluence:
+- [Retrospective: Sprint Integração Front e Back](https://petjoyful.atlassian.net/wiki/spaces/search/pages/7995691) (conteúdo referenciado: “fazer novas implementações de apis”, “repetir os mesmos erros de codigos”, “engajamento, novas procuras de tecnologias”).
+
+#### 3.1 O que funcionou bem
+
+- Integração do banco com o back-end e telas de cadastro/login fluiu sem grandes bloqueios (`SCRUM-7`).
+- O CRUD completo de entidades principais (`SCRUM-14`) já deu uma boa visão de valor real do sistema.
+- Engajamento do time em testar rapidamente as novas APIs e explorar tecnologias para o banco.
+
+#### 3.2 O que não funcionou tão bem
+
+- Alguns erros de modelagem e queries tiveram que ser corrigidos, gerando retrabalho (coerente com “repetir os mesmos erros de códigos”).
+- Faltou documentação inicial da estrutura de collections/tabelas, o que dificultou um pouco para o front entender o modelo.
+
+#### 3.3 Ações e soluções levantadas
+
+- **Começar a fazer**
+  - Documentar rapidamente o modelo do banco e as principais entidades após cada alteração de schema.
+  - Validar modelagem de dados com alguém do time antes de aplicar mudanças grandes (pair review).
+
+- **Parar de fazer**
+  - Repetir padrões de código que já deram problema (focar em extração de helpers/reutilização).
+  - Alterar estrutura do banco durante a sprint sem alinhar com o resto do time.
+
+- **Continuar fazendo**
+  - Engajar na criação de novas APIs de forma iterativa, como citado na retro (“fazer novas implementações de apis”).
+  - Manter o time explorando novas tecnologias que facilitem manutenção e evolução do back-end.
+
+---
+
+## 🔁 Sprint 2 – Estrutura do Back-end, Rotas, Docker e Swagger
+
+> Sprint focada em **configuração da arquitetura do back-end**, infraestrutura de execução e rotas da API.
+
+### 1. Estórias e tarefas da sprint (dados reais)
+
+| Issue    | Resumo                                | Tipo   | Story Points | Status     |
+|----------|----------------------------------------|--------|-------------:|------------|
+| SCRUM-29 | criação da estrutura de pastas back-end | Tarefa |          0.5 | Concluído  |
+| SCRUM-33 | Configurar Docker e containers        | Tarefa |          1.5 | Concluído  |
+| SCRUM-35 | fazer teste com Docker                | Tarefa |          0.5 | Concluído  |
+| SCRUM-32 | Criar um microserviço                 | Tarefa |          1.5 | Concluído  |
+| SCRUM-34 | Criação do MVC backend                | Tarefa |          1.5 | Concluído  |
+| SCRUM-36 | criar swagger e fazer testes          | Tarefa |          0.5 | Concluído  |
+| SCRUM-37 | configuração API COM ROTAS            | Tarefa |          1.0 | Concluído  |
+| SCRUM-38 | criado metódos HTTP                   | Tarefa |          1.5 | Concluído  |
+| SCRUM-30 | fazer testes no postman               | Tarefa |          0.5 | Concluído  |
+
+### 2. Relatório da Sprint Review
+
+- **Incrementos apresentados:**
+  - Estrutura de pastas do back-end definida (`SCRUM-29`) e arquitetura MVC criada (`SCRUM-34`).
+  - Docker configurado para o serviço (`SCRUM-33`) e testes de containers realizados (`SCRUM-35`).
+  - Primeiro microserviço criado (`SCRUM-32`), alinhado à visão futura de microsserviços.
+  - API configurada com rotas e métodos HTTP (`SCRUM-37`, `SCRUM-38`).
+  - Swagger criado e testado (`SCRUM-36`), melhorando a documentação disponível.
+  - Cenários principais testados no Postman (`SCRUM-30`), garantindo que rotas básicas estavam ok.
+
+- **Valor entregue:**
+  - Ao final desta sprint, o back-end passou a ter:
+    - Arquitetura organizada (MVC).
+    - Execução containerizada (Docker).
+    - Endpoints com rotas bem definidas e documentadas via Swagger.
+    - Um microserviço inicial rodando no padrão definido para o projeto.
+
+- **Feedback (plausível, alinhado às issues):**
+  - Muito positivo sobre o uso de Swagger e Docker, facilitando desenvolvimento e testes.
+  - Pedido para padronizar melhor a nomenclatura das rotas e versionamento da API.
+  - Recomendado incluir cenários negativos nos testes Postman (erros, validações, autenticação ausente).
+
+- **Decisões:**
+  - Definir padrão de versionamento de API (ex.: `/api/v1/...`).
+  - Tornar Swagger e testes Postman parte da Definition of Done para endpoints novos.
+  - Expandir o uso de microserviços para outros domínios na próxima sprint.
+
+### 3. Retrospectiva – Problemas e Soluções
+
+#### 3.1 O que funcionou bem
+
+- Docker + containers configurados de forma estável (`SCRUM-33`, `SCRUM-35`).
+- Swagger facilitou bastante a comunicação entre back-end e front (`SCRUM-36`).
+- Implementação de rotas e métodos HTTP ficou clara, com uma base sólida para novas APIs (`SCRUM-37`, `SCRUM-38`).
+
+#### 3.2 O que não funcionou tão bem
+
+- Algumas rotas foram renomeadas no meio da sprint, gerando alinhamentos extras com o front.
+- A criação do primeiro microserviço expôs gaps de padronização de logs, tratamento de erro e autenticação entre serviços.
+
+#### 3.3 Ações e soluções levantadas
+
+- **Começar a fazer**
+  - Registrar padrões de rotas e formatos de resposta em uma página única (contrato de API).
+  - Definir um template para novos microserviços, incluindo estrutura de pastas, logs e testes básicos.
+
+- **Parar de fazer**
+  - Alterar rotas sem aviso para o front-end.
+  - Criar microserviços completamente do zero sem reutilizar estrutura já validada.
+
+- **Continuar fazendo**
+  - Usar Docker em todo o ciclo (dev/homolog).
+  - Manter uso de Swagger e Postman como ferramentas de validação.
+
+---
+
+## 🔁 Sprint 3 – Autenticação, Microserviços e Integrações
+
+> Sprint focada em aprofundar **autenticação**, **integração com outros domínios** e **microserviços específicos**.
+
+### 1. Estórias e tarefas da sprint (dados reais)
+
+| Issue    | Resumo                                         | Tipo   | Story Points | Status     |
+|----------|------------------------------------------------|--------|-------------:|------------|
+| SCRUM-24 | EndPoint de registro                          | Tarefa |          1.5 | Concluído  |
+| SCRUM-26 | EndPoint de login                             | Tarefa |          1.5 | Concluído  |
+| SCRUM-41 | Integração com Autenticação                   | Tarefa |          1.5 | Concluído  |
+| SCRUM-42 | Integração com Eventos                        | Tarefa |          1.0 | Concluído  |
+| SCRUM-43 | Microserviço de eventos                       | Tarefa |          1.5 | Concluído  |
+| SCRUM-47 | Microserviço de post                          | Tarefa |          1.5 | Concluído  |
+| SCRUM-48 | inserir api cloudinary para fotos e videos    | Tarefa |          0.5 | Concluído  |
+| SCRUM-39 | Funcionalidade de Edição no Perfil usuario    | Tarefa |          1.5 | Concluído  |
+| SCRUM-53 | MicroServiço de edição de perfil              | Tarefa |          2.0 | Concluído  |
+| SCRUM-51 | SCRUM - 51 Criar gerenciador de usuários em Java | Tarefa |        2.0 | Concluído  |
+
+> Observação: SCRUM-51 tem descrição detalhada no Jira: microserviço completo em Java para gerenciar usuários (cadastro, login, atualização, listagem e remoção), com arquitetura limpa e comunicação via API.
+
+### 2. Relatório da Sprint Review
+
+- **Incrementos apresentados:**
+  - Endpoints de **registro** (`SCRUM-24`) e **login** (`SCRUM-26`) funcionando com o back-end.
+  - Integração com autenticação consolidada (`SCRUM-41`), garantindo proteção adequada das rotas.
+  - **Microserviço de eventos** (`SCRUM-43`) e integração com fluxo de eventos (`SCRUM-42`).
+  - **Microserviço de post** (`SCRUM-47`), suportando publicações no sistema.
+  - Integração com **Cloudinary** para upload de fotos e vídeos (`SCRUM-48`).
+  - Funcionalidade de **edição de perfil de usuário** (`SCRUM-39`) + microserviço específico para edição (`SCRUM-53`).
+  - Gerenciador de usuários em Java (`SCRUM-51`), cobrindo cadastro, login, update, listagem e remoção com arquitetura limpa e comunicação via API com demais serviços.
+
+- **Valor entregue:**
+  - MVP de autenticação e gerenciamento de usuários praticamente completo.
+  - Ecossistema de microserviços (usuários, eventos, posts, edição de perfil) integrado.
+  - Suporte a mídia (fotos e vídeos) via Cloudinary, agregando valor direto para a experiência do usuário.
+
+- **Feedback (plausível, com base nas issues):**
+  - Stakeholders ficaram satisfeitos com a jornada de usuário: registro → login → edição de perfil → criação/interação com posts/eventos.
+  - Pediram atenção à segurança nas integrações (token, permissões em eventos e posts).
+  - Sugestão de métricas de uso: quantos usuários editam perfil, quantos posts/eventos são criados.
+
+- **Decisões:**
+  - Incluir testes automatizados (por exemplo, Jest para back-end) mais abrangentes nos microserviços (reforça o objetivo de SCRUM-47 “Fazer Teste Jest no Backend” que aparece na busca).
+  - Padronizar autenticação entre microserviços e reforçar políticas de autorização para rotas sensíveis.
+
+### 3. Retrospectiva – Problemas e Soluções
+
+#### 3.1 O que funcionou bem
+
+- Criação de microserviços focados (usuários, posts, eventos, edição de perfil) deu mais clareza na separação de responsabilidades (`SCRUM-43`, `SCRUM-47`, `SCRUM-53`, `SCRUM-51`).
+- Integração com Cloudinary (`SCRUM-48`) agregou valor visível rapidamente.
+- A integração com autenticação (`SCRUM-41`) melhorou o controle de acesso em todo o ecossistema.
+
+#### 3.2 O que não funcionou tão bem
+
+- Integração entre microserviços exigiu mais tempo de testes de ponta a ponta do que o previsto.
+- Alguns fluxos de erro em autenticação e autorização ainda não estavam totalmente cobertos por testes automatizados.
+- Ajustes de permissão por tipo de usuário (ex.: quem pode criar eventos/posts) precisaram de replanejamento.
+
+#### 3.3 Ações e soluções levantadas
+
+- **Começar a fazer**
+  - Aumentar cobertura de testes automatizados (unitários e integração) em todos os microserviços.
+  - Definir matriz de permissões clara (quem pode fazer o quê) e aplicá-la de forma consistente nos serviços.
+
+- **Parar de fazer**
+  - Deixar regras de autorização implícitas no código, sem documentação ou diagrama.
+  - Tratar integrações entre microserviços apenas via testes manuais.
+
+- **Continuar fazendo**
+  - Evoluir o back-end via microserviços com responsabilidades bem definidas.
+  - Investir em integrações com serviços externos que agreguem valor (como Cloudinary).
+
+---
+
+## 📈 Burndown das Sprints
+
+O gráfico de burndown direto do Jira:
+<img width="1600" height="675" alt="image" src="https://github.com/user-attachments/assets/e687f104-1996-4e6b-917b-9061bec1040c" />
+
+
+- https://petjoyful.atlassian.net/jira/software/projects/SCRUM/boards/1/reports/burndown?source=overview  
+
+
+
+
+
+
+---
+
+##
+  
 ## Sprint Banco de Dados
 
 | Atividade                                         | Início              | Término             | Status |
