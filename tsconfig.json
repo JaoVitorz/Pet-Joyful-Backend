@@ -1,13 +1,15 @@
 {
   "extends": "@tsconfig/node24/tsconfig.json",
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "nodenext",
     "outDir": "./dist",
-    "rootDir": "./src",
-    "moduleResolution": "node",
+    "rootDir": ".",
+    "moduleResolution": "nodenext",
     "esModuleInterop": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "allowJs": false,
+    "skipLibCheck": true
   },
-  "include": ["**/*.ts", "backend/src/app.ts"],
+  "include": ["**/*.ts", "**/*.d.ts", "backend/src/app.ts"],
   "exclude": ["dist", "node_modules"]
 }

@@ -6,7 +6,7 @@ import {
   updateUser,
   deleteUser,
 } from "../controllers/userController.js";
-import ensureAuth from "../middlewares/ensureAuth.js";
+
 import ensureAdminKey from "../middlewares/ensureAdminKey.js";
 
 const router = Router();

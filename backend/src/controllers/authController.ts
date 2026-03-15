@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import type {Response} from 'express';
 import userModel from '../models/userModel.js';
-import type {AuthRequest} from '../types/index.js';
+import type {AuthRequest, IUserDocument} from '../types/index.ts';
 
 export const register = async (
   req: AuthRequest,
@@ -155,8 +155,8 @@ export const updateProfile = async (
     if (senha) updateData.senha = await bcrypt.hash(senha, 10);
 
     if (email) {
-      const other = await userModel.findOne({email});
-      if (other && other._id.toString() !== userId.toString()) {
+      const other = (await userModel.findOne({email})) as IUserDocument | null;
+      if (other && String(other._id) !== userId.toString()) {
         res.status(400).json({error: 'Email já em uso por outro usuário'});
         return;
       }

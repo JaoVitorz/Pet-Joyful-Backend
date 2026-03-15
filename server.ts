@@ -1,8 +1,8 @@
 import 'dotenv/config';
-import connectDB from './database/connection.js';
-import app from './app.js';
+import connectDB from './backend/src/database/connection.js';
+import app from './backend/src/app.js';
 import bcrypt from 'bcryptjs';
-import userModel from './models/userModel.js';
+import userModel from './backend/src/models/userModel.js';
 import type {Request, Response} from 'express';
 
 const PORT = process.env.PORT || 5000;
@@ -37,11 +37,11 @@ connectDB()
       }
     });
 
-    app.listen(PORT, '0.0.0.0', () =>
+    app.listen(Number(PORT), '0.0.0.0', () =>
       console.log(`✅ Servidor rodando na porta ${PORT}`),
     );
   })
-  .catch(err => {
+  .catch((err: any) => {
     console.error(
       'Falha ao conectar ao banco, servidor não iniciado:',
       (err as Error).message ?? err,

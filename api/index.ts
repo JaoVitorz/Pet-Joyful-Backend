@@ -2,7 +2,6 @@
 import express from "express";
 import serverless from "serverless-http";
 import swaggerUi from "swagger-ui-express";
-import swaggerDocument from "../swagger-output.json" assert { type: "json" };
 import dotenv from "dotenv";
 import connectDB from "../backend/src/database/connection.js";
 import app from "../backend/src/app.js";
