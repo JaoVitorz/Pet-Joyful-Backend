@@ -2,55 +2,50 @@
   "name": "pet-joyful-backend",
   "version": "1.0.0",
   "description": "Backend em microsserviços para o projeto Pet Joyful (Java + Node.js + Express)",
-  "main": "backend/server.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "npm run swagger && node server.js",
-    "dev": "node api/index.js",
-    "swagger": "node backend/src/swagger.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/JaoVitorz/Pet-Joyful-Backend.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "main": "dist/server.js",
   "type": "module",
-  "bugs": {
-    "url": "https://github.com/JaoVitorz/Pet-Joyful-Backend/issues"
+  "scripts": {
+    "dev": "nodemon --exec ts-node ./src/server.ts",
+    "build": "tsc --build",
+  "postbuild": "copyfiles -u 2 backend/src/swagger-output.json dist/backend/src/config",
+    "start": "node dist/server.js",
+    "start:prod": "npm run build && npm start",
+    "swagger": "ts-node src/swagger.ts",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\""
   },
-  "homepage": "https://github.com/JaoVitorz/Pet-Joyful-Backend#readme",
   "dependencies": {
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
-    "mongodb": "^6.20.0",
     "mongoose": "^8.19.1",
     "serverless-http": "^4.0.0",
     "swagger-autogen": "^2.23.7",
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
-    "@tsconfig/node24": "^24.0.4",
+    "@eslint/js": "^9.0.0",
+    "@tsconfig/node24": "^24.0.0",
     "@types/bcryptjs": "^2.4.6",
-    "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.6",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
     "@types/http-proxy-middleware": "^0.19.3",
-    "@types/jsonwebtoken": "^9.0.10",
+    "@types/jsonwebtoken": "^9.0.6",
     "@types/multer": "^2.1.0",
-    "@types/node": "^25.5.0",
-    "@types/serverless": "^3.12.28",
-    "@types/swagger-ui-express": "^4.1.8",
-    "eslint": "^10.0.3",
-    "eslint-plugin-perfectionist": "^5.6.0",
-    "nodemon": "^3.1.14",
-    "prettier": "^3.8.1",
+    "@types/node": "^20.11.0",
+    "@types/serverless": "^3.12.0",
+    "@types/swagger-ui-express": "^4.1.6",
+    "copyfiles": "^2.4.1",
+    "eslint": "^9.0.0",
+    "eslint-plugin-perfectionist": "^4.0.0",
+    "nodemon": "^3.1.10",
+    "prettier": "^3.2.5",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3",
-    "typescript-eslint": "^8.57.0"
+    "typescript": "^5.4.0",
+    "typescript-eslint": "^8.0.0"
   }
 }

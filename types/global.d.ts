@@ -1,4 +1,19 @@
 declare module 'multer' {
+  const multer: any;
+  export default multer;
+}
+
+declare module 'http-proxy-middleware' {
+  import type { RequestHandler } from 'express';
+  export function createProxyMiddleware(options: any): RequestHandler;
+}
+
+// Fallback for swagger-autogen runtime JSON import if needed
+declare module '*.json' {
+  const value: any;
+  export default value;
+}
+declare module 'multer' {
   import type { Request } from 'express';
   const multer: any;
   export default multer;
