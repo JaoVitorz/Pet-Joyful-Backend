@@ -1,9 +1,9 @@
 import dotenv from "dotenv";
-import connectDB from "./backend/src/database/connection.js";
-import app from "./backend/src/app.js";
-import userModel from "./backend/src/models/userModel.js";
+import connectDB from "./dist/backend/src/database/connection.js";
+import app from "./dist/backend/src/app.js";
+import userModel from "./dist/backend//models/userModel.js";
 import bcrypt from "bcryptjs";
-// import messagesRoutes from "./backend/src/routes/messagesRoutes.js"; // Commented out as routing is handled in app.js
+// import messagesRoutes from "./dist/backend/src/routes/messagesRoutes.js"; // Commented out as routing is handled in app.js
 
 // Load environment variables early
 dotenv.config();
