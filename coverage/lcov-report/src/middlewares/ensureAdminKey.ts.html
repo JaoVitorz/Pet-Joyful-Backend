@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>12/12</span>
+                <span class='fraction'>0/12</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>6/6</span>
+                <span class='fraction'>0/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>1/1</span>
+                <span class='fraction'>0/1</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>12/12</span>
+                <span class='fraction'>0/12</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -90,59 +90,59 @@
 <a name='L25'></a><a href='#L25'>25</a>
 <a name='L26'></a><a href='#L26'>26</a>
 <a name='L27'></a><a href='#L27'>27</a>
-<a name='L28'></a><a href='#L28'>28</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L28'></a><a href='#L28'>28</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import 'dotenv/config';
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" >import 'dotenv/config';</span>
 import type {Response, NextFunction} from 'express';
 import type {AuthRequest} from '../types/index.js';
 &nbsp;
-export default function ensureAdminKey(
+<span class="cstat-no" title="statement not covered" >export default function <span class="fstat-no" title="function not covered" >e</span>nsureAdminKey(</span>
   req: AuthRequest,
   res: Response,
   next: NextFunction,
 ): void {
   const adminKey =
-    (req.headers['x-admin-key'] as string) ||
+    (<span class="cstat-no" title="statement not covered" >req.headers['x-admin-key'] as string) ||</span>
     (req.query['admin_key'] as string);
 &nbsp;
-  if (!adminKey) {
-    res.status(401).json({error: 'Admin key ausente'});
-    return;
+<span class="cstat-no" title="statement not covered" >  if (!adminKey) {</span>
+<span class="cstat-no" title="statement not covered" >    res.status(401).json({error: 'Admin key ausente'});</span>
+<span class="cstat-no" title="statement not covered" >    return;</span>
   }
 &nbsp;
-  if (adminKey !== process.env.ADMIN_KEY) {
-    res.status(403).json({error: 'Admin key inválida'});
-    return;
+<span class="cstat-no" title="statement not covered" >  if (adminKey !== process.env.ADMIN_KEY) {</span>
+<span class="cstat-no" title="statement not covered" >    res.status(403).json({error: 'Admin key inválida'});</span>
+<span class="cstat-no" title="statement not covered" >    return;</span>
   }
 &nbsp;
-  req.isApiKeyValid = true;
-  req.userRole = 'admin';
-  return next();
+<span class="cstat-no" title="statement not covered" >  req.isApiKeyValid = true;</span>
+<span class="cstat-no" title="statement not covered" >  req.userRole = 'admin';</span>
+<span class="cstat-no" title="statement not covered" >  return next();</span>
 }
 &nbsp;</pre></td></tr></table></pre>
 
@@ -151,7 +151,7 @@ export default function ensureAdminKey(
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-03-17T01:14:22.283Z
+                at 2026-03-18T00:52:46.270Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

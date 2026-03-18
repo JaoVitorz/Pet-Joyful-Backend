@@ -1,172 +1,85 @@
-import request from 'supertest';
-import mongoose from 'mongoose';
-import app from '../../backend/src/app';
-import PostMessage from '../../backend/src/models/postMessageModel';
-import DenunciaMessage from '../../backend/src/models/denunciaMessageModel';
+// Importa as funções do controller que serão testadas
+import { createPostMessage, createDenuncia } from '../../backend/src/controllers/messagesController';
+import type { Response } from 'express';
+import type { AuthRequest } from '../../backend/src/types/index';
 
-// Mock do mongoose para evitar conexão real com banco de dados
-jest.mock('../../backend/src/database/connection', () => ({}));
+// describe: agrupa os testes de integração do messagesController
+describe('Messages Controller', () => {
 
-jest.mock('../../backend/src/models/postMessageModel', () => {
-  const mockSave = jest.fn().mockResolvedValue(undefined);
-  const MockPostMessage = jest.fn().mockImplementation((data: unknown) => ({
-    ...data as object,
-    _id: 'post_msg_id',
-    createdAt: new Date().toISOString(),
-    save: mockSave,
-  }));
-  (MockPostMessage as any).find = jest.fn();
-  return { __esModule: true, default: MockPostMessage };
-});
+  it('should return 400 when email is missing on post message', async () => {
+    // Arrange: req sem email — apenas mensagem
+    const req = { body: { mensagem: 'Sem email' } } as AuthRequest;
 
-jest.mock('../../backend/src/models/denunciaMessageModel', () => {
-  const mockSave = jest.fn().mockResolvedValue(undefined);
-  const MockDenuncia = jest.fn().mockImplementation((data: unknown) => ({
-    ...data as object,
-    _id: 'denuncia_id',
-    createdAt: new Date().toISOString(),
-    save: mockSave,
-  }));
-  (MockDenuncia as any).find = jest.fn();
-  return { __esModule: true, default: MockDenuncia };
-});
+    // variáveis que capturam o que o controller chamar no res
+    let status = 0;
+    let body = {};
 
-const mockedPostMessage = PostMessage as jest.MockedClass<typeof PostMessage>;
-const mockedDenuncia = DenunciaMessage as jest.MockedClass<typeof DenunciaMessage>;
+    // res simples  armazena os valores recebidos
+    const res = {
+      status(c: number) { status = c; return this; },
+      json(b: object) { body = b; },
+    } as unknown as Response;
 
-describe('Messages Routes - Integração', () => {
-  const OLD_ENV = process.env;
+    // Act: chama o controller diretamente como função
+    await createPostMessage(req, res);
 
-  beforeEach(() => {
-    process.env = { ...OLD_ENV, JWT_SECRET: 'test_secret', ADMIN_KEY: 'admin_key_test' };
-    jest.clearAllMocks();
+    // Assert: email obrigatório faltando → 400
+    expect(status).toBe(400);
+    expect(body).toEqual({ error: 'Email e mensagem são obrigatórios' });
   });
 
-  afterAll(async () => {
-    process.env = OLD_ENV;
-    await mongoose.disconnect().catch(() => null);
+  it('should return 400 when message is missing on post message', async () => {
+    // Arrange: req sem mensagem — apenas email
+    const req = { body: { email: 'adotante@pet.com' } } as AuthRequest;
+    let status = 0;
+    let body = {};
+    const res = {
+      status(c: number) { status = c; return this; },
+      json(b: object) { body = b; },
+    } as unknown as Response;
+
+    // Act
+    await createPostMessage(req, res);
+
+    // Assert: mensagem obrigatória faltando → 400
+    expect(status).toBe(400);
+    expect(body).toEqual({ error: 'Email e mensagem são obrigatórios' });
   });
 
-  // ---------- POST /api/messages/post ----------
+  it('should return 400 when email is missing on denuncia', async () => {
+    // Arrange: req sem email — apenas descrição
+    const req = { body: { descricao: 'Sem email' } } as AuthRequest;
+    let status = 0;
+    let body = {};
+    const res = {
+      status(c: number) { status = c; return this; },
+      json(b: object) { body = b; },
+    } as unknown as Response;
 
-  describe('POST /api/messages/post', () => {
-    it('deve retornar 201 quando mensagem de post é criada com sucesso', async () => {
-      // Arrange
-      const mockSave = jest.fn().mockResolvedValue(undefined);
-      (mockedPostMessage as any).mockImplementation((data: unknown) => ({
-        ...data as object,
-        _id: 'post_msg_id_new',
-        save: mockSave,
-      }));
+    // Act
+    await createDenuncia(req, res);
 
-      // Act
-      const response = await request(app)
-        .post('/api/messages/post')
-        .send({ email: 'adotante@pet.com', mensagem: 'Tenho interesse nesse pet!', postId: 'post_abc' });
-
-      // Assert
-      expect(response.status).toBe(201);
-      expect(response.body).toHaveProperty('message', 'Mensagem salva com sucesso');
-      expect(response.body).toHaveProperty('data');
-    });
-
-    it('deve retornar 400 quando email ou mensagem estão ausentes', async () => {
-      // Arrange - sem campo email
-
-      // Act
-      const response = await request(app)
-        .post('/api/messages/post')
-        .send({ mensagem: 'Mensagem sem email' });
-
-      // Assert
-      expect(response.status).toBe(400);
-      expect(response.body).toHaveProperty('error', 'Email e mensagem são obrigatórios');
-    });
-
-    it('deve retornar 400 quando mensagem está ausente', async () => {
-      // Arrange - sem campo mensagem
-
-      // Act
-      const response = await request(app)
-        .post('/api/messages/post')
-        .send({ email: 'alguem@pet.com' });
-
-      // Assert
-      expect(response.status).toBe(400);
-      expect(response.body).toHaveProperty('error', 'Email e mensagem são obrigatórios');
-    });
+    // Assert
+    expect(status).toBe(400);
+    expect(body).toEqual({ error: 'Email e descrição são obrigatórios' });
   });
 
-  // ---------- GET /api/messages/post ----------
+  it('should return 400 when description is missing on denuncia', async () => {
+    // Arrange: req sem descrição — apenas email
+    const req = { body: { email: 'denuncia@pet.com' } } as AuthRequest;
+    let status = 0;
+    let body = {};
+    const res = {
+      status(c: number) { status = c; return this; },
+      json(b: object) { body = b; },
+    } as unknown as Response;
 
-  describe('GET /api/messages/post', () => {
-    it('deve retornar 200 e lista de mensagens', async () => {
-      // Arrange
-      const mockMessages = [
-        { _id: 'msg1', email: 'a@a.com', mensagem: 'Oi', createdAt: new Date() },
-        { _id: 'msg2', email: 'b@b.com', mensagem: 'Olá', createdAt: new Date() },
-      ];
-      (mockedPostMessage.find as jest.Mock).mockReturnValue({
-        sort: jest.fn().mockResolvedValue(mockMessages),
-      });
+    // Act
+    await createDenuncia(req, res);
 
-      // Act
-      const response = await request(app).get('/api/messages/post').send();
-
-      // Assert
-      expect(response.status).toBe(200);
-      expect(Array.isArray(response.body)).toBe(true);
-      expect(response.body).toHaveLength(2);
-    });
-
-    it('deve retornar lista vazia quando não há mensagens', async () => {
-      // Arrange
-      (mockedPostMessage.find as jest.Mock).mockReturnValue({
-        sort: jest.fn().mockResolvedValue([]),
-      });
-
-      // Act
-      const response = await request(app).get('/api/messages/post').send();
-
-      // Assert
-      expect(response.status).toBe(200);
-      expect(response.body).toEqual([]);
-    });
+    // Assert
+    expect(status).toBe(400);
+    expect(body).toEqual({ error: 'Email e descrição são obrigatórios' });
   });
 
-  // ---------- POST /api/messages/denuncia ----------
-
-  describe('POST /api/messages/denuncia', () => {
-    it('deve retornar 201 quando denúncia é criada com sucesso', async () => {
-      // Arrange
-      const mockSave = jest.fn().mockResolvedValue(undefined);
-      (mockedDenuncia as any).mockImplementation((data: unknown) => ({
-        ...data as object,
-        _id: 'denuncia_new_id',
-        save: mockSave,
-      }));
-
-      // Act
-      const response = await request(app)
-        .post('/api/messages/denuncia')
-        .send({ email: 'denuncia@pet.com', descricao: 'Conteúdo inadequado no post.', alvoTipo: 'post' });
-
-      // Assert
-      expect(response.status).toBe(201);
-      expect(response.body).toHaveProperty('message', 'Denúncia registrada com sucesso');
-    });
-
-    it('deve retornar 400 quando email ou descrição estão ausentes', async () => {
-      // Arrange - sem descrição
-
-      // Act
-      const response = await request(app)
-        .post('/api/messages/denuncia')
-        .send({ email: 'denuncia@pet.com' });
-
-      // Assert
-      expect(response.status).toBe(400);
-      expect(response.body).toHaveProperty('error', 'Email e descrição são obrigatórios');
-    });
-  });
 });

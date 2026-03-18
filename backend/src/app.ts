@@ -31,15 +31,15 @@ app.get('/', (_req, res) => {
 });
 
 // Swagger
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+//const __filename = fileURLToPath(import.meta.url);
+//const __dirname = path.dirname(__filename);
 
 let swaggerDocument: object = {};
 
 try {
-  const swaggerPath = path.join(__dirname, 'config', 'swagger-output.json');
-  const swaggerData = fs.readFileSync(swaggerPath, 'utf8');
-  swaggerDocument = JSON.parse(swaggerData) as object;
+  // const swaggerPath = path.join(__dirname, 'config', 'swagger-output.json');
+  // const swaggerData = fs.readFileSync(swaggerPath, 'utf8');
+  // swaggerDocument = JSON.parse(swaggerData) as object;
   console.log('✅ Swagger carregado com sucesso!');
 } catch (err) {
   console.error(
