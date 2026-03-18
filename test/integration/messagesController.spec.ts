@@ -41,7 +41,7 @@ describe('Messages Controller', () => {
     // Act
     await createPostMessage(req, res);
 
-    // Assert: mensagem obrigatória faltando → 400
+    // Assert: mensagem obrigatória faltando -> 400
     expect(status).toBe(400);
     expect(body).toEqual({ error: 'Email e mensagem são obrigatórios' });
   });
