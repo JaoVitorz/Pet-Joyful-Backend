@@ -1,5 +1,5 @@
 // Importa os enums que serão testados
-import { UserTipo, AlvoTipo } from '../../../backend/src/types/index';
+import { UserTipo, AlvoTipo } from '../../backend/src/types/index';
 
 // describe: agrupa os testes relacionados ao enum UserTipo
 describe('UserTipo', () => {
