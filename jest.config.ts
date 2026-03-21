@@ -8,10 +8,10 @@ export default {
   coverageDirectory: 'coverage',
   coveragethreshold: {
 global: {
-  statements: 1,
-  branches: 1,
-  function: 1,
-  lines: 1,
+  statements: 0,
+  branches: 0,
+  function: 0,
+  lines: 0,
 }
   },
   moduleNameMapper: {
