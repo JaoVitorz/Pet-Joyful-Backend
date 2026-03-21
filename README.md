@@ -1,6 +1,6 @@
 # 🐾 Pet Joyful - Backend API
 
-API RESTful completa para a plataforma Pet Joyful, desenvolvida com Node.js, Express e MongoDB. Sistema de gerenciamento de usuários, autenticação JWT e mensagens com **arquitetura de microsserviços escalável**.
+API RESTful completa para a plataforma Pet Joyful, desenvolvida com Node.js, Express e MongoDB. Sistema de gerenciamento de usuários, autenticação JWT e mensagens com **arquitetura de microsserviços escalável**
 
 ---
 
