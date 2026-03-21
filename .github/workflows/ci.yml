@@ -31,7 +31,7 @@ jobs:
         run: npm test
       #PARTE 1 - Até aqui
 
-      #PARTE 2 - Versionamento automático SemVer
+      #PARTE 2 - Versionamento automático SemVer. conflito dado aqui
       - name: Instalar SemVer
         run: npm install -g semver
 
