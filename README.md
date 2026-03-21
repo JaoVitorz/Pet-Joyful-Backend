@@ -16,7 +16,7 @@ API RESTful completa para a plataforma Pet Joyful, desenvolvida com Node.js, Exp
 
 ## 📋 Sobre o Projeto
 
-O **Pet Joyful** é uma rede social voltada à conexão entre instituições de adoção, adotantes e clínicas veterinárias. Nosso foco é a conscientização sobre cuidados com animais, vacinação e o incentivo à adoção responsável.
+O **Pet Joyful** é uma rede social voltada à conexão entre instituições de adoção, adotantes e clínicas veterinárias. Nosso foco é a  conscientização sobre cuidados com animais, vacinação e o incentivo à adoção responsável.
 
 A plataforma facilita o acesso a informações, promove campanhas e eventos como forma de publicação para adoção, criando uma comunidade engajada com a causa animal através de uma arquitetura moderna de microsserviços.
 
