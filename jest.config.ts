@@ -6,11 +6,11 @@ export default {
   restoreMocks: true,
   collectCoverageFrom: ['backend/src/**/*.ts'],
   coverageDirectory: 'coverage',
-  coveragethreshold: {
+  coverageThreshold: {
 global: {
   statements: 90,
   branches: 90,
-  function: 90,
+  functions: 90,
   lines: 83.7,
 }
   },
