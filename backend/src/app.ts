@@ -26,7 +26,7 @@ app.use(express.json());
 
 // Rotas principais
 app.use('/api', routes);
-app.use('/api/chat', chatRoutes); // ← 2. registra as rotas do chat
+app.use('/api/chat', express.json(), chatRoutes);
 
 // Rota base (teste)
 app.get('/', (_req, res) => {
