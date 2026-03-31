@@ -1,10 +1,11 @@
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
-import {fileURLToPath} from 'url';
+import { fileURLToPath } from 'url';
 import fs from 'fs';
 import swaggerUi from 'swagger-ui-express';
 import routes from './routes/index.js';
+import chatRoutes from './routes/chatRoutes.js'; // ← 1. importa o chatRoutes
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.use(
     origin: [
       'https://pet-joyful-backend-1.onrender.com',
       'http://localhost:5000',
+      'http://localhost:3000', // Next.js local
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -24,6 +26,7 @@ app.use(express.json());
 
 // Rotas principais
 app.use('/api', routes);
+app.use('/api/chat', chatRoutes); // ← 2. registra as rotas do chat
 
 // Rota base (teste)
 app.get('/', (_req, res) => {
@@ -31,15 +34,9 @@ app.get('/', (_req, res) => {
 });
 
 // Swagger
-//const __filename = fileURLToPath(import.meta.url);
-//const __dirname = path.dirname(__filename);
-
 let swaggerDocument: object = {};
 
 try {
-  // const swaggerPath = path.join(__dirname, 'config', 'swagger-output.json');
-  // const swaggerData = fs.readFileSync(swaggerPath, 'utf8');
-  // swaggerDocument = JSON.parse(swaggerData) as object;
   console.log('✅ Swagger carregado com sucesso!');
 } catch (err) {
   console.error(
