@@ -131,8 +131,7 @@ Responda com conhecimento geral sobre pets.`;
     const error = err as Error;
     console.error('❌ [Chat] Erro:', error.message);
 
-    if (error.message?.includes('429') || error.message?.includes('quota'))
-      return res.status(429).json({ success: false, error: 'Muitas requisições. Aguarde um momento.' });
+    return res.status(429).json({ success: false, error: error.message});
 
     if (error.message?.includes('API_KEY') || error.message?.includes('401'))
       return res.status(500).json({ success: false, error: 'Erro de configuração. Contate o suporte.' });

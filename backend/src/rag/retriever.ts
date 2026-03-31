@@ -1,6 +1,6 @@
 // =============================================================
 // backend/src/rag/retriever.ts
-// Motor de busca do RAG — tipado com TypeScript
+// Motor de busca do RAG — 
 // =============================================================
 
 import fs   from 'fs';
