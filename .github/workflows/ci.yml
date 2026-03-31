@@ -29,9 +29,8 @@ jobs:
 
       - name: Testes unitarios
         run: npm test
-      #PARTE 1 - Até aqui
 
-      #PARTE 2 - Versionamento automático SemVer. conflito dado aqui
+      # PARTE 2 - Versionamento automático SemVer
       - name: Instalar SemVer
         run: npm install -g semver
 
@@ -83,7 +82,7 @@ jobs:
           git push origin HEAD:main
           git push origin $NEW_VERSION
 
-      #PARTE 3 - Notificação por e-mail em caso de falha no pipeline
+      # PARTE 3 - Notificação por e-mail
       - name: Enviar e-mail em caso de falha
         if: failure()
         uses: dawidd6/action-send-mail@v3
@@ -95,17 +94,27 @@ jobs:
           subject: "❌ Falha no pipeline - ${{ github.repository }}"
           body: |
             O pipeline falhou no repositório ${{ github.repository }}.
-
-            Branch: ${{ github.ref_name }}
-            Commit: ${{ github.sha }}
-            Autor: ${{ github.actor }}
-
-            Acesse os detalhes em:
-            ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            Acesse os detalhes em: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           to: ${{ secrets.EMAIL_USERNAME }}
           from: ${{ secrets.EMAIL_USERNAME }}
 
-      #PARTE 4 - Notificação pelo Discord em caso de falha no pipeline
+      - name: Enviar e-mail em caso de sucesso
+        if: success()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "✅ Sucesso no pipeline - ${{ github.repository }}"
+          body: |
+            O pipeline foi concluído com sucesso!
+            Nova versão liberada: ${{ steps.versioning.outputs.new_version }}
+            Acesse os detalhes em: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          to: ${{ secrets.EMAIL_USERNAME }}
+          from: ${{ secrets.EMAIL_USERNAME }}
+
+      # PARTE 4 - Notificação pelo Discord
       - name: Enviar notificação no Discord em caso de falha
         if: failure()
         run: |
@@ -121,6 +130,26 @@ jobs:
                   { "name": "Autor", "value": "${{ github.actor }}", "inline": true },
                   { "name": "Commit", "value": "`${{ github.sha }}`", "inline": false },
                   { "name": "Ver detalhes", "value": "[${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})", "inline": false }
+                ],
+                "footer": { "text": "GitHub Actions • Pet Joyful Backend" },
+                "timestamp": "${{ github.event.head_commit.timestamp }}"
+              }]
+            }'
+
+      - name: Enviar notificação no Discord em caso de sucesso
+        if: success()
+        run: |
+          curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "embeds": [{
+                "title": "✅ Pipeline concluída com sucesso",
+                "color": 3066993,
+                "fields": [
+                  { "name": "Repositório", "value": "${{ github.repository }}", "inline": true },
+                  { "name": "Versão", "value": "`${{ steps.versioning.outputs.new_version }}`", "inline": true },
+                  { "name": "Autor", "value": "${{ github.actor }}", "inline": true },
+                  { "name": "Ver detalhes", "value": "[Execução #${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})", "inline": false }
                 ],
                 "footer": { "text": "GitHub Actions • Pet Joyful Backend" },
                 "timestamp": "${{ github.event.head_commit.timestamp }}"
