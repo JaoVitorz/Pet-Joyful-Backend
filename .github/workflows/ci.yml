@@ -83,7 +83,7 @@ jobs:
           git push origin HEAD:main
           git push origin $NEW_VERSION
 
-      #PARTE 3 - Envio de e-mail em caso de erro no pipeline
+      #PARTE 3 - Notificação por e-mail em caso de falha no pipeline
       - name: Enviar e-mail em caso de falha
         if: failure()
         uses: dawidd6/action-send-mail@v3
@@ -104,3 +104,25 @@ jobs:
             ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           to: ${{ secrets.EMAIL_USERNAME }}
           from: ${{ secrets.EMAIL_USERNAME }}
+
+      #PARTE 4 - Notificação pelo Discord em caso de falha no pipeline
+      - name: Enviar notificação no Discord em caso de falha
+        if: failure()
+        run: |
+          curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "embeds": [{
+                "title": "❌ Pipeline falhou",
+                "color": 15158332,
+                "fields": [
+                  { "name": "Repositório", "value": "${{ github.repository }}", "inline": true },
+                  { "name": "Branch", "value": "${{ github.ref_name }}", "inline": true },
+                  { "name": "Autor", "value": "${{ github.actor }}", "inline": true },
+                  { "name": "Commit", "value": "`${{ github.sha }}`", "inline": false },
+                  { "name": "Ver detalhes", "value": "[${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})", "inline": false }
+                ],
+                "footer": { "text": "GitHub Actions • Pet Joyful Backend" },
+                "timestamp": "${{ github.event.head_commit.timestamp }}"
+              }]
+            }'
