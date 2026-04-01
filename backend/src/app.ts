@@ -1,10 +1,11 @@
 import express from 'express';
 import cors from 'cors';
-import path from 'path';
-import {fileURLToPath} from 'url';
-import fs from 'fs';
-import swaggerUi from 'swagger-ui-express';
+//import path from 'path';
+//import {fileURLToPath} from 'url';
+//import fs from 'fs';
+//import swaggerUi from 'swagger-ui-express';
 import routes from './routes/index.js';
+import chatRoutes from './routes/chatRoutes.js';
 
 const app = express();
 
@@ -22,6 +23,8 @@ app.use(
 );
 app.use(express.json());
 
+
+app.use('/api/chat', chatRoutes);
 // Rotas principais
 app.use('/api', routes);
 
@@ -34,7 +37,7 @@ app.get('/', (_req, res) => {
 //const __filename = fileURLToPath(import.meta.url);
 //const __dirname = path.dirname(__filename);
 
-let swaggerDocument: object = {};
+//let swaggerDocument: object = {};
 
 try {
   // const swaggerPath = path.join(__dirname, 'config', 'swagger-output.json');
@@ -48,6 +51,6 @@ try {
   );
 }
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+//app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 export default app;
