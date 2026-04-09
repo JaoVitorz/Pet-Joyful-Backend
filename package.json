@@ -21,6 +21,8 @@
   "dependencies": {
     "@google/genai": "^1.47.0",
     "@google/generative-ai": "^0.24.1",
+    "@logtail/node": "^0.5.8",
+    "@logtail/winston": "^0.5.8",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
@@ -30,7 +32,8 @@
     "mongoose": "^8.19.1",
     "serverless-http": "^4.0.0",
     "swagger-autogen": "^2.23.7",
-    "swagger-ui-express": "^5.0.1"
+    "swagger-ui-express": "^5.0.1",
+    "winston": "^3.19.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
@@ -44,6 +47,7 @@
     "@types/node": "^20.11.0",
     "@types/supertest": "^6.0.2",
     "@types/swagger-ui-express": "^4.1.6",
+    "@types/winston": "^2.4.4",
     "copyfiles": "^2.4.1",
     "eslint": "^9.0.0",
     "eslint-plugin-perfectionist": "^4.0.0",

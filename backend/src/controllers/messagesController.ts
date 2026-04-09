@@ -1,4 +1,5 @@
 import type {Response} from 'express';
+import {logger} from '../logger/logger.js';
 import PostMessage from '../models/postMessageModel.js';
 import DenunciaMessage from '../models/denunciaMessageModel.js';
 import type {AuthRequest} from '../types/index.js';
@@ -25,6 +26,7 @@ export const createPostMessage = async (
     await msg.save();
     res.status(201).json({message: 'Mensagem salva com sucesso', data: msg});
   } catch (error) {
+    logger.error('Erro em createPostMessage:', error);
     res.status(500).json({error: (error as Error).message});
   }
 };
@@ -38,6 +40,7 @@ export const getPostMessages = async (
     const messages = await PostMessage.find().sort({createdAt: -1});
     res.json(messages);
   } catch (error) {
+    logger.error('Erro em getPostMessages:', error);
     res.status(500).json({error: (error as Error).message});
   }
 };
@@ -67,6 +70,7 @@ export const createDenuncia = async (
       .status(201)
       .json({message: 'Denúncia registrada com sucesso', data: den});
   } catch (error) {
+    logger.error('Erro em createDenuncia:', error);
     res.status(500).json({error: (error as Error).message});
   }
 };
@@ -80,6 +84,7 @@ export const getDenuncias = async (
     const items = await DenunciaMessage.find().sort({createdAt: -1});
     res.json(items);
   } catch (error) {
+    logger.error('Erro em getDenuncias:', error);
     res.status(500).json({error: (error as Error).message});
   }
 };
@@ -116,6 +121,7 @@ export const updatePostMessage = async (
 
     res.json({message: 'Mensagem atualizada', data: updated});
   } catch (error) {
+    logger.error('Erro em updatePostMessage:', error);
     res.status(500).json({error: (error as Error).message});
   }
 };
@@ -139,6 +145,7 @@ export const deletePostMessage = async (
 
     res.json({message: 'Mensagem deletada'});
   } catch (error) {
+    logger.error('Erro em deletePostMessage:', error);
     res.status(500).json({error: (error as Error).message});
   }
 };
@@ -176,6 +183,7 @@ export const updateDenuncia = async (
 
     res.json({message: 'Denúncia atualizada', data: updated});
   } catch (error) {
+    logger.error('Erro em updateDenuncia:', error);
     res.status(500).json({error: (error as Error).message});
   }
 };
@@ -199,6 +207,7 @@ export const deleteDenuncia = async (
 
     res.json({message: 'Denúncia deletada'});
   } catch (error) {
+    logger.error('Erro em deleteDenuncia:', error);
     res.status(500).json({error: (error as Error).message});
   }
 };

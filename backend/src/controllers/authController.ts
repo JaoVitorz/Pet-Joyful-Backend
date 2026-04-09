@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import type {Response} from 'express';
 import userModel from '../models/userModel.js';
 import type {AuthRequest, IUserDocument} from '../types/index.ts';
+import {logger} from '../logger/logger.js';
 
 export const register = async (
   req: AuthRequest,
@@ -46,7 +47,7 @@ export const register = async (
       },
     });
   } catch (error) {
-    console.error('Erro no registro:', error);
+    logger.error('Erro no registro:', {message: (error as Error).message});
     res.status(500).json({error: (error as Error).message});
   }
 };
@@ -64,22 +65,21 @@ export const login = async (
       return;
     }
 
-    console.log('Tentando login com email:', email);
+    logger.info('Tentativa de login', {email});
     const user = await userModel.findOne({email});
 
     if (!user) {
-      console.log('Usuário não encontrado para o email:', email);
+      logger.info('Login falhou: usuário não encontrado', {email});
       res.status(401).json({error: 'Credenciais inválidas'});
       return;
     }
 
-    console.log('Usuário encontrado:', {email: user.email, tipo: user.tipo});
+    logger.info('Login: usuário encontrado', {email: user.email, tipo: user.tipo});
 
     const senhaCorreta = await user.comparePassword(senha);
-    console.log('Resultado da comparação de senha:', senhaCorreta);
 
     if (!senhaCorreta) {
-      console.log('Senha incorreta para o usuário:', email);
+      logger.info('Login falhou: senha incorreta', {email});
       res.status(401).json({error: 'Credenciais inválidas'});
       return;
     }
@@ -100,7 +100,7 @@ export const login = async (
       },
     });
   } catch (error) {
-    console.error('Erro no login:', error);
+    logger.error('Erro no login:', {message: (error as Error).message});
     res.status(500).json({error: (error as Error).message});
   }
 };
@@ -125,7 +125,7 @@ export const getProfile = async (
 
     res.json({user});
   } catch (error) {
-    console.error('Erro em getProfile:', error);
+    logger.error('Erro em getProfile:', {message: (error as Error).message});
     res.status(500).json({error: (error as Error).message});
   }
 };
@@ -167,13 +167,14 @@ export const updateProfile = async (
       .select('-senha');
 
     if (!user) {
+      logger.error('Usuário não encontrado para o ID:', {userId});
       res.status(404).json({error: 'Usuário não encontrado'});
       return;
     }
 
     res.json({message: 'Perfil atualizado com sucesso', user});
   } catch (error) {
-    console.error('Erro em updateProfile:', error);
+    logger.error('Erro em updateProfile:', {message: (error as Error).message});
     res.status(500).json({error: (error as Error).message});
   }
 };
@@ -198,7 +199,7 @@ export const deleteProfile = async (
 
     res.json({message: 'Conta deletada com sucesso'});
   } catch (error) {
-    console.error('Erro em deleteProfile:', error);
+    logger.error('Erro em deleteProfile:', {message: (error as Error).message});
     res.status(500).json({error: (error as Error).message});
   }
 };

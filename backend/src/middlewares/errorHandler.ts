@@ -1,4 +1,5 @@
-import type {Request, Response, NextFunction} from 'express';
+import type { Request, Response, NextFunction } from 'express';
+import { logger } from '../logger/logger.js';
 
 export interface AppError extends Error {
   status?: number;
@@ -6,11 +7,26 @@ export interface AppError extends Error {
 
 export default function errorHandler(
   err: AppError,
-  _req: Request,
+  req: Request,
   res: Response,
-  _next: NextFunction,
+  next: NextFunction,
 ): void {
-  console.error(err);
+  void next;
+
+  logger.error('Exceção não tratada capturada pelo middleware global', {
+    message: err.message,
+    stack: err.stack,
+    method: req.method,
+    route: req.originalUrl,
+    params: req.params,
+    query: req.query,
+    body: req.body,
+  });
+
   const status = err.status ?? 500;
-  res.status(status).json({error: err.message || 'Internal server error'});
+  res.status(status).json({
+    success: false,
+    message: 'Erro interno no servidor',
+    detail: err.message,
+  });
 }
