@@ -1830,3 +1830,33 @@ Contribuições são bem-vindas! Para contribuir:
 **[⬆ Voltar ao topo](#-pet-joyful---backend-api)**
 
 </div>
+
+## 🐳 Docker
+
+### Pré-requisito
+Ter o [Docker](https://docs.docker.com/get-docker/) instalado.
+
+### Gerar a imagem
+```bash
+docker build -t pet-joyful-backend .
+```
+
+### Rodar o container
+```bash
+docker run -d --name pet-joyful-backend -p 5000:5000 -e MONGO_URI="sua_string_aqui" -e LOGTAIL_TOKEN="seu_token_aqui" -e LOGTAIL_URL="sua_url_aqui" -e GEMINI_API_KEY="sua_chave_aqui" pet-joyful-backend
+```
+
+### Verificar se está rodando
+```bash
+docker ps
+```
+
+### Ver logs
+```bash
+docker logs pet-joyful-backend
+```
+
+### Parar o container
+```bash
+docker stop pet-joyful-backend
+```
