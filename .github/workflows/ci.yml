@@ -19,10 +19,13 @@ jobs:
       - name: Configurar Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '22'
+          node-version: '20'
+
+      - name: limpar cache npm
+        run: npm cache clean --force 
 
       - name: Instalar dependências
-        run: npm install
+        run: npm ci
 
       - name: Rodar build
         run: npm run build
