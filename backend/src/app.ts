@@ -6,6 +6,9 @@ import cors from 'cors';
 //import swaggerUi from 'swagger-ui-express';
 import routes from './routes/index.js';
 import chatRoutes from './routes/chatRoutes.js';
+import { requestLogger } from './middlewares/requestLogger';
+import { logger } from './logger/logger';
+import errorHandler from './middlewares/errorHandler.js';
 
 const app = express();
 
@@ -24,12 +27,15 @@ app.use(
 app.use(express.json());
 
 
+app.use(requestLogger);
+
 app.use('/api/chat', chatRoutes);
 // Rotas principais
 app.use('/api', routes);
 
 // Rota base (teste)
 app.get('/', (_req, res) => {
+  logger.info('Health check');
   res.send('🚀 API Pet Joyful funcionando!');
 });
 
@@ -50,7 +56,7 @@ try {
     (err as Error).message,
   );
 }
-
+app.use(errorHandler);
 //app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 export default app;

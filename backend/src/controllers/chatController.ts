@@ -2,6 +2,7 @@
 
 import {GoogleGenAI} from '@google/genai';
 import type {Request, Response} from 'express';
+import {logger} from '../logger/logger.js';
 
 const SYSTEM_PROMPT = `
 Você é o PetBot, assistente virtual da plataforma Pet Joyful — uma rede social
@@ -42,6 +43,7 @@ export const sendMessage = async (req: Request, res: Response): Promise<Response
   }
 
   if (!apiKey) {
+    logger.error('PetBot: GEMINI_API_KEY não configurada no servidor');
     return res.status(500).json({
       success: false,
       error: 'GEMINI_API_KEY não configurada no servidor.',
@@ -56,12 +58,17 @@ export const sendMessage = async (req: Request, res: Response): Promise<Response
     });
     const reply = response.text ?? 'Não consegui gerar resposta agora.';
 
-    console.log(`📨 [PetBot] Mensagem: "${message.substring(0, 50)}"`);
+    logger.info('PetBot: resposta gerada', {
+      preview: message.substring(0, 50),
+    });
 
     return res.status(200).json({success: true, reply});
   } catch (err: unknown) {
     const error = err as Error;
-    console.error('❌ [PetBot] Erro:', error.message);
+    logger.error('PetBot: erro ao gerar resposta', {
+      message: error.message,
+      stack: error.stack,
+    });
 
     if (error.message?.includes('429'))
       return res.status(429).json({

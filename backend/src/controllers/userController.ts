@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import type {Response} from 'express';
+import {logger} from '../logger/logger.js';
 import User from '../models/userModel.js';
 import type {AuthRequest, JwtPayload} from '../types/index.js';
 
@@ -66,6 +67,7 @@ export const createUser = async (
 
     res.status(201).json({message: 'Usuário criado com sucesso!', user});
   } catch (error) {
+    logger.error('Erro em createUser:', error);
     res.status(500).json({error: (error as Error).message});
   }
 };
@@ -79,6 +81,7 @@ export const getUsers = async (
     const users = await User.find();
     res.json(users);
   } catch (error) {
+    logger.error('Erro em getUsers:', error);
     res.status(500).json({error: (error as Error).message});
   }
 };
@@ -96,6 +99,7 @@ export const getUserById = async (
     }
     res.json(user);
   } catch (error) {
+    logger.error('Erro em getUserById:', error);
     res.status(500).json({error: (error as Error).message});
   }
 };
@@ -145,6 +149,7 @@ export const updateUser = async (
 
     res.json({message: 'Usuário atualizado com sucesso!', user});
   } catch (error) {
+    logger.error('Erro em updateUser:', error);
     res.status(500).json({error: (error as Error).message});
   }
 };
@@ -176,6 +181,7 @@ export const deleteUser = async (
 
     res.json({message: 'Usuário deletado com sucesso!'});
   } catch (error) {
+    logger.error('Erro em deleteUser:', error);
     res.status(500).json({error: (error as Error).message});
   }
 };
