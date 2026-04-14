@@ -1,4 +1,13 @@
 // Importa as funções do controller que serão testadas
+
+jest.mock('../../backend/src/logger/logger', () => ({
+  logger: {
+    info: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+  },
+}));
+
 import { createPostMessage, createDenuncia } from '../../backend/src/controllers/messagesController';
 import type { Response } from 'express';
 import type { AuthRequest } from '../../backend/src/types/index';
