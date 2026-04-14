@@ -1861,3 +1861,102 @@ docker logs pet-joyful-backend
 docker stop pet-joyful-backend
 ```
 trigger actions
+
+
+---
+
+## 📊 Observabilidade — Logs e Alertas (Better Stack)
+
+O backend utiliza **Winston** integrado ao **Better Stack (Logtail)** para centralizar e monitorar os logs da aplicação em tempo real.
+
+---
+
+### 🗂️ Estrutura dos Logs
+
+Os logs são gerados por uma classe utilitária (`logger.ts`) que encapsula o Winston com níveis customizados e envio automático para o Better Stack.
+
+**Níveis de log definidos (ordem de prioridade):**
+
+| Nível   | Uso                                                        |
+|---------|------------------------------------------------------------|
+| `alert` | Situações críticas que exigem atenção imediata             |
+| `error` | Erros de execução (ex: falha de conexão com o banco)       |
+| `warn`  | Avisos que não interrompem o fluxo, mas merecem atenção    |
+| `info`  | Eventos normais do ciclo de vida (requisições, respostas)  |
+| `debug` | Informações detalhadas para desenvolvimento                |
+
+**Formato de cada entrada de log:**
+
+```
+[2026-04-14T14:34:48.066Z] INFO: Requisição recebida
+[2026-04-14T15:57:29.696Z] ERROR: Banco indisponível. API iniciada sem conexão com MongoDB: querySrv ECONNREFUSED _mongodb._tcp.cluster0.hmlyx3e.mongodb.net {"stack": "..."}
+
+```
+
+Cada log contém: **timestamp ISO 8601**, **nível em maiúsculas**, **mensagem** e, quando disponível, **metadados extras em JSON** (como stack trace de erros).
+
+Os transportes configurados são:
+- **Console** — exibição local durante desenvolvimento
+- **LogtailTransport** — envio em tempo real para o Better Stack
+
+---
+
+### 📸 Logs no Better Stack
+
+Visualização dos logs capturados em tempo real na plataforma, com nível (`INFO`, `ERROR`), fonte (`Backend`) e mensagem:
+
+![Logs no Better Stack](docs/images/logs-betterstack.png)
+
+---
+
+### 🔔 Alertas Configurados
+
+Foram configurados **3 alertas automáticos** no Better Stack, todos monitorando a fonte `Backend`:
+
+| # | Condição | Query | Limiar |
+|---|----------|-------|--------|
+| 1 | Respostas lentas | `durationMs > 1000` | `value > 5` ocorrências |
+| 2 | Pico de requisições | `method:GET OR method:POST` | `value > 100` requisições |
+| 3 | Alta taxa de erros | `statusCode:500 OR statusCode:401` | `value > 10` erros |
+
+Todos os alertas utilizam o método de detecção **Threshold** e criam um incidente único ao serem disparados.
+
+![Painel de alertas configurados](docs/images/alertas-configurados.png)
+
+#### Detalhe — Alerta de Respostas Lentas
+Disparado quando mais de 5 requisições com duração superior a 1000ms são detectadas na fonte Backend.
+
+![Configuração do alerta de respostas lentas](docs/images/alerta-duracao.png)
+
+#### Detalhe — Alerta de Pico de Requisições
+Disparado quando o volume de requisições GET ou POST ultrapassa 100 no intervalo monitorado.
+
+![Configuração do alerta de pico de requisições](docs/images/alerta-requisicoes.png)
+
+#### Detalhe — Alerta de Alta Taxa de Erros
+Disparado quando mais de 10 respostas com status 500 ou 401 são registradas.
+
+![Configuração do alerta de erros](docs/images/alerta-erros.png)
+
+---
+
+### 📧 Alertas Recebidos por E-mail
+
+Os alertas foram efetivamente disparados e recebidos por e-mail ao atingir os limiares configurados.
+
+#### Incidente — Alta Taxa de Erros (Value > 10, valor atingido: 15)
+Disparado em **13 de abril de 2026 às 19h57 GMT-5** com 15 ocorrências de status 500/401.
+
+![E-mail de alerta de erros — parte 1](docs/images/email-alerta-3.png)
+![E-mail de alerta de erros — parte 2](docs/images/email-alerta-3b.png)
+
+#### Incidente — Pico de Requisições (Value > 100, valor atingido: 240)
+Disparado em **13 de abril de 2026 às 20h15 GMT-5** com 240 requisições GET/POST registradas.
+
+![E-mail de alerta de pico — parte 1](docs/images/email-alerta-2.png)
+![E-mail de alerta de pico — parte 2 (gráfico)](docs/images/email-alerta-2b.png)
+
+#### Incidente — Alta Taxa de Erros (Value > 10, valor atingido: 120)
+Disparado em **13 de abril de 2026 às 20h15 GMT-5** com 120 ocorrências de status 500/401.
+
+![E-mail de alerta de erros críticos](docs/images/email-alerta-1.png)
