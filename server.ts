@@ -5,8 +5,11 @@ import bcrypt from 'bcryptjs';
 import userModel from './backend/src/models/userModel.js';
 import type {Request, Response} from 'express';
 import { logger } from './backend/src/logger/logger.js';
+import { requestLogger } from './backend/src/middlewares/requestLogger.js';
 
 const PORT = process.env.PORT || 5000;
+
+app.use(requestLogger)
 
 process.on('uncaughtException', (error) => {
   logger.error('uncaughtException capturada', {

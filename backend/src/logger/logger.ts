@@ -21,7 +21,7 @@ const baseLogger = winston.createLogger({
   level: 'debug',
   format: winston.format.combine(
     winston.format.timestamp(),
-    winston.format.printf(({ level, message, timestamp, ...rest }) => {
+    winston.format.json(({ level, message, timestamp, ...rest }) => {
       const meta = Object.keys(rest).length ? JSON.stringify(rest) : '';
       return `[${timestamp}] ${level.toUpperCase()}: ${message} ${meta}`;
     }),

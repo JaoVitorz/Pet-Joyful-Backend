@@ -29,6 +29,24 @@ app.use(express.json());
 
 app.use(requestLogger);
 
+// Rota protegida de exemplo
+app.get('/api/protected', (req, res) => {
+  // Simula acesso negado
+  res.status(401).json({
+    error: 'Acesso não autorizado. Token inválido ou ausente.'
+  });
+});
+
+app.get('/api/slow', async (_req, res) => {
+  await new Promise(resolve => setTimeout(resolve, 2000)); // espera 2 segundos
+  res.json({ message: 'Resposta lenta' });
+});
+
+app.get('/api/fail', (_req, _res) => {
+  // Simula um erro interno
+  throw new Error('Erro forçado para teste');
+});
+
 app.use('/api/chat', chatRoutes);
 // Rotas principais
 app.use('/api', routes);

@@ -17,6 +17,8 @@ export function requestLogger(req: Request, res: Response, next: NextFunction) {
     userAgent: req.get('user-agent'),
   });
 
+
+  
   res.on('finish', () => {
     const durationMs = Date.now() - startTime;
     logger.info('Resposta enviada', {
