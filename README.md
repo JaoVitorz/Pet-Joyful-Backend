@@ -1905,7 +1905,7 @@ Os transportes configurados são:
 
 Visualização dos logs capturados em tempo real na plataforma, com nível (`INFO`, `ERROR`), fonte (`Backend`) e mensagem:
 
-![Logs no Better Stack](docs/images/logs-betterstack.png)
+![Logs no Better Stack](docs/images/logs-betterstack.webp)
 
 ---
 
@@ -1921,22 +1921,22 @@ Foram configurados **3 alertas automáticos** no Better Stack, todos monitorando
 
 Todos os alertas utilizam o método de detecção **Threshold** e criam um incidente único ao serem disparados.
 
-![Painel de alertas configurados](docs/images/alertas-configurados.png)
+![Painel de alertas configurados](docs/images/alertas-configurados.webp)
 
 #### Detalhe — Alerta de Respostas Lentas
 Disparado quando mais de 5 requisições com duração superior a 1000ms são detectadas na fonte Backend.
 
-![Configuração do alerta de respostas lentas](docs/images/alerta-duracao.png)
+![Configuração do alerta de respostas lentas](docs/images/alerta-duracao.webp)
 
 #### Detalhe — Alerta de Pico de Requisições
 Disparado quando o volume de requisições GET ou POST ultrapassa 100 no intervalo monitorado.
 
-![Configuração do alerta de pico de requisições](docs/images/alerta-requisicoes.png)
+![Configuração do alerta de pico de requisições](docs/images/alerta-requisicoes.webp)
 
 #### Detalhe — Alerta de Alta Taxa de Erros
 Disparado quando mais de 10 respostas com status 500 ou 401 são registradas.
 
-![Configuração do alerta de erros](docs/images/alerta-erros.png)
+![Configuração do alerta de erros](docs/images/alerta-erros.webp)
 
 ---
 
@@ -1947,16 +1947,16 @@ Os alertas foram efetivamente disparados e recebidos por e-mail ao atingir os li
 #### Incidente — Alta Taxa de Erros (Value > 10, valor atingido: 15)
 Disparado em **13 de abril de 2026 às 19h57 GMT-5** com 15 ocorrências de status 500/401.
 
-![E-mail de alerta de erros — parte 1](docs/images/email-alerta-3.png)
-![E-mail de alerta de erros — parte 2](docs/images/email-alerta-3b.png)
+![E-mail de alerta de erros — parte 1](docs/images/email-alerta-3.webp)
+![E-mail de alerta de erros — parte 2](docs/images/email-alerta-3b.webp)
 
 #### Incidente — Pico de Requisições (Value > 100, valor atingido: 240)
 Disparado em **13 de abril de 2026 às 20h15 GMT-5** com 240 requisições GET/POST registradas.
 
-![E-mail de alerta de pico — parte 1](docs/images/email-alerta-2.png)
-![E-mail de alerta de pico — parte 2 (gráfico)](docs/images/email-alerta-2b.png)
+![E-mail de alerta de pico — parte 1](docs/images/email-alerta-2.webp)
+![E-mail de alerta de pico — parte 2 (gráfico)](docs/images/email-alerta-2b.webp)
 
 #### Incidente — Alta Taxa de Erros (Value > 10, valor atingido: 120)
 Disparado em **13 de abril de 2026 às 20h15 GMT-5** com 120 ocorrências de status 500/401.
 
-![E-mail de alerta de erros críticos](docs/images/email-alerta-1.png)
+![E-mail de alerta de erros críticos](docs/images/email-alerta-1.webp)
