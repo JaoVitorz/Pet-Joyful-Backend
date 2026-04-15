@@ -1815,21 +1815,7 @@ Contribuições são bem-vindas! Para contribuir:
 
 ---
 
-<div align="center">
 
-## 🐾 Conectando Corações e Patas
-
-**Pet-Joyful** - Promovendo adoção responsável e cuidados com animais através da tecnologia.
-
-**Desenvolvido com ❤️ pela Equipe Pet Joyful - Fatec São Paulo**
-
-⭐ Se este projeto foi útil, considere dar uma estrela!
-
----
-
-**[⬆ Voltar ao topo](#-pet-joyful---backend-api)**
-
-</div>
 
 ## 🐳 Docker
 
@@ -1960,3 +1946,20 @@ Disparado em **13 de abril de 2026 às 20h15 GMT-5** com 240 requisições GET/P
 Disparado em **13 de abril de 2026 às 20h15 GMT-5** com 120 ocorrências de status 500/401.
 
 ![E-mail de alerta de erros críticos](docs/images/email-alerta-1.webp)
+
+
+<div align="center">
+
+## 🐾 Conectando Corações e Patas
+
+**Pet-Joyful** - Promovendo adoção responsável e cuidados com animais através da tecnologia.
+
+**Desenvolvido com ❤️ pela Equipe Pet Joyful - Fatec São Paulo**
+
+⭐ Se este projeto foi útil, considere dar uma estrela!
+
+---
+
+**[⬆ Voltar ao topo](#-pet-joyful---backend-api)**
+
+</div>
