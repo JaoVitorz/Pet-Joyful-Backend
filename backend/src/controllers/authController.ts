@@ -10,7 +10,7 @@ export const register = async (
   res: Response,
 ): Promise<void> => {
   try {
-    // Aceita ambos os formatos: português (nome, senha, tipo) e inglês (name, password, type)
+    // Aceita ambos os formatos: português (nome, senha, tipo) e inglês (name, password, type )
     const nome = (req.body.nome || req.body.name) as string;
     const email = req.body.email as string;
     const senha = (req.body.senha || req.body.password) as string;
