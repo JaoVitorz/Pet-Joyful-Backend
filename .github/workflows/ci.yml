@@ -160,7 +160,7 @@ jobs:
             }'
 
       - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@mv2
+        uses: SonarSource/sonarcloud-github-action@v2
         with:
           projectBaseDir: .
         env: 
