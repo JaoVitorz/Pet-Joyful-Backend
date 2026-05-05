@@ -85,6 +85,13 @@ jobs:
           git push origin HEAD:main
           git push origin $NEW_VERSION
 
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v2
+        with:
+          projectBaseDir: .
+        env: 
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}         
+
       # PARTE 3 - Notificação por e-mail
       - name: Enviar e-mail em caso de falha
         if: failure()
@@ -159,12 +166,7 @@ jobs:
               }]
             }'
 
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@v2
-        with:
-          projectBaseDir: .
-        env: 
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}                
+            
 
   docker-build:
     name: Build da imagem Docker
