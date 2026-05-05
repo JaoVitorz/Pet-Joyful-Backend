@@ -237,3 +237,11 @@ jobs:
           echo "Fazendo push da imagem Docker para o Docker Hub ***/${REPO_NAME}:${NEW_VERSION}"
           docker push ${REPO_NAME}:${NEW_VERSION}
           docker push ${REPO_NAME}:latest
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@mv2
+        with:
+        projectBaseDir: .
+        env: 
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        
