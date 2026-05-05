@@ -1,12 +1,11 @@
 import mongoose from 'mongoose';
+import 'dotenv/config';
 
 const connectDB = async (): Promise<void> => {
-  const mongoURL =
-    process.env.MONGO_URI ||
-    'mongodb+srv://joaojesus:oULyKDlXfS0Stg4M@cluster0.hmlyx3e.mongodb.net/?appName=Cluster0';
+  const mongoURL = process.env.MONGO_URI;
 
-  if (!mongoURL.startsWith('mongodb')) {
-    throw new Error(`MONGO_URI inválida: ${mongoURL}`);
+  if (!mongoURL) {
+    throw new Error('MONGO_URI não definida');
   }
 
   await mongoose.connect(mongoURL);
