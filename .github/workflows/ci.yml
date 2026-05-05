@@ -159,6 +159,13 @@ jobs:
               }]
             }'
 
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@mv2
+        with:
+          projectBaseDir: .
+        env: 
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}                
+
   docker-build:
     name: Build da imagem Docker
     runs-on: ubuntu-latest
@@ -238,10 +245,5 @@ jobs:
           docker push ${REPO_NAME}:${NEW_VERSION}
           docker push ${REPO_NAME}:latest
 
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@mv2
-        with:
-          projectBaseDir: .
-        env: 
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      
         
