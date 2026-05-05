@@ -17,7 +17,7 @@ app.use(
   cors({
     origin: [
       'https://pet-joyful-backend-1.onrender.com',
-      'http://localhost:5000',
+      'http://localhost:3000',
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
