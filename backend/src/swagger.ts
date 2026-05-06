@@ -81,13 +81,13 @@ const doc = {
   ],
 };
 
-const outputFile = './src/config/swagger-output.json';
+const outputFile = './backend/src/config/swagger-output.json';
 
 const endpointsFiles = [
-  './src/routes/index.ts',
-  './src/routes/userRoutes.ts',
-  './src/routes/messagesRoutes.ts',
-  './src/routes/authRoutes.ts',
+  './backend/src/routes/index.ts',
+  './backend/src/routes/userRoutes.ts',
+  './backend/src/routes/messagesRoutes.ts',
+  './backend/src/routes/authRoutes.ts',
 ];
 
 void swaggerAutogen({openapi: '3.0.0'})(outputFile, endpointsFiles, doc);
