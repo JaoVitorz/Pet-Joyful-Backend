@@ -1,9 +1,9 @@
 import express from 'express';
 import cors from 'cors';
-//import path from 'path';
-//import {fileURLToPath} from 'url';
-//import fs from 'fs';
-//import swaggerUi from 'swagger-ui-express';
+import path from 'path';
+import {fileURLToPath} from 'url';
+import fs from 'fs';
+import swaggerUi from 'swagger-ui-express';
 import routes from './routes/index.js';
 import chatRoutes from './routes/chatRoutes.js';
 import { requestLogger } from './middlewares/requestLogger';
@@ -58,15 +58,15 @@ app.get('/', (_req, res) => {
 });
 
 // Swagger
-//const __filename = fileURLToPath(import.meta.url);
-//const __dirname = path.dirname(__filename);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-//let swaggerDocument: object = {};
+let swaggerDocument: object = {};
 
 try {
-  // const swaggerPath = path.join(__dirname, 'config', 'swagger-output.json');
-  // const swaggerData = fs.readFileSync(swaggerPath, 'utf8');
-  // swaggerDocument = JSON.parse(swaggerData) as object;
+   const swaggerPath = path.join(__dirname, 'config', 'swagger-output.json');
+   const swaggerData = fs.readFileSync(swaggerPath, 'utf8');
+   swaggerDocument = JSON.parse(swaggerData) as object;
   console.log('✅ Swagger carregado com sucesso!');
 } catch (err) {
   console.error(
@@ -75,6 +75,6 @@ try {
   );
 }
 app.use(errorHandler);
-//app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 export default app;
