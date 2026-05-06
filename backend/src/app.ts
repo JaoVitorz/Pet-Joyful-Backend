@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
-import {fileURLToPath} from 'url';
+//import {fileURLToPath} from 'url';
 import fs from 'fs';
 import swaggerUi from 'swagger-ui-express';
 import routes from './routes/index.js';
@@ -42,11 +42,11 @@ app.get('/api/slow', async (_req, res) => {
   res.json({ message: 'Resposta lenta' });
 });
 
-app.get('/api/fail', (_req, _res) => {
+/*app.get('/api/fail', (_req, _res) => {
   // Simula um erro interno
   throw new Error('Erro forçado para teste');
 });
-
+*/
 app.use('/api/chat', chatRoutes);
 // Rotas principais
 app.use('/api', routes);
@@ -58,8 +58,7 @@ app.get('/', (_req, res) => {
 });
 
 // Swagger
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = process.cwd();
 
 let swaggerDocument: object = {};
 
