@@ -6,8 +6,8 @@ import fs from 'fs';
 import swaggerUi from 'swagger-ui-express';
 import routes from './routes/index.js';
 import chatRoutes from './routes/chatRoutes.js';
-import { requestLogger } from './middlewares/requestLogger';
-import { logger } from './logger/logger';
+import { requestLogger } from './middlewares/requestLogger.js';
+import { logger } from './logger/logger.js';
 import errorHandler from './middlewares/errorHandler.js';
 
 const app = express();

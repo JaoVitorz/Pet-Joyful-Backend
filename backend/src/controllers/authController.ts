@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import type {Response} from 'express';
 import userModel from '../models/userModel.js';
-import type {AuthRequest, IUserDocument} from '../types/index.ts';
+import type {AuthRequest, IUserDocument} from '../types/index.js';
 import {logger} from '../logger/logger.js';
 
 export const register = async (
