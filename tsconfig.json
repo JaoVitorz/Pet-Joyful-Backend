@@ -2,10 +2,10 @@
   "extends": "@tsconfig/node24/tsconfig.json",
   "compilerOptions": {
     "types": ["node", "jest"],
-    "module": "nodenext",
+    "module": "esnext",
     "outDir": "./dist",
     "rootDir": ".",
-    "moduleResolution": "nodenext",
+    "moduleResolution": "bundler",
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "allowJs": false,
