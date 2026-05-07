@@ -2040,9 +2040,15 @@ MONGO_DB_NAME=PETJOYFUL-DB
 PORT=5000
 NODE_ENV=production
 JWT_SECRET=sua_chave_jwt_super_segura
+GEMINI_API_KEY=sua_chave_gemini
 
 # Observabilidade (Better Stack / Logtail)
 LOGTAIL_TOKEN=seu_token_logtail
+LOGTAIL_URL=sua_url_logtail
+
+# Frontend (opcional)
+# Se não informar, o Docker Compose usa ./frontend
+FRONTEND_CONTEXT=./frontend
 
 # Admin
 ADMIN_KEY=sua_admin_key
@@ -2062,7 +2068,15 @@ docker compose up --build mongodb backend
 
 ### Projeto completo (Backend + MongoDB + Frontend)
 
-> O frontend deve estar clonado em `../Pet-Joyful-Frontend` (pasta irmã do backend).
+> O `docker-compose.yml` usa `FRONTEND_CONTEXT` com fallback para `./frontend`.
+> Clone o frontend nesse caminho padrão para funcionar em qualquer máquina:
+
+```bash
+git clone https://github.com/JaoVitorz/Pet-Joyful---Projeto-Integrador--NextJs.git frontend
+```
+
+> Se preferir manter o frontend em outra pasta local, ajuste no `.env`:
+> `FRONTEND_CONTEXT=../sua-pasta-frontend`
 
 ```bash
 docker compose up --build
@@ -2133,6 +2147,13 @@ docker system prune -a --volumes
 O `dotenv` precisa estar nas `dependencies` (não `devDependencies`) do `package.json`:
 ```bash
 npm install dotenv --save
+```
+
+### Erro: o build do backend tenta compilar arquivos do frontend
+Se o frontend estiver clonado dentro do repositório backend, o `tsconfig.json` do backend deve excluir a pasta `frontend`.
+Verifique se existe:
+```json
+"exclude": ["dist", "node_modules", "frontend"]
 ```
 
 ### Erro: `connection refused` no MongoDB
