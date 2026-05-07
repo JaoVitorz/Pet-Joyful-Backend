@@ -2003,6 +2003,168 @@ O projeto está integrado ao **SonarCloud** para análise estática contínua de
 > O Quality Gate falhou principalmente devido ao alto índice de duplicações (33.7%).
 > A análise cobre aproximadamente **10k linhas de código** entre HTML, TypeScript e JavaScript.
 
+# 🐳 Rodando com Docker
+
+Este guia explica como executar o projeto **Pet Joyful Backend** usando Docker e Docker Compose, sem precisar instalar Node.js ou MongoDB diretamente na sua máquina.
+
+---
+
+## 📋 Pré-requisitos
+
+- **Docker Engine** 24+ instalado
+- **Docker Compose** plugin instalado
+- Arquivo `.env` configurado na raiz do projeto (veja a seção de variáveis de ambiente)
+
+> **No Windows:** recomendamos usar o Docker Engine diretamente no **WSL2 (Ubuntu)**, sem Docker Desktop.
+> Para instalar o Docker Engine no WSL2:
+> ```bash
+> sudo apt update && sudo apt install -y docker.io docker-compose-plugin
+> sudo service docker start
+> sudo usermod -aG docker $USER
+> ```
+> Feche e abra o terminal novamente após esses comandos.
+
+---
+
+## ⚙️ Configurando as variáveis de ambiente
+
+Crie um arquivo `.env` na raiz do projeto com as seguintes variáveis:
+
+```env
+# MongoDB
+MONGO_ROOT_USER=admin
+MONGO_ROOT_PASSWORD=sua_senha_segura
+MONGO_DB_NAME=PETJOYFUL-DB
+
+# Aplicação
+PORT=5000
+NODE_ENV=production
+JWT_SECRET=sua_chave_jwt_super_segura
+
+# Observabilidade (Better Stack / Logtail)
+LOGTAIL_TOKEN=seu_token_logtail
+
+# Admin
+ADMIN_KEY=sua_admin_key
+```
+
+> ⚠️ **Nunca commite o `.env` no Git.** Ele já está no `.gitignore`.
+
+---
+
+## 🚀 Subindo os containers
+
+### Apenas o Backend + MongoDB (recomendado para desenvolvimento)
+
+```bash
+docker compose up --build mongodb backend
+```
+
+### Projeto completo (Backend + MongoDB + Frontend)
+
+> O frontend deve estar clonado em `../Pet-Joyful-Frontend` (pasta irmã do backend).
+
+```bash
+docker compose up --build
+```
+
+### Em segundo plano (modo detached)
+
+```bash
+docker compose up --build -d
+```
+
+---
+
+## 🌐 Acessando os serviços
+
+| Serviço | URL |
+|---|---|
+| Backend API | http://localhost:5000 |
+| Documentação Swagger | http://localhost:5000/api-docs |
+| MongoDB | localhost:27017 |
+| Frontend | http://localhost:3000 |
+
+---
+
+## 🔍 Verificando se está funcionando
+
+```bash
+curl http://localhost:5000
+# Resposta esperada: 🚀 API Pet Joyful funcionando!
+```
+
+---
+
+## 📋 Comandos úteis
+
+```bash
+# Ver logs dos containers em tempo real
+docker compose logs -f
+
+# Ver logs de um serviço específico
+docker compose logs -f backend
+docker compose logs -f mongodb
+
+# Parar os containers
+docker compose down
+
+# Parar e remover volumes (apaga os dados do MongoDB)
+docker compose down -v
+
+# Reconstruir sem cache
+docker compose build --no-cache
+
+# Ver containers rodando
+docker ps
+```
+
+---
+
+## 🐛 Troubleshooting
+
+### Erro: `input/output error`
+O disco virtual do Docker está cheio. Libere espaço:
+```bash
+docker system prune -a --volumes
+```
+
+### Erro: `Cannot find module 'dotenv'`
+O `dotenv` precisa estar nas `dependencies` (não `devDependencies`) do `package.json`:
+```bash
+npm install dotenv --save
+```
+
+### Erro: `connection refused` no MongoDB
+Aguarde o healthcheck do MongoDB terminar. O backend só sobe após o MongoDB estar `healthy`.
+Verifique com:
+```bash
+docker compose ps
+```
+
+### Erro: `exports is not defined in ES module scope`
+Conflito entre CommonJS e ES Modules. Verifique se o `tsconfig.json` usa `"module": "commonjs"` e que não há `"type": "module"` no `package.json`.
+
+### Backend não conecta ao MongoDB
+Verifique se a `MONGO_URI` no `docker-compose.yml` usa o nome do serviço como host:
+```
+mongodb://admin:senha@mongodb:27017/PETJOYFUL-DB?authSource=admin
+```
+O host deve ser `mongodb` (nome do serviço no compose), não `localhost`.
+
+---
+
+## 🏗️ Estrutura dos containers
+
+```
+pet-joyful-network
+├── pet-joyful-db        (MongoDB 7)      → porta 27017
+├── pet-joyful-backend   (Node.js 20)     → porta 5000
+└── pet-joyful-frontend  (Next.js)        → porta 3000
+```
+
+Os serviços se comunicam internamente pela rede `pet-joyful-network`. O backend conecta ao MongoDB usando o hostname `mongodb` (nome do serviço), não `localhost`.
+
 <div align="center">
 
 ## 🐾 Conectando Corações e Patas
