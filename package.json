@@ -1,11 +1,9 @@
 {
   "name": "pet-joyful-backend",
-  "version": "1.4.10",
+  "version": "1.4.11",
   "description": "Backend em microsserviços para o projeto Pet Joyful (Java + Node.js + Express)",
-  
   "main": "dist/server.js",
   "scripts": {
-    
     "dev": "nodemon --watch backend/src --watch server.ts --exec tsx ./server.ts",
     "build": "tsc --build",
     "postbuild": "copyfiles -u 2 backend/src/swagger-output.json dist/backend/src/config",
