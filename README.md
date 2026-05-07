@@ -1948,6 +1948,61 @@ Disparado em **13 de abril de 2026 às 20h15 GMT-5** com 120 ocorrências de sta
 ![E-mail de alerta de erros críticos](docs/images/email-alerta-1.webp)
 
 
+## 🐳 Docker Hub
+
+As imagens Docker do projeto são publicadas automaticamente no Docker Hub via GitHub Actions a cada push na branch `main`.
+
+### Repositórios
+
+| Serviço   | Imagem                                  | Link |
+|-----------|-----------------------------------------|------|
+| Backend   | `joaovitorjesus/pet-joyful-backend`     | [Docker Hub](https://hub.docker.com/r/joaovitorjesus/pet-joyful-backend) |
+| Frontend  | `joaovitorjesus/pet-joyful-frontend`    | [Docker Hub](https://hub.docker.com/r/joaovitorjesus/pet-joyful-frontend) |
+
+### Tags disponíveis (Backend)
+
+| Tag      | Descrição              |
+|----------|------------------------|
+| `latest` | Versão mais recente    |
+| `v1.4.0` | Release estável atual  |
+| `v1.3.0` | Release anterior       |
+| `v1.2.0` | Release anterior       |
+
+### Como baixar e executar a imagem
+
+```bash
+# Baixar a imagem mais recente
+docker pull joaovitorjesus/pet-joyful-backend:latest
+
+# Executar o container
+docker run -p 3000:3000 \
+  -e MONGO_URI=sua_uri \
+  -e JWT_SECRET=seu_secret \
+  joaovitorjesus/pet-joyful-backend:latest
+```
+
+---
+
+## 🔍 Qualidade de Código – SonarCloud
+
+O projeto está integrado ao **SonarCloud** para análise estática contínua de qualidade de código, executada automaticamente pelo pipeline do GitHub Actions.
+
+🔗 [Ver análise no SonarCloud](https://sonarcloud.io/project/overview?id=JaoVitorz_Pet-Joyful-Backend)
+
+### Métricas atuais
+
+| Métrica          | Resultado |
+|------------------|-----------|
+| Security         | A         |
+| Reliability      | C (1.4k)  |
+| Maintainability  | A (2.8k)  |
+| Duplications     | 33.7%     |
+| Hotspots Reviewed| 0.0%      |
+| Quality Gate     | ❌ Failed  |
+
+> O Quality Gate falhou principalmente devido ao alto índice de duplicações (33.7%).
+> A análise cobre aproximadamente **10k linhas de código** entre HTML, TypeScript e JavaScript.
+
 <div align="center">
 
 ## 🐾 Conectando Corações e Patas

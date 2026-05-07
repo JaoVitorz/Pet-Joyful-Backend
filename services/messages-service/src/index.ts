@@ -1,7 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
-import { fileURLToPath } from 'url';
+//import { fileURLToPath } from 'url';
 
 import connectDB from './database/connection.js';
 import messagesRoutes from './routes/messagesRoutes.js';
@@ -12,7 +12,7 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+// const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const uploadsPath = path.join(__dirname, '..', 'uploads');
 
 // serve uploaded files

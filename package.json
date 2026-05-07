@@ -3,8 +3,9 @@
   "version": "1.4.2",
   "description": "Backend em microsserviços para o projeto Pet Joyful (Java + Node.js + Express)",
   "main": "dist/server.js",
+   "type": "module",
   "scripts": {
-    "type": "module",
+   
     "dev": "nodemon --watch backend/src --watch server.ts --exec tsx ./server.ts",
     "build": "tsc --build",
     "postbuild": "copyfiles -u 2 backend/src/swagger-output.json dist/backend/src/config",
@@ -20,6 +21,7 @@
     "test:coverage": "jest --coverage"
   },
   "dependencies": {
+     "dotenv": "^17.4.2",
     "@google/genai": "^1.47.0",
     "@google/generative-ai": "^0.24.1",
     "@logtail/node": "^0.5.8",
@@ -50,7 +52,7 @@
     "@types/swagger-ui-express": "^4.1.6",
     "@types/winston": "^2.4.4",
     "copyfiles": "^2.4.1",
-    "dotenv": "^17.4.2",
+   
     "eslint": "^9.0.0",
     "eslint-plugin-perfectionist": "^4.0.0",
     "jest": "^29.7.0",

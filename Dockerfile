@@ -20,7 +20,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # 👇 mais moderno que --only=production
-RUN npm ci --omit=dev
+RUN npm install --omit=dev --no-audit --no-fund
 
 COPY --from=builder /app/dist ./dist
 

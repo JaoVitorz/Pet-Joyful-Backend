@@ -43,7 +43,7 @@ services:
   frontend:
     container_name: pet-joyful-frontend
     build:
-      context: ../Pet-Joyful-Frontend
+      context: /mnt/c/Users/João/OneDrive/Área de Trabalho/frontend-pet/Pet-Joyful---Projeto-Integrador--NextJs
       dockerfile: Dockerfile
     restart: unless-stopped
     ports:

@@ -1,25 +1,25 @@
 import { Router } from 'express';
 import multer from 'multer';
 import path from 'path';
-import { fileURLToPath } from 'url';
+//import { fileURLToPath } from 'url';
 import { createPost } from '../controllers/postsController.js';
 
 const router = Router();
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+//const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const uploadsDir = path.join(__dirname, '..', 'uploads');
 
 const storage = multer.diskStorage({
   destination: function (
     _req: Express.Request,
-    _file: any,
+    _file: Express.Multer.File,
     cb: (error: Error | null, destination: string) => void,
   ) {
     cb(null, uploadsDir);
   },
   filename: function (
     _req: Express.Request,
-    file: any,
+    file: Express.Multer.File,
     cb: (error: Error | null, filename: string) => void,
   ) {
     const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);

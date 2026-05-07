@@ -2,10 +2,10 @@
   "extends": "@tsconfig/node24/tsconfig.json",
   "compilerOptions": {
     "types": ["node", "jest"],
-    "module": "nodenext",
+    "module": "commonjs",
     "outDir": "./dist",
     "rootDir": ".",
-    "moduleResolution": "nodenext",
+    "moduleResolution": "node",
     "esModuleInterop": true,
     "resolveJsonModule": true,
      "target": "ES2020",
