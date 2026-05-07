@@ -12,5 +12,5 @@
     "skipLibCheck": true
   },
   "include": ["**/*.ts", "**/*.d.ts", "backend/src/app.ts"],
-  "exclude": ["dist", "node_modules", "services/gateway-service", "services/messages-service"]
+  "exclude": ["dist", "node_modules"]
 }
