@@ -12,5 +12,5 @@
     "skipLibCheck": true
   },
   "include": ["**/*.ts", "**/*.d.ts", "backend/src/app.ts"],
-  "exclude": ["dist", "node_modules"]
+  "exclude": ["dist", "node_modules", "frontend"]
 }

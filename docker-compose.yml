@@ -32,8 +32,10 @@ services:
     environment:
       NODE_ENV: production
       PORT: 5000
-      MONGO_URI: mongodb://admin:123456@mongodb:27017/PETJOYFUL-DB?authSource=admin
+      MONGO_URI: mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongodb:27017/${MONGO_DB_NAME}?authSource=admin
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
       LOGTAIL_TOKEN: ${LOGTAIL_TOKEN}
+      LOGTAIL_URL: ${LOGTAIL_URL}
     depends_on:
       mongodb:
         condition: service_healthy
@@ -43,7 +45,7 @@ services:
   frontend:
     container_name: pet-joyful-frontend
     build:
-      context: /mnt/c/Users/João/OneDrive/Área de Trabalho/frontend-pet/Pet-Joyful---Projeto-Integrador--NextJs
+      context: ${FRONTEND_CONTEXT:-./frontend}
       dockerfile: Dockerfile
     restart: unless-stopped
     ports:

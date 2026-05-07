@@ -2,9 +2,19 @@ import winston from 'winston';
 import { Logtail } from '@logtail/node';
 import { LogtailTransport } from '@logtail/winston';
 
-const logtail = new Logtail(process.env.LOGTAIL_TOKEN!, {
-  endpoint: process.env.LOGTAIL_URL,
-});
+const logtailToken = process.env.LOGTAIL_TOKEN;
+const logtailUrl = process.env.LOGTAIL_URL;
+
+function buildTransports(): winston.transport[] {
+  const transports: winston.transport[] = [new winston.transports.Console()];
+
+  if (logtailToken && logtailUrl) {
+    const logtail = new Logtail(logtailToken, {endpoint: logtailUrl});
+    transports.push(new LogtailTransport(logtail));
+  }
+
+  return transports;
+}
 
 const customLevels = {
   levels: {
@@ -26,10 +36,7 @@ const baseLogger = winston.createLogger({
       return `[${timestamp}] ${level.toUpperCase()}: ${message} ${meta}`;
     }),
   ),
-  transports: [
-    new winston.transports.Console(),
-    new LogtailTransport(logtail),
-  ],
+  transports: buildTransports(),
 });
 
 /** Normaliza o 2º argumento (objeto, Error ou valor vindo de catch) para o Winston. */
