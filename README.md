@@ -1994,14 +1994,14 @@ O projeto está integrado ao **SonarCloud** para análise estática contínua de
 | Métrica          | Resultado |
 |------------------|-----------|
 | Security         | A         |
-| Reliability      | C (1.4k)  |
-| Maintainability  | A (2.8k)  |
-| Duplications     | 33.7%     |
+| Reliability      | C (1.386) |
+| Maintainability  | A (2.762) |
+| Duplications     | 32.3%     |
 | Hotspots Reviewed| 0.0%      |
-| Quality Gate     | ❌ Failed  |
+| Quality Gate     | ✅ Passed |
 
-> O Quality Gate falhou principalmente devido ao alto índice de duplicações (33.7%).
-> A análise cobre aproximadamente **10k linhas de código** entre HTML, TypeScript e JavaScript.
+> Última análise: **07/05/2026 às 18:29**, com aproximadamente **11k linhas de código**.
+> Snapshot atual: **0 security issues**, **2.784 open issues** e **cobertura sem dados exibidos**.
 
 # 🐳 Rodando com Docker
 
