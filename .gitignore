@@ -4,6 +4,9 @@ node_modules/
 # Environment variables
 .env
 
+frontend/node_modules/
+frontend/dist/
+
 # Logs
 logs/
 *.log
