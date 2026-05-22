@@ -168,80 +168,7 @@ jobs:
               }]
             }'
 
-  docker-build:
-    name: Build da imagem Docker
-    runs-on: ubuntu-latest
-    needs: [version]
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Instalar semver
-        run: npm install -g semver
-
-      - name: Criar nova tag caso não exista
-        run: |
-          if [ -z "$(git tag)" ]; then
-            git tag v0.0.1
-            git push origin v0.0.1
-          fi
-
-      # Versão já calculada no job `version` (usar needs.version.outputs.version_number)
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login DockerHub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Definir o nome do repositório
-        id: repo
-        run: |
-          REPO_NAME="${{ secrets.DOCKERHUB_USERNAME }}/pet-joyful-backend"
-          echo "repo_name=${REPO_NAME}" >> $GITHUB_OUTPUT
-
-      - name: Verificar e criar repositório no Docker Hub (se necessário)
-        run: |
-          REPO="${{ steps.repo.outputs.repo_name }}"
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-            -H "Authorization: Bearer ${{ secrets.DOCKER_PASSWORD }}" \
-            "https://hub.docker.com/v2/repositories/${REPO}/")
-
-          if [ "$STATUS" = "404" ]; then
-            echo "Repositório não encontrado. Criando..."
-            curl -s -X POST \
-              -H "Content-Type: application/json" \
-              -H "Authorization: Bearer ${{ secrets.DOCKER_PASSWORD }}" \
-              -d "{\"name\":\"pet-joyful-backend\",\"namespace\":\"${{ secrets.DOCKERHUB_USERNAME }}\",\"is_private\":false}" \
-              "https://hub.docker.com/v2/repositories/"
-            echo "Repositório criado."
-          else
-            echo "Repositório já existe. Seguindo..."
-          fi
-
-      - name: Criar imagem docker (tag com versão)
-        run: |
-          NEW_VERSION=${{ needs.version.outputs.version_number }}
-          REPO_NAME=${{ steps.repo.outputs.repo_name }}
-          IMAGE_TAG=${REPO_NAME}:${NEW_VERSION}
-          docker build --tag ${IMAGE_TAG} --tag ${REPO_NAME}:latest .
-
-      - name: Efetuar push da imagem (versão)
-        run: |
-          NEW_VERSION=${{ needs.version.outputs.version_number }}
-          REPO_NAME=${{ steps.repo.outputs.repo_name }}
-          IMAGE_TAG=${REPO_NAME}:${NEW_VERSION}
-          echo "Fazendo push da imagem Docker: ${IMAGE_TAG}"
-          docker push ${IMAGE_TAG}
-          docker push ${REPO_NAME}:latest
-
-    deploy-hml:
+   deploy-hml:
       name: CD - Deploy HML
       runs-on: ubuntu-latest
       needs: [version, docker-build]
@@ -376,3 +303,79 @@ jobs:
                 ],
                 "footer": { "text": "GitHub Actions • Pet Joyful Backend" }
               }]}'
+
+
+  docker-build:
+    name: Build da imagem Docker
+    runs-on: ubuntu-latest
+    needs: [version]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Instalar semver
+        run: npm install -g semver
+
+      - name: Criar nova tag caso não exista
+        run: |
+          if [ -z "$(git tag)" ]; then
+            git tag v0.0.1
+            git push origin v0.0.1
+          fi
+
+      # Versão já calculada no job `version` (usar needs.version.outputs.version_number)
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Definir o nome do repositório
+        id: repo
+        run: |
+          REPO_NAME="${{ secrets.DOCKERHUB_USERNAME }}/pet-joyful-backend"
+          echo "repo_name=${REPO_NAME}" >> $GITHUB_OUTPUT
+
+      - name: Verificar e criar repositório no Docker Hub (se necessário)
+        run: |
+          REPO="${{ steps.repo.outputs.repo_name }}"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer ${{ secrets.DOCKER_PASSWORD }}" \
+            "https://hub.docker.com/v2/repositories/${REPO}/")
+
+          if [ "$STATUS" = "404" ]; then
+            echo "Repositório não encontrado. Criando..."
+            curl -s -X POST \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer ${{ secrets.DOCKER_PASSWORD }}" \
+              -d "{\"name\":\"pet-joyful-backend\",\"namespace\":\"${{ secrets.DOCKERHUB_USERNAME }}\",\"is_private\":false}" \
+              "https://hub.docker.com/v2/repositories/"
+            echo "Repositório criado."
+          else
+            echo "Repositório já existe. Seguindo..."
+          fi
+
+      - name: Criar imagem docker (tag com versão)
+        run: |
+          NEW_VERSION=${{ needs.version.outputs.version_number }}
+          REPO_NAME=${{ steps.repo.outputs.repo_name }}
+          IMAGE_TAG=${REPO_NAME}:${NEW_VERSION}
+          docker build --tag ${IMAGE_TAG} --tag ${REPO_NAME}:latest .
+
+      - name: Efetuar push da imagem (versão)
+        run: |
+          NEW_VERSION=${{ needs.version.outputs.version_number }}
+          REPO_NAME=${{ steps.repo.outputs.repo_name }}
+          IMAGE_TAG=${REPO_NAME}:${NEW_VERSION}
+          echo "Fazendo push da imagem Docker: ${IMAGE_TAG}"
+          docker push ${IMAGE_TAG}
+          docker push ${REPO_NAME}:latest
+
+    
