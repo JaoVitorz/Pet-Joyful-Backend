@@ -1,0 +1,3 @@
+{"total": {"lines":{"total":85,"covered":81,"skipped":0,"pct":95.29},"statements":{"total":95,"covered":91,"skipped":0,"pct":95.78},"functions":{"total":5,"covered":5,"skipped":0,"pct":100},"branches":{"total":38,"covered":36,"skipped":0,"pct":94.73},"branchesTrue":{"total":0,"covered":0,"skipped":0,"pct":"Unknown"}}
+,"C:\\Users\\João\\OneDrive\\Documentos\\GitHub\\Pet-Joyful-Backend\\backend\\src\\controllers\\userController.ts": {"lines":{"total":85,"covered":81,"skipped":0,"pct":95.29},"functions":{"total":5,"covered":5,"skipped":0,"pct":100},"statements":{"total":95,"covered":91,"skipped":0,"pct":95.78},"branches":{"total":38,"covered":36,"skipped":0,"pct":94.73}}
+}

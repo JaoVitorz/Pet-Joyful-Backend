@@ -1,7 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
-//import {fileURLToPath} from 'url';
 import fs from 'fs';
 import swaggerUi from 'swagger-ui-express';
 import routes from './routes/index.js';
@@ -11,6 +10,17 @@ import {logger} from './logger/logger.js';
 import errorHandler from './middlewares/errorHandler.js';
 
 const app = express();
+
+const resolveSwaggerPath = () => {
+  const candidates = [
+    path.resolve(process.cwd(), 'backend/src/config/swagger.json'),
+    path.resolve(process.cwd(), 'dist/backend/src/config/swagger.json'),
+  ];
+
+  return (
+    candidates.find(candidate => fs.existsSync(candidate)) ?? candidates[0]
+  );
+};
 
 // Middlewares globais
 app.use(
@@ -57,26 +67,15 @@ app.get('/', (_req, res) => {
 });
 
 // Swagger
-const dirPath = process.cwd();
-
 let swaggerDocument: object = {};
 
 try {
-  const swaggerPath = path.join(
-    dirPath,
-    'backend',
-    'src',
-    'config',
-    'swagger-output.json',
-  );
+  const swaggerPath = resolveSwaggerPath();
   const swaggerData = fs.readFileSync(swaggerPath, 'utf8');
   swaggerDocument = JSON.parse(swaggerData) as object;
   console.log('✅ Swagger carregado com sucesso!');
 } catch (err) {
-  console.error(
-    '❌ Erro ao carregar swagger-output.json:',
-    (err as Error).message,
-  );
+  console.error('❌ Erro ao carregar swagger.json:', (err as Error).message);
 }
 app.use(errorHandler);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));

@@ -4,14 +4,18 @@ const doc = {
   openapi: '3.0.0',
   info: {
     title: 'Pet Joyful API',
-    version: '1.0.0',
+    version: '1.4.17',
     description:
-      'Documentação completa da API Pet Joyful — gerenciamento de usuários, autenticação, mensagens e denúncias.',
+      'Documentação completa da API Pet Joyful — gerenciamento de usuários, autenticação, mensagens, denúncias e chat com IA (Gemini).',
   },
   servers: [
     {
       url: 'http://localhost:5000',
-      description: 'Servidor de teste',
+      description: 'Servidor de desenvolvimento',
+    },
+    {
+      url: 'https://pet-joyful-backend.onrender.com',
+      description: 'Servidor de produção',
     },
   ],
   components: {
@@ -70,6 +74,27 @@ const doc = {
           alvoTipo: {type: 'string', example: 'post'},
         },
       },
+      ChatRequest: {
+        type: 'object',
+        required: ['message'],
+        properties: {
+          message: {
+            type: 'string',
+            example: 'Quais são os cuidados básicos para um cachorro?',
+          },
+        },
+      },
+      ChatResponse: {
+        type: 'object',
+        properties: {
+          success: {type: 'boolean', example: true},
+          response: {
+            type: 'string',
+            example:
+              'Os cuidados básicos incluem alimentação adequada, exercícios...',
+          },
+        },
+      },
     },
   },
   security: [{BearerAuth: []}],
@@ -78,16 +103,20 @@ const doc = {
     {name: 'Users', description: 'Operações relacionadas a usuários'},
     {name: 'Messages', description: 'Mensagens e comentários em postagens'},
     {name: 'Reports', description: 'Denúncias e moderação de conteúdo'},
+    {name: 'Chat', description: 'Chat com IA (Gemini) para dúvidas sobre pets'},
   ],
 };
 
 const outputFile = './backend/src/config/swagger-output.json';
 
+// Incluir app.ts como entrada principal garante que os prefixos /api e /api/chat sejam detectados
 const endpointsFiles = [
+  './backend/src/app.ts',
   './backend/src/routes/index.ts',
   './backend/src/routes/userRoutes.ts',
   './backend/src/routes/messagesRoutes.ts',
   './backend/src/routes/authRoutes.ts',
+  './backend/src/routes/chatRoutes.ts',
 ];
 
 void swaggerAutogen({openapi: '3.0.0'})(outputFile, endpointsFiles, doc);
