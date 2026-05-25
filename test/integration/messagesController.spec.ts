@@ -1,94 +1,299 @@
-// Importa as funções do controller que serão testadas
+import request from 'supertest';
+import {MongoMemoryServer} from 'mongodb-memory-server';
+import mongoose from 'mongoose';
+import app from '../../backend/src/app';
+import PostMessage from '../../backend/src/models/postMessageModel';
+import DenunciaMessage from '../../backend/src/models/denunciaMessageModel';
 
-jest.mock('../../backend/src/logger/logger', () => ({
-  logger: {
-    info: jest.fn(),
-    error: jest.fn(),
-    warn: jest.fn(),
-  },
-}));
+const ADMIN_KEY = 'test-admin-key';
+const MESSAGES_BASE = '/api/messages';
 
-import { createPostMessage, createDenuncia } from '../../backend/src/controllers/messagesController';
-import type { Response } from 'express';
-import type { AuthRequest } from '../../backend/src/types/index';
+describe('Suíte de Testes - Exclusivo para 5 APIs', () => {
+  let mongoServer: MongoMemoryServer;
 
-// describe: agrupa os testes de integração do messagesController
-describe('Messages Controller', () => {
+  beforeAll(async () => {
+    process.env.ADMIN_KEY = ADMIN_KEY;
 
-  it('should return 400 when email is missing on post message', async () => {
-    // Arrange: req sem email — apenas mensagem
-    const req = { body: { mensagem: 'Sem email' } } as AuthRequest;
-
-    // variáveis que capturam o que o controller chamar no res
-    let status = 0;
-    let body = {};
-
-    // res simples  armazena os valores recebidos
-    const res = {
-      status(c: number) { status = c; return this; },
-      json(b: object) { body = b; },
-    } as unknown as Response;
-
-    // Act: chama o controller diretamente como função
-    await createPostMessage(req, res);
-
-    // Assert: email obrigatório faltando → 400
-    expect(status).toBe(400);
-    expect(body).toEqual({ error: 'Email e mensagem são obrigatórios' });
+    mongoServer = await MongoMemoryServer.create();
+    const uri = mongoServer.getUri();
+    await mongoose.connect(uri);
   });
 
-  it('should return 400 when message is missing on post message', async () => {
-    // Arrange: req sem mensagem — apenas email
-    const req = { body: { email: 'adotante@pet.com' } } as AuthRequest;
-    let status = 0;
-    let body = {};
-    const res = {
-      status(c: number) { status = c; return this; },
-      json(b: object) { body = b; },
-    } as unknown as Response;
-
-    // Act
-    await createPostMessage(req, res);
-
-    // Assert: mensagem obrigatória faltando -> 400
-    expect(status).toBe(400);
-    expect(body).toEqual({ error: 'Email e mensagem são obrigatórios' });
+  afterAll(async () => {
+    // Encerra as conexões após o término de todos os testes
+    await mongoose.disconnect();
+    await mongoServer.stop();
   });
 
-  it('should return 400 when email is missing on denuncia', async () => {
-    // Arrange: req sem email — apenas descrição
-    const req = { body: { descricao: 'Sem email' } } as AuthRequest;
-    let status = 0;
-    let body = {};
-    const res = {
-      status(c: number) { status = c; return this; },
-      json(b: object) { body = b; },
-    } as unknown as Response;
-
-    // Act
-    await createDenuncia(req, res);
-
-    // Assert
-    expect(status).toBe(400);
-    expect(body).toEqual({ error: 'Email e descrição são obrigatórios' });
+  afterEach(async () => {
+    // Limpa as coleções após cada cenário para não haver interferência
+    await PostMessage.deleteMany({});
+    await DenunciaMessage.deleteMany({});
   });
 
-  it('should return 400 when description is missing on denuncia', async () => {
-    // Arrange: req sem descrição — apenas email
-    const req = { body: { email: 'denuncia@pet.com' } } as AuthRequest;
-    let status = 0;
-    let body = {};
-    const res = {
-      status(c: number) { status = c; return this; },
-      json(b: object) { body = b; },
-    } as unknown as Response;
+  // =========================================================================
+  // API 1: CRIAR MENSAGEM (POST /api/messages/post)
+  // =========================================================================
+  describe('API 1 - POST /api/messages/post (createPostMessage)', () => {
+    it('Deve salvar a mensagem com sucesso e retornar status 201', async () => {
+      const res = await request(app).post(`${MESSAGES_BASE}/post`).send({
+        nome: 'Fulano',
+        email: 'fulano@petjoyful.com',
+        mensagem: 'Quero adotar um gatinho!',
+        postId: new mongoose.Types.ObjectId().toString(),
+      });
 
-    // Act
-    await createDenuncia(req, res);
+      expect(res.status).toBe(201);
+      expect(res.body.message).toBe('Mensagem salva com sucesso');
+      expect(res.body.data).toHaveProperty('_id');
+    });
 
-    // Assert
-    expect(status).toBe(400);
-    expect(body).toEqual({ error: 'Email e descrição são obrigatórios' });
+    it('Deve retornar status 400 se faltarem email ou mensagem (Validação do IF)', async () => {
+      const res = await request(app)
+        .post(`${MESSAGES_BASE}/post`)
+        .send({nome: 'Sem Dados Obrigatórios'});
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe('Email e mensagem são obrigatórios');
+    });
   });
 
+  // =========================================================================
+  // API 2: LISTAR MENSAGENS (GET /api/messages/post)
+  // =========================================================================
+  describe('API 2 - GET /api/messages/post (getPostMessages)', () => {
+    it('Deve listar as mensagens cadastradas ordenadas por data', async () => {
+      await PostMessage.create({email: 'user@t.com', mensagem: 'Olá PetBot'});
+
+      const res = await request(app).get(`${MESSAGES_BASE}/post`);
+
+      expect(res.status).toBe(200);
+      expect(Array.isArray(res.body)).toBe(true);
+      expect(res.body.length).toBe(1);
+    });
+  });
+
+  // =========================================================================
+  // API 3: CRIAR DENÚNCIA (POST /api/messages/denuncia)
+  // =========================================================================
+  describe('API 3 - POST /api/messages/denuncia (createDenuncia)', () => {
+    it('Deve registrar uma denúncia com sucesso e retornar status 201', async () => {
+      const res = await request(app).post(`${MESSAGES_BASE}/denuncia`).send({
+        email: 'fiscal@petjoyful.com',
+        descricao: 'Comentário ofensivo detectado.',
+        alvoId: new mongoose.Types.ObjectId().toString(),
+        alvoTipo: 'post',
+      });
+
+      expect(res.status).toBe(201);
+      expect(res.body.message).toBe('Denúncia registrada com sucesso');
+    });
+
+    it('Deve retornar status 400 se faltarem email ou descrição (Validação do IF)', async () => {
+      const res = await request(app)
+        .post(`${MESSAGES_BASE}/denuncia`)
+        .send({descricao: 'Falta o e-mail aqui'});
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe('Email e descrição são obrigatórios');
+    });
+  });
+
+  // =========================================================================
+  // API 4: LISTAR DENÚNCIAS (GET /api/messages/denuncia)
+  // =========================================================================
+  describe('API 4 - GET /api/messages/denuncia (getDenuncias)', () => {
+    it('Deve retornar a lista de denúncias registradas', async () => {
+      await DenunciaMessage.create({
+        email: 'admin@t.com',
+        descricao: 'Denúncia fake',
+      });
+
+      const res = await request(app)
+        .get(`${MESSAGES_BASE}/denuncia`)
+        .set('x-admin-key', ADMIN_KEY);
+
+      expect(res.status).toBe(200);
+      expect(Array.isArray(res.body)).toBe(true);
+    });
+  });
+
+  // =========================================================================
+  // API 5: DELETAR MENSAGEM (DELETE /api/messages/post/:id)
+  // =========================================================================
+  describe('API 5 - DELETE /api/messages/post/:id (deletePostMessage)', () => {
+    it('Deve retornar status 403 (Não Autorizado) se o usuário comum tentar deletar (Validação de Segurança)', async () => {
+      const msg = await PostMessage.create({
+        email: 'u@t.com',
+        mensagem: 'Mensagem para apagar',
+      });
+
+      const res = await request(app)
+        .delete(`${MESSAGES_BASE}/post/${msg._id}`)
+        .set('x-admin-key', 'chave-incorreta');
+
+      expect(res.status).toBe(403);
+      expect(res.body.error).toBe('Admin key inválida');
+    });
+  });
+
+  describe('API 6 - PUT /api/messages/post/:id (updatePostMessage)', () => {
+    it('Deve atualizar uma mensagem com sucesso', async () => {
+      const msg = await PostMessage.create({
+        email: 'old@t.com',
+        mensagem: 'Mensagem antiga',
+      });
+
+      const res = await request(app)
+        .put(`${MESSAGES_BASE}/post/${msg._id}`)
+        .set('x-admin-key', ADMIN_KEY)
+        .send({
+          email: 'new@t.com',
+          mensagem: 'Mensagem atualizada',
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body.message).toBe('Mensagem atualizada');
+      expect(res.body.data._id).toBe(msg._id.toString());
+      expect(res.body.data.mensagem).toBe('Mensagem atualizada');
+    });
+
+    it('Deve retornar 404 ao tentar atualizar uma mensagem inexistente', async () => {
+      const res = await request(app)
+        .put(`${MESSAGES_BASE}/post/${new mongoose.Types.ObjectId()}`)
+        .set('x-admin-key', ADMIN_KEY)
+        .send({
+          email: 'naoexiste@t.com',
+          mensagem: 'Mensagem inexistente',
+        });
+
+      expect(res.status).toBe(404);
+      expect(res.body.error).toBe('Mensagem não encontrada');
+    });
+  });
+
+  describe('API 7 - DELETE /api/messages/post/:id (deletePostMessage)', () => {
+    it('Deve deletar uma mensagem com sucesso', async () => {
+      const msg = await PostMessage.create({
+        email: 'delete@t.com',
+        mensagem: 'Mensagem para deletar',
+      });
+
+      const res = await request(app)
+        .delete(`${MESSAGES_BASE}/post/${msg._id}`)
+        .set('x-admin-key', ADMIN_KEY);
+
+      expect(res.status).toBe(200);
+      expect(res.body.message).toBe('Mensagem deletada');
+
+      const deleted = await PostMessage.findById(msg._id);
+      expect(deleted).toBeNull();
+    });
+
+    it('Deve retornar 404 ao tentar deletar uma mensagem inexistente', async () => {
+      const res = await request(app)
+        .delete(`${MESSAGES_BASE}/post/${new mongoose.Types.ObjectId()}`)
+        .set('x-admin-key', ADMIN_KEY);
+
+      expect(res.status).toBe(404);
+      expect(res.body.error).toBe('Mensagem não encontrada');
+    });
+  });
+
+  describe('API 8 - PUT /api/messages/denuncia/:id (updateDenuncia)', () => {
+    it('Deve atualizar uma denúncia com sucesso', async () => {
+      const report = await DenunciaMessage.create({
+        email: 'denuncia@t.com',
+        descricao: 'Descrição antiga',
+      });
+
+      const res = await request(app)
+        .put(`${MESSAGES_BASE}/denuncia/${report._id}`)
+        .set('x-admin-key', ADMIN_KEY)
+        .send({
+          email: 'denuncia@t.com',
+          descricao: 'Descrição atualizada',
+          alvoTipo: 'post',
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body.message).toBe('Denúncia atualizada');
+      expect(res.body.data._id).toBe(report._id.toString());
+      expect(res.body.data.descricao).toBe('Descrição atualizada');
+    });
+
+    it('Deve retornar 403 ao tentar atualizar uma denúncia com chave inválida', async () => {
+      const report = await DenunciaMessage.create({
+        email: 'denuncia@t.com',
+        descricao: 'Descrição antiga',
+      });
+
+      const res = await request(app)
+        .put(`${MESSAGES_BASE}/denuncia/${report._id}`)
+        .set('x-admin-key', 'chave-incorreta')
+        .send({
+          email: 'denuncia@t.com',
+          descricao: 'Descrição atualizada',
+          alvoTipo: 'post',
+        });
+
+      expect(res.status).toBe(403);
+      expect(res.body.error).toBe('Admin key inválida');
+    });
+
+    it('Deve retornar 404 ao tentar atualizar uma denúncia inexistente', async () => {
+      const res = await request(app)
+        .put(`${MESSAGES_BASE}/denuncia/${new mongoose.Types.ObjectId()}`)
+        .set('x-admin-key', ADMIN_KEY)
+        .send({
+          email: 'naoexiste@t.com',
+          descricao: 'Descrição inexistente',
+        });
+
+      expect(res.status).toBe(404);
+      expect(res.body.error).toBe('Denúncia não encontrada');
+    });
+  });
+
+  describe('API 9 - DELETE /api/messages/denuncia/:id (deleteDenuncia)', () => {
+    it('Deve deletar uma denúncia com sucesso', async () => {
+      const report = await DenunciaMessage.create({
+        email: 'delete-report@t.com',
+        descricao: 'Denúncia para deletar',
+      });
+
+      const res = await request(app)
+        .delete(`${MESSAGES_BASE}/denuncia/${report._id}`)
+        .set('x-admin-key', ADMIN_KEY);
+
+      expect(res.status).toBe(200);
+      expect(res.body.message).toBe('Denúncia deletada');
+
+      const deleted = await DenunciaMessage.findById(report._id);
+      expect(deleted).toBeNull();
+    });
+
+    it('Deve retornar 403 ao tentar deletar uma denúncia com chave inválida', async () => {
+      const report = await DenunciaMessage.create({
+        email: 'delete-report@t.com',
+        descricao: 'Denúncia para deletar',
+      });
+
+      const res = await request(app)
+        .delete(`${MESSAGES_BASE}/denuncia/${report._id}`)
+        .set('x-admin-key', 'chave-incorreta');
+
+      expect(res.status).toBe(403);
+      expect(res.body.error).toBe('Admin key inválida');
+    });
+
+    it('Deve retornar 404 ao tentar deletar uma denúncia inexistente', async () => {
+      const res = await request(app)
+        .delete(`${MESSAGES_BASE}/denuncia/${new mongoose.Types.ObjectId()}`)
+        .set('x-admin-key', ADMIN_KEY);
+
+      expect(res.status).toBe(404);
+      expect(res.body.error).toBe('Denúncia não encontrada');
+    });
+  });
 });

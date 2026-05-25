@@ -1,415 +1,840 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "PetJoyful API",
-    "version": "1.0.0",
-    "description": "API documentation for PetJoyful backend"
+    "title": "Pet Joyful API",
+    "version": "1.4.17",
+    "description": "Documentação completa da API Pet Joyful — gerenciamento de usuários, autenticação, mensagens, denúncias e chat com IA (Gemini)."
   },
   "servers": [
-    { "url": "http://localhost:5000", "description": "Local server" }
+    {
+      "url": "http://localhost:5000",
+      "description": "Servidor de desenvolvimento"
+    },
+    {
+      "url": "https://pet-joyful-backend-1.onrender.com",
+      "description": "Servidor de produção"
+    }
   ],
   "components": {
     "securitySchemes": {
-      "ApiKeyAuth": { "type": "apiKey", "in": "header", "name": "x-api-key" },
       "BearerAuth": {
         "type": "http",
         "scheme": "bearer",
-        "bearerFormat": "JWT"
+        "bearerFormat": "JWT",
+        "description": "Insira o token JWT no formato **Bearer {token}**"
+      },
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-admin-key",
+        "description": "Chave de admin para operações privilegiadas"
       }
     },
     "schemas": {
       "User": {
         "type": "object",
+        "required": [
+          "nome",
+          "email",
+          "senha"
+        ],
         "properties": {
-          "nome": { "type": "string" },
-          "email": { "type": "string" },
-          "senha": { "type": "string" },
+          "nome": {
+            "type": "string",
+            "example": "João Silva"
+          },
+          "email": {
+            "type": "string",
+            "example": "joao@email.com"
+          },
+          "senha": {
+            "type": "string",
+            "example": "123456"
+          },
           "tipo": {
             "type": "string",
-            "enum": ["adotante", "ong", "veterinario"]
+            "example": "cliente"
           }
-        },
-        "required": ["nome", "email", "senha", "tipo"]
+        }
       },
-      "PostMessage": {
+      "Login": {
+        "type": "object",
+        "required": [
+          "email",
+          "senha"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "joao@email.com"
+          },
+          "senha": {
+            "type": "string",
+            "example": "123456"
+          }
+        }
+      },
+      "Message": {
+        "type": "object",
+        "required": [
+          "nome",
+          "email",
+          "mensagem"
+        ],
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Maria"
+          },
+          "email": {
+            "type": "string",
+            "example": "maria@email.com"
+          },
+          "mensagem": {
+            "type": "string",
+            "example": "Gostei do post!"
+          },
+          "postId": {
+            "type": "string",
+            "example": "65b8d7b2b9e"
+          }
+        }
+      },
+      "Report": {
+        "type": "object",
+        "required": [
+          "descricao",
+          "alvoId",
+          "alvoTipo"
+        ],
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Carlos"
+          },
+          "email": {
+            "type": "string",
+            "example": "carlos@email.com"
+          },
+          "descricao": {
+            "type": "string",
+            "example": "Conteúdo ofensivo detectado"
+          },
+          "alvoId": {
+            "type": "string",
+            "example": "123abc456"
+          },
+          "alvoTipo": {
+            "type": "string",
+            "example": "mensagem"
+          }
+        }
+      },
+      "ChatRequest": {
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Quais são os cuidados básicos para um cachorro?"
+          }
+        }
+      },
+      "ChatResponse": {
         "type": "object",
         "properties": {
-          "nome": { "type": "string" },
-          "email": { "type": "string" },
-          "mensagem": { "type": "string" },
-          "postId": { "type": "string" }
-        },
-        "required": ["email", "mensagem"]
-      },
-      "DenunciaMessage": {
-        "type": "object",
-        "properties": {
-          "nome": { "type": "string" },
-          "email": { "type": "string" },
-          "descricao": { "type": "string" },
-          "alvoId": { "type": "string" },
-          "alvoTipo": { "type": "string", "enum": ["post", "usuario", "outro"] }
-        },
-        "required": ["email", "descricao"]
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "response": {
+            "type": "string",
+            "example": "Os cuidados básicos incluem alimentação adequada, exercícios regulares..."
+          }
+        }
       }
     }
   },
-  "security": [{ "ApiKeyAuth": [] }],
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Auth",
+      "description": "Autenticação e gerenciamento de sessão do usuário"
+    },
+    {
+      "name": "Users",
+      "description": "Operações relacionadas a usuários"
+    },
+    {
+      "name": "Messages",
+      "description": "Mensagens e comentários em postagens"
+    },
+    {
+      "name": "Reports",
+      "description": "Denúncias e moderação de conteúdo"
+    },
+    {
+      "name": "Chat",
+      "description": "Chat com IA (Gemini) para dúvidas sobre pets"
+    }
+  ],
   "paths": {
     "/api/auth/register": {
       "post": {
-        "summary": "Register a new user",
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Registrar novo usuário",
+        "description": "Cria uma nova conta de usuário na plataforma.",
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/User" }
+              "schema": {
+                "$ref": "#/components/schemas/User"
+              }
             }
           }
         },
-        "responses": { "201": { "description": "User created" } },
-        "security": []
+        "responses": {
+          "201": {
+            "description": "Usuário criado com sucesso"
+          },
+          "400": {
+            "description": "Erro de validação"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
       }
     },
     "/api/auth/login": {
       "post": {
-        "summary": "Login and receive a JWT token",
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Login do usuário",
+        "description": "Autentica o usuário e retorna o token JWT.",
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "email": { "type": "string" },
-                  "senha": { "type": "string" }
-                },
-                "required": ["email", "senha"]
+                "$ref": "#/components/schemas/Login"
               }
             }
           }
         },
-        "responses": { "200": { "description": "Token" } },
-        "security": []
+        "responses": {
+          "200": {
+            "description": "Login realizado com sucesso"
+          },
+          "400": {
+            "description": "Credenciais inválidas"
+          },
+          "401": {
+            "description": "Não autorizado"
+          }
+        }
       }
     },
     "/api/auth/me": {
       "get": {
-        "summary": "Get authenticated user's profile",
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Obter dados do usuário autenticado",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
         "responses": {
-          "200": { "description": "User profile" },
-          "401": { "description": "Unauthorized" }
-        },
-        "security": [{ "BearerAuth": [] }]
+          "200": {
+            "description": "Usuário autenticado retornado"
+          },
+          "401": {
+            "description": "Token inválido ou ausente"
+          }
+        }
       },
       "put": {
-        "summary": "Update authenticated user's profile",
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Atualizar dados do usuário autenticado",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "nome": { "type": "string" },
-                  "email": { "type": "string" },
-                  "senha": { "type": "string" },
-                  "tipo": {
-                    "type": "string",
-                    "enum": ["adotante", "ong", "veterinario"]
-                  }
-                }
+                "$ref": "#/components/schemas/User"
               }
             }
           }
         },
         "responses": {
-          "200": { "description": "Profile updated" },
-          "400": { "description": "Bad request" },
-          "401": { "description": "Unauthorized" }
-        },
-        "security": [{ "BearerAuth": [] }]
+          "200": {
+            "description": "Dados atualizados com sucesso"
+          },
+          "400": {
+            "description": "Erro de validação"
+          },
+          "401": {
+            "description": "Token inválido"
+          }
+        }
       },
       "delete": {
-        "summary": "Delete authenticated user's account",
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Excluir conta do usuário autenticado",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
         "responses": {
-          "200": { "description": "Account deleted" },
-          "401": { "description": "Unauthorized" }
-        },
-        "security": [{ "BearerAuth": [] }]
+          "200": {
+            "description": "Conta excluída com sucesso"
+          },
+          "401": {
+            "description": "Token inválido"
+          }
+        }
       }
     },
     "/api/users": {
       "get": {
-        "summary": "List all users",
-        "responses": { "200": { "description": "List of users" } },
-        "security": [{ "BearerAuth": [] }]
+        "tags": [
+          "Users"
+        ],
+        "summary": "Listar todos os usuários (apenas admin)",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de usuários retornada"
+          },
+          "401": {
+            "description": "Admin key ausente"
+          },
+          "403": {
+            "description": "Admin key inválida"
+          },
+          "500": {
+            "description": "Erro interno"
+          }
+        }
       },
       "post": {
-        "summary": "Create a new user",
+        "tags": [
+          "Users"
+        ],
+        "summary": "Criar novo usuário (admin)",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/User" }
+              "schema": {
+                "$ref": "#/components/schemas/User"
+              }
             }
           }
         },
-        "responses": { "201": { "description": "User created" } },
-        "security": []
+        "responses": {
+          "201": {
+            "description": "Usuário criado com sucesso"
+          },
+          "400": {
+            "description": "Erro de validação"
+          },
+          "401": {
+            "description": "Admin key ausente"
+          },
+          "403": {
+            "description": "Admin key inválida"
+          }
+        }
       }
     },
     "/api/users/{id}": {
       "get": {
-        "summary": "Get user by ID",
+        "tags": [
+          "Users"
+        ],
+        "summary": "Buscar usuário por ID (apenas admin)",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "schema": { "type": "string" }
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
-          "200": { "description": "User found" },
-          "404": { "description": "User not found" }
-        },
-        "security": [{ "BearerAuth": [] }]
+          "200": {
+            "description": "Usuário encontrado"
+          },
+          "401": {
+            "description": "Admin key ausente"
+          },
+          "403": {
+            "description": "Admin key inválida"
+          },
+          "404": {
+            "description": "Usuário não encontrado"
+          }
+        }
       },
       "put": {
-        "summary": "Update user by ID",
+        "tags": [
+          "Users"
+        ],
+        "summary": "Atualizar usuário por ID (apenas admin)",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "schema": { "type": "string" }
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "nome": { "type": "string" },
-                  "email": { "type": "string" },
-                  "senha": { "type": "string" },
-                  "tipo": {
-                    "type": "string",
-                    "enum": ["adotante", "ong", "veterinario"]
-                  }
-                }
+                "$ref": "#/components/schemas/User"
               }
             }
           }
         },
         "responses": {
-          "200": { "description": "User updated" },
-          "403": { "description": "Forbidden" }
-        },
-        "security": [{ "BearerAuth": [] }]
+          "200": {
+            "description": "Usuário atualizado"
+          },
+          "401": {
+            "description": "Admin key ausente"
+          },
+          "403": {
+            "description": "Admin key inválida"
+          },
+          "404": {
+            "description": "Usuário não encontrado"
+          }
+        }
       },
       "delete": {
-        "summary": "Delete user by ID",
+        "tags": [
+          "Users"
+        ],
+        "summary": "Excluir usuário por ID (apenas admin)",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "schema": { "type": "string" }
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
-          "200": { "description": "User deleted" },
-          "403": { "description": "Forbidden" }
-        },
-        "security": [{ "BearerAuth": [] }]
+          "200": {
+            "description": "Usuário excluído"
+          },
+          "401": {
+            "description": "Admin key ausente"
+          },
+          "403": {
+            "description": "Admin key inválida"
+          },
+          "404": {
+            "description": "Usuário não encontrado"
+          }
+        }
       }
     },
     "/api/messages/post": {
       "post": {
-        "summary": "Create a post message (via microservice)",
-        "description": "Envia uma mensagem de post para o microserviço de mensagens.",
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Enviar mensagem em um post",
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/PostMessage" },
-              "example": {
-                "nome": "João",
-                "email": "joao@email.com",
-                "mensagem": "Olá, tenho interesse!",
-                "postId": "123abc"
+              "schema": {
+                "$ref": "#/components/schemas/Message"
               }
             }
           }
         },
         "responses": {
-          "201": { "description": "Mensagem salva com sucesso" },
-          "400": { "description": "Dados inválidos" },
-          "502": { "description": "Erro ao comunicar com microserviço" }
-        },
-        "security": []
+          "201": {
+            "description": "Mensagem criada com sucesso"
+          },
+          "400": {
+            "description": "Erro de validação"
+          }
+        }
       },
       "get": {
-        "summary": "List post messages (protected, via microservice)",
-        "description": "Lista mensagens de post consultando o microserviço de mensagens.",
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Listar todas as mensagens",
         "responses": {
           "200": {
-            "description": "Lista de mensagens",
-            "content": {
-              "application/json": {
-                "example": [
-                  {
-                    "nome": "João",
-                    "email": "joao@email.com",
-                    "mensagem": "Olá!",
-                    "postId": "123abc"
-                  }
-                ]
-              }
-            }
-          },
-          "502": { "description": "Erro ao comunicar com microserviço" }
-        },
-        "security": [{ "ApiKeyAuth": [] }, { "BearerAuth": [] }]
+            "description": "Mensagens retornadas"
+          }
+        }
       }
     },
     "/api/messages/post/{id}": {
-      "parameters": [
-        {
-          "name": "id",
-          "in": "path",
-          "required": true,
-          "schema": { "type": "string" }
-        }
-      ],
       "put": {
-        "summary": "Update a post message (admin, via microservice)",
-        "description": "Atualiza uma mensagem de post via microserviço.",
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Atualizar mensagem por ID (apenas admin)",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/PostMessage" },
-              "example": {
-                "nome": "João",
-                "email": "joao@email.com",
-                "mensagem": "Mensagem editada",
-                "postId": "123abc"
+              "schema": {
+                "$ref": "#/components/schemas/Message"
               }
             }
           }
         },
         "responses": {
-          "200": { "description": "Mensagem atualizada" },
-          "403": { "description": "Não autorizado" },
-          "404": { "description": "Mensagem não encontrada" },
-          "502": { "description": "Erro ao comunicar com microserviço" }
-        },
-        "security": [{ "ApiKeyAuth": [] }]
+          "200": {
+            "description": "Mensagem atualizada com sucesso"
+          },
+          "401": {
+            "description": "Admin key ausente"
+          },
+          "403": {
+            "description": "Admin key inválida"
+          },
+          "404": {
+            "description": "Mensagem não encontrada"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
       },
       "delete": {
-        "summary": "Delete a post message (admin, via microservice)",
-        "description": "Remove uma mensagem de post via microserviço.",
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Excluir mensagem por ID (apenas admin)",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
-          "200": { "description": "Mensagem deletada" },
-          "403": { "description": "Não autorizado" },
-          "404": { "description": "Mensagem não encontrada" },
-          "502": { "description": "Erro ao comunicar com microserviço" }
-        },
-        "security": [{ "ApiKeyAuth": [] }]
+          "200": {
+            "description": "Mensagem excluída com sucesso"
+          },
+          "401": {
+            "description": "Admin key ausente"
+          },
+          "403": {
+            "description": "Admin key inválida"
+          },
+          "404": {
+            "description": "Mensagem não encontrada"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
       }
     },
     "/api/messages/denuncia": {
       "post": {
-        "summary": "Create a denuncia/report (via microservice)",
-        "description": "Envia uma denúncia para o microserviço de denúncias.",
+        "tags": [
+          "Reports"
+        ],
+        "summary": "Criar nova denúncia",
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/DenunciaMessage" },
-              "example": {
-                "nome": "Maria",
-                "email": "maria@email.com",
-                "descricao": "Conteúdo impróprio",
-                "alvoId": "post123",
-                "alvoTipo": "post"
+              "schema": {
+                "$ref": "#/components/schemas/Report"
               }
             }
           }
         },
         "responses": {
-          "201": { "description": "Denúncia registrada com sucesso" },
-          "400": { "description": "Dados inválidos" },
-          "502": { "description": "Erro ao comunicar com microserviço" }
-        },
-        "security": []
+          "201": {
+            "description": "Denúncia registrada com sucesso"
+          },
+          "400": {
+            "description": "Erro nos dados enviados"
+          }
+        }
       },
       "get": {
-        "summary": "List denuncias (protected, via microservice)",
-        "description": "Lista denúncias consultando o microserviço de denúncias.",
+        "tags": [
+          "Reports"
+        ],
+        "summary": "Listar todas as denúncias (apenas admin)",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Lista de denúncias",
-            "content": {
-              "application/json": {
-                "example": [
-                  {
-                    "nome": "Maria",
-                    "email": "maria@email.com",
-                    "descricao": "Conteúdo impróprio",
-                    "alvoId": "post123",
-                    "alvoTipo": "post"
-                  }
-                ]
-              }
-            }
+            "description": "Lista de denúncias retornada"
           },
-          "502": { "description": "Erro ao comunicar com microserviço" }
-        },
-        "security": [{ "ApiKeyAuth": [] }, { "BearerAuth": [] }]
+          "401": {
+            "description": "Admin key ausente"
+          },
+          "403": {
+            "description": "Admin key inválida"
+          }
+        }
       }
     },
     "/api/messages/denuncia/{id}": {
-      "parameters": [
-        {
-          "name": "id",
-          "in": "path",
-          "required": true,
-          "schema": { "type": "string" }
-        }
-      ],
       "put": {
-        "summary": "Update a denuncia (admin, via microservice)",
-        "description": "Atualiza uma denúncia via microserviço.",
+        "tags": [
+          "Reports"
+        ],
+        "summary": "Atualizar denúncia por ID (apenas admin)",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/DenunciaMessage" },
-              "example": {
-                "nome": "Maria",
-                "email": "maria@email.com",
-                "descricao": "Atualização da denúncia",
-                "alvoId": "post123",
-                "alvoTipo": "post"
+              "schema": {
+                "$ref": "#/components/schemas/Report"
               }
             }
           }
         },
         "responses": {
-          "200": { "description": "Denúncia atualizada" },
-          "403": { "description": "Não autorizado" },
-          "404": { "description": "Denúncia não encontrada" },
-          "502": { "description": "Erro ao comunicar com microserviço" }
-        },
-        "security": [{ "ApiKeyAuth": [] }]
+          "200": {
+            "description": "Denúncia atualizada com sucesso"
+          },
+          "401": {
+            "description": "Admin key ausente"
+          },
+          "403": {
+            "description": "Admin key inválida"
+          },
+          "404": {
+            "description": "Denúncia não encontrada"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
       },
       "delete": {
-        "summary": "Delete a denuncia (admin, via microservice)",
-        "description": "Remove uma denúncia via microserviço.",
+        "tags": [
+          "Reports"
+        ],
+        "summary": "Excluir denúncia por ID (apenas admin)",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
-          "200": { "description": "Denúncia deletada" },
-          "403": { "description": "Não autorizado" },
-          "404": { "description": "Denúncia não encontrada" },
-          "502": { "description": "Erro ao comunicar com microserviço" }
+          "200": {
+            "description": "Denúncia excluída com sucesso"
+          },
+          "401": {
+            "description": "Admin key ausente"
+          },
+          "403": {
+            "description": "Admin key inválida"
+          },
+          "404": {
+            "description": "Denúncia não encontrada"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      }
+    },
+    "/api/chat": {
+      "post": {
+        "tags": [
+          "Chat"
+        ],
+        "summary": "Enviar mensagem para o chat com IA (Gemini)",
+        "description": "Envia uma pergunta sobre pets para o modelo Gemini e retorna a resposta gerada pela IA.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequest"
+              }
+            }
+          }
         },
-        "security": [{ "ApiKeyAuth": [] }]
+        "responses": {
+          "200": {
+            "description": "Resposta gerada pela IA com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno ao processar a mensagem",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "error": {
+                      "type": "string",
+                      "example": "Erro ao processar mensagem"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chat/health": {
+      "get": {
+        "tags": [
+          "Chat"
+        ],
+        "summary": "Health check do serviço de chat com IA",
+        "description": "Verifica se a integração com a Gemini API está online.",
+        "responses": {
+          "200": {
+            "description": "Serviço online",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "🤖 Gemini API online!"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   }
