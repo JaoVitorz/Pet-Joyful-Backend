@@ -1,80 +1,123 @@
-# 🐾 Pet Joyful - Backend API
+ # 🐾 Pet Joyful — Backend API
 
-API RESTful completa para a plataforma Pet Joyful, desenvolvida com Node.js, Express e MongoDB. Sistema de gerenciamento de usuários, autenticação JWT e mensagens com **arquitetura de microsserviços escalável**
+> API RESTful com arquitetura de microsserviços para a plataforma Pet Joyful. Construída com Node.js, Express, MongoDB e integrada a um ecossistema completo de DevOps, observabilidade e qualidade de código.
+
+<div align="center">
+
+![Node.js](https://img.shields.io/badge/Node.js-20-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![Express](https://img.shields.io/badge/Express-5.x-000000?style=for-the-badge&logo=express&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=for-the-badge&logo=mongodb&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Containerizado-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![SonarCloud](https://img.shields.io/badge/SonarCloud-Qualidade-F3702A?style=for-the-badge&logo=sonarcloud&logoColor=white)
+
+</div>
 
 ---
 
 ## 👥 Equipe de Desenvolvimento
 
-- **João Vitor dos Santos de Jesus** - joao.jesus18@fatec.sp.gov.br
-- **Mateus Fernandes Alves** - mateus.alves10@fatec.sp.gov.br
-- **Elton da Costa** - elton.costa@fatec.sp.gov.br
+| Nome | E-mail | RA |
+|------|--------|----|
+| João Vitor dos Santos de Jesus | joao.jesus18@fatec.sp.gov.br | — |
+| Mateus Fernandes Alves | mateus.alves10@fatec.sp.gov.br | — |
+| Elton da Costa | elton.costa@fatec.sp.gov.br | — |
+| Caio Fernando Scudeler |  | — |
+| Nicollas Mencacci Pereira |  | — |
 
-**Fatec São Paulo - Projeto Integrador 2024/2025**
+
+**Fatec São Paulo — Projeto Integrador 2024/2025**
 
 ---
 
-## 📋 Sobre o Projeto
+## 📋 Índice
 
-O **Pet Joyful** é uma rede social voltada à conexão entre instituições de adoção, adotantes e clínicas veterinárias. Nosso foco é a  conscientização sobre cuidados com animais, vacinação e o incentivo à adoção responsável.
+- [Sobre o Projeto](#sobre-o-projeto)
+- [Ambientes](#ambientes)
+- [Arquitetura do Sistema](#arquitetura-do-sistema)
+- [Stack Tecnológica](#stack-tecnológica)
+- [CI/CD e DevOps](#cicd-e-devops)
+- [Docker e Containerização](#docker-e-containerização)
+- [Observabilidade — Logs e Alertas](#observabilidade--logs-e-alertas)
+- [Qualidade de Código — SonarCloud](#qualidade-de-código--sonarcloud)
+- [Endpoints da API](#endpoints-da-api)
+- [Autenticação](#autenticação)
+- [Testes](#testes)
+- [Instalação Local](#instalação-local)
+- [Rodando com Docker](#rodando-com-docker)
+- [Requisitos do Sistema](#requisitos-do-sistema)
+- [Documentação Adicional](#documentação-adicional)
 
-A plataforma facilita o acesso a informações, promove campanhas e eventos como forma de publicação para adoção, criando uma comunidade engajada com a causa animal através de uma arquitetura moderna de microsserviços.
+---
+
+## 📖 Sobre o Projeto
+
+O **Pet Joyful** é uma rede social voltada à conexão entre instituições de adoção, adotantes e clínicas veterinárias. O foco está na conscientização sobre cuidados com animais, vacinação e incentivo à adoção responsável.
+
+Este repositório contém o **Backend Principal**, responsável por autenticação JWT, gerenciamento de usuários, sistema de mensagens, denúncias e chat com IA (Gemini). O sistema é composto por uma **arquitetura de microsserviços**, garantindo escalabilidade e separação de responsabilidades.
+
+---
+
+## 🌐 Ambientes
+
+| Ambiente | Frontend | Backend | Status |
+|----------|----------|---------|--------|
+| **Produção** | [pet-joyful-projeto-integrador-nextjs.onrender.com](https://pet-joyful-projeto-integrador-nextjs.onrender.com) | [pet-joyful-backend.onrender.com](https://pet-joyful-backend.onrender.com) | ✅ Online |
+| **Homologação** | [pet-joyful-projeto-integrador-nextjs-1.onrender.com](https://pet-joyful-projeto-integrador-nextjs-1.onrender.com) | [pet-joyful-backend-hml.onrender.com](https://pet-joyful-backend-hml.onrender.com) | ✅ Online |
+| **Swagger Docs (PROD)** | — | [/api-docs](https://pet-joyful-backend.onrender.com/api-docs) | ✅ |
+| **Swagger Docs (HML)** | — | [/api-docs](https://pet-joyful-backend-hml.onrender.com/api-docs) | ✅ |
 
 ---
 
 ## 🏗️ Arquitetura do Sistema
 
-O projeto utiliza uma **arquitetura de microsserviços** com múltiplos backends independentes, garantindo escalabilidade, manutenibilidade e separação de responsabilidades.
+O projeto adota uma **arquitetura de microsserviços** onde cada domínio de negócio é tratado de forma independente.
 
-### 🔗 Repositórios e Serviços
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        CLIENTE (Browser)                        │
+└───────────────────────────┬─────────────────────────────────────┘
+                            │ HTTPS
+┌───────────────────────────▼─────────────────────────────────────┐
+│              FRONTEND — Next.js 15 (Vercel / Render)            │
+│         PROD: pet-joyful-projeto-integrador-nextjs.onrender.com │
+│         HML:  pet-joyful-projeto-integrador-nextjs-1.onrender.com│
+└────────┬──────────────────┬──────────────────┬──────────────────┘
+         │                  │                  │
+         ▼                  ▼                  ▼
+┌────────────────┐ ┌────────────────┐ ┌────────────────────────┐
+│  BACKEND PRIN. │ │  MS EVENTOS    │ │  MS PERFIL & ÁLBUNS    │
+│  (Este repo)   │ │  (port 3002)   │ │  (port 3001)           │
+│  port 5000     │ │                │ │                        │
+│  PROD/HML      │ │ PROD:          │ │ PROD:                  │
+│  Render        │ │ events.onrender│ │ perfil.onrender.com    │
+└───────┬────────┘ └───────┬────────┘ └──────────┬─────────────┘
+        │                  │                     │
+        └──────────────────┴─────────────────────┘
+                           │
+               ┌───────────▼───────────┐
+               │   MongoDB Atlas       │
+               │   (Nuvem — PROD/HML)  │
+               └───────────────────────┘
+```
 
-#### Frontend
+### 🔗 Repositórios dos Microsserviços
 
-- **Repositório:** [Pet-Joyful---Projeto-Integrador--NextJs](https://github.com/JaoVitorz/Pet-Joyful---Projeto-Integrador--NextJs)
-- **URL Produção:** https://pet-joyful-projeto-integrador-next-nu.vercel.app/Home
-- **Tecnologia:** Next.js 15, React 19, TypeScript
-- **Deploy:** Vercel
+| Serviço | Repositório | Deploy |
+|---------|------------|--------|
+| **Frontend** | [Pet-Joyful-Frontend (Next.js)](https://github.com/JaoVitorz/Pet-Joyful---Projeto-Integrador--NextJs) | Render |
+| **Backend Principal** | [Pet-Joyful-Backend](https://github.com/JaoVitorz/Pet-Joyful-Backend) *(este repo)* | Render |
+| **MS Eventos** | [PET-JOYFUL-EVENTS-SERVICE](https://github.com/JaoVitorz/PET-JOYFUL-EVENTS-SERVICE) | Render |
+| **MS Perfil & Álbuns** | [EDICAO-PERFIL-MICROSERVICE](https://github.com/JaoVitorz/EDICAO-PERFIL-MICROSERVICE) | Render |
 
-#### Microsserviços Backend
+### 🐳 Docker Hub
 
-##### 1. Backend Principal (Autenticação e Mensagens)
-
-- **Repositório:** [Pet-Joyful-Backend](https://github.com/JaoVitorz/Pet-Joyful-Backend) (Este repositório)
-- **URL Produção:** https://pet-joyful-backend-1.onrender.com
-- **URL Documentação:** https://pet-joyful-backend-1.onrender.com/api-docs
-- **Funcionalidades:**
-  - Autenticação JWT (login/registro)
-  - Gerenciamento de usuários
-  - Sistema de mensagens
-  - Sistema de denúncias
-- **Porta Local:** `3001`
-- **Deploy:** Render
-
-##### 2. Microserviço de Eventos
-
-- **Repositório:** [PET-JOYFUL-EVENTS-SERVICE](https://github.com/JaoVitorz/PET-JOYFUL-EVENTS-SERVICE)
-- **URL Produção:** https://pet-joyful-events-service.onrender.com
-- **Funcionalidades:**
-  - CRUD completo de eventos
-  - Campanhas de adoção
-  - Gerenciamento de participantes
-- **Porta Local:** `3002`
-- **Deploy:** Render
-
-##### 3. Microserviço de Perfil e Álbuns
-
-- **Repositório:** [EDICAO-PERFIL-MICROSERVICE](https://github.com/JaoVitorz/EDICAO-PERFIL-MICROSERVICE)
-- **URL Produção:** https://edicao-perfil-microservice.onrender.com
-- **Funcionalidades:**
-  - Edição de perfil de usuário
-  - Upload de fotos de perfil
-  - Gerenciamento de álbuns de fotos
-  - Informações de pets cadastrados
-- **Porta Local:** `3001`
-- **Deploy:** Render
+| Serviço | Imagem | Link |
+|---------|--------|------|
+| **Backend** | `joaovitorjesus/pet-joyful-backend` | [Docker Hub](https://hub.docker.com/r/joaovitorjesus/pet-joyful-backend) |
+| **Frontend** | `joaovitorjesus/pet-joyful-frontend` | [Docker Hub](https://hub.docker.com/r/joaovitorjesus/pet-joyful-frontend) |
 
 ---
-
 ### 🎯 Funcionalidades Principais (Ecossistema Completo)
 
 #### Autenticação e Autorização (Este Backend)
@@ -443,39 +486,193 @@ O projeto utiliza uma **arquitetura de microsserviços** com múltiplos backends
 
 ## 🛠️ Stack Tecnológica
 
-### Frontend 🚀
+### Backend Principal (Este Repositório)
 
-- **Next.js 15** - Framework React com SSR
-- **React 19** - Biblioteca UI
-- **TypeScript** - Tipagem estática
-- **Tailwind CSS 4** - Framework CSS
-- **Bootstrap 5** - Componentes UI
-- **React-Bootstrap** - Bootstrap para React
-- **React Icons / Lucide React** - Ícones
-- **Formik** - Gerenciamento de formulários
-- **Yup** - Validação de schemas
-- **Axios** - Cliente HTTP
+| Tecnologia | Versão | Função |
+|------------|--------|--------|
+| **Node.js** | 20 (LTS) | Runtime JavaScript |
+| **TypeScript** | 5.x | Tipagem estática |
+| **Express** | 5.x | Framework web |
+| **MongoDB Atlas** | — | Banco de dados NoSQL em nuvem |
+| **Mongoose** | 8.x | ODM para MongoDB |
+| **jsonwebtoken** | 9.x | Autenticação JWT |
+| **bcryptjs** | 3.x | Hash de senhas |
+| **CORS** | 2.x | Políticas de origem cruzada |
+| **dotenv** | 17.x | Variáveis de ambiente |
+| **Winston** | 3.x | Sistema de logs estruturados |
+| **@logtail/node + @logtail/winston** | 0.5.x | Integração Better Stack (Logtail) |
+| **@google/genai** | 1.x | IA Generativa (Gemini) — PetBot |
+| **swagger-autogen + swagger-ui-express** | — | Documentação automática da API |
+| **http-proxy-middleware** | 3.x | Gateway / proxy de microsserviços |
+| **serverless-http** | 4.x | Suporte Vercel Serverless |
 
-### Backend (Este Microsserviço)
+### DevOps & Infraestrutura
 
-- **Node.js 18+** - Runtime JavaScript
-- **Express 5** - Framework web
-- **MongoDB Atlas** - Banco de dados NoSQL
-- **Mongoose 8** - ODM para MongoDB
-- **JWT (jsonwebtoken)** - Autenticação
-- **Bcryptjs** - Criptografia de senhas
-- **CORS** - Políticas de origem cruzada
-- **Dotenv** - Gerenciamento de variáveis de ambiente
+| Tecnologia | Função |
+|------------|--------|
+| **Docker** | Containerização da aplicação |
+| **Docker Compose** | Orquestração local (Backend + MongoDB + Frontend) |
+| **Docker Hub** | Registro de imagens (`joaovitorjesus/pet-joyful-backend`) |
+| **GitHub Actions** | Pipeline CI/CD automatizado |
+| **SonarCloud** | Análise estática de qualidade de código |
+| **Better Stack (Logtail)** | Centralização de logs e alertas em tempo real |
+| **Render** | Deploy de produção e homologação (PROD + HML) |
+| **Vercel** | Deploy do Frontend (alternativo) |
 
-### DevOps & Ferramentas
+### Ferramentas de Desenvolvimento
 
-- **Docker** e Docker Compose - Containerização
-- **Render** - Deploy backend (microsserviços)
-- **Vercel** - Deploy frontend
-- **Swagger UI / swagger-autogen** - Documentação automática
-- **Nodemon** - Hot reload em desenvolvimento
-- **Git** - Controle de versão
-- **npm** - Gerenciador de pacotes
+| Tecnologia | Função |
+|------------|--------|
+| **Jest + ts-jest** | Testes unitários e de integração |
+| **Supertest** | Testes HTTP de ponta a ponta |
+| **mongodb-memory-server** | Banco em memória para testes |
+| **ESLint + Prettier** | Lint e formatação de código |
+| **tsx + nodemon** | Hot reload em desenvolvimento |
+| **Postman / Insomnia** | Testes manuais de API |
+
+---
+
+## 🔄 CI/CD e DevOps
+
+O pipeline de CI/CD é gerenciado inteiramente pelo **GitHub Actions** (`.github/workflows/ci.yml`) e executa automaticamente a cada push nas branches `main` e `develop`.
+
+### Fluxo do Pipeline
+
+```
+Push (main / develop)
+        │
+        ▼
+┌──────────────────────────────────┐
+│  JOB: version                    │
+│  1. Checkout do código           │
+│  2. Instalar dependências        │
+│  3. Build (npm run build)        │
+│  4. Testes unitários (npm test)  │
+│  5. Calcular versão SemVer       │
+│  6. Atualizar package.json       │
+│  7. Criar e publicar TAG Git     │
+│  8. SonarCloud Scan              │
+│  9. Notificação por e-mail       │
+│ 10. Notificação no Discord       │
+└──────────────┬───────────────────┘
+               │
+               ▼
+┌──────────────────────────────────┐
+│  JOB: docker-build               │
+│  1. Build imagem Docker          │
+│     tag: {versão} + latest       │
+│  2. Push para Docker Hub         │
+└──────────────┬───────────────────┘
+               │
+               ▼
+┌──────────────────────────────────┐
+│  JOB: deploy-hml                 │
+│  Ambiente: hml                   │
+│  Deploy na Render (HML)          │
+│  Imagem: mesma tag da versão     │
+└──────────────┬───────────────────┘
+               │ (apenas branch main)
+               ▼
+┌──────────────────────────────────┐
+│  JOB: deploy-prod                │
+│  Ambiente: prod                  │
+│  Deploy na Render (PROD)         │
+│  Notificação Discord: 🚀 Deploy  │
+└──────────────────────────────────┘
+```
+
+### Versionamento Automático (SemVer)
+
+O pipeline detecta automaticamente o tipo de versão com base nos commits:
+
+| Prefixo do commit | Tipo de bump | Exemplo |
+|-------------------|--------------|---------|
+| `feat!:` / `BREAKING CHANGE` | `major` | `1.0.0` → `2.0.0` |
+| `feat:` | `minor` | `1.0.0` → `1.1.0` |
+| `fix:`, `chore:`, outros | `patch` | `1.0.0` → `1.0.1` |
+
+### Secrets Configuradas
+
+| Secret | Ambiente | Uso |
+|--------|----------|-----|
+| `RENDER_API_KEY` | PROD + HML | Deploy automático na Render |
+| `DOCKERHUB_USERNAME` | CI | Push de imagens |
+| `DOCKER_PASSWORD` | CI | Autenticação Docker Hub |
+| `SONAR_TOKEN` | CI | Análise SonarCloud |
+| `EMAIL_USERNAME` + `EMAIL_PASSWORD` | CI | Notificação por e-mail em falhas |
+| `DISCORD_WEBHOOK_URL` | CI | Notificação no Discord |
+| `MONGO_URI` | HML + PROD | Conexão com MongoDB |
+| `JWT_SECRET` | HML + PROD | Assinatura de tokens |
+| `ADMIN_KEY` | HML + PROD | Chave de acesso administrativo |
+| `LOGTAIL_TOKEN` + `LOGTAIL_URL` | HML + PROD | Envio de logs ao Better Stack |
+| `GEMINI_API_KEY` | HML + PROD | API do PetBot (Gemini) |
+
+---
+
+## 🐳 Docker e Containerização
+
+### Dockerfile (Multi-stage Build)
+
+```dockerfile
+# Stage 1: Build
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm install --no-audit --no-fund
+COPY . .
+RUN npm run build
+
+# Stage 2: Produção (apenas dependências de produção)
+FROM node:20-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm install --omit=dev --no-audit --no-fund
+COPY --from=builder /app/dist ./dist
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+USER appuser
+EXPOSE 5000
+ENV NODE_ENV=production
+CMD ["node", "dist/server.js"]
+```
+
+### Docker Hub — Tags disponíveis
+
+| Tag | Descrição |
+|-----|-----------|
+| `latest` | Versão mais recente (branch main) |
+| `v1.4.x` | Release específica gerada pelo pipeline |
+
+```bash
+# Baixar e executar a imagem de produção
+docker pull joaovitorjesus/pet-joyful-backend:latest
+
+docker run -p 5000:5000 \
+  -e MONGO_URI=sua_uri \
+  -e JWT_SECRET=seu_secret \
+  -e ADMIN_KEY=sua_chave \
+  joaovitorjesus/pet-joyful-backend:latest
+```
+
+### Docker Compose (Local)
+
+```bash
+# Subir apenas Backend + MongoDB
+docker compose up --build mongodb backend
+
+# Subir tudo (Backend + MongoDB + Frontend)
+git clone https://github.com/JaoVitorz/Pet-Joyful---Projeto-Integrador--NextJs.git frontend
+docker compose up --build
+```
+
+#### Serviços do Compose
+
+| Container | Porta | Tecnologia |
+|-----------|-------|------------|
+| `pet-joyful-backend` | 5000 | Node.js 20 |
+| `pet-joyful-db` | 27017 | MongoDB 7 |
+| `pet-joyful-frontend` | 3000 | Next.js 15 |
+
+> **Healthcheck:** O backend só sobe após o MongoDB estar `healthy`.
 
 ---
 
@@ -579,45 +776,55 @@ http://localhost:3001/api-docs
 
 ## 📡 Endpoints da API (Este Microsserviço)
 
-### 🔐 Autenticação
+## 📡 Endpoints da API
 
-| Método | Endpoint             | Descrição                     | Auth         |
-| ------ | -------------------- | ----------------------------- | ------------ |
-| POST   | `/api/auth/register` | Cadastrar novo usuário        | Não          |
-| POST   | `/api/auth/login`    | Login (retorna JWT)           | Não          |
-| GET    | `/api/auth/me`       | Perfil do usuário autenticado | Bearer Token |
-| PUT    | `/api/auth/me`       | Atualizar perfil              | Bearer Token |
-| DELETE | `/api/auth/me`       | Deletar conta                 | Bearer Token |
+### 🔐 Autenticação (`/api/auth`)
 
-### 👤 Usuários
+| Método | Endpoint | Descrição | Auth |
+|--------|----------|-----------|------|
+| `POST` | `/api/auth/register` | Cadastrar novo usuário | — |
+| `POST` | `/api/auth/login` | Login (retorna JWT) | — |
+| `GET` | `/api/auth/me` | Perfil do usuário autenticado | Bearer Token |
+| `PUT` | `/api/auth/me` | Atualizar perfil | Bearer Token |
+| `DELETE` | `/api/auth/me` | Deletar conta | Bearer Token |
 
-| Método | Endpoint         | Descrição                | Auth      |
-| ------ | ---------------- | ------------------------ | --------- |
-| GET    | `/api/users`     | Listar todos os usuários | Admin Key |
-| GET    | `/api/users/:id` | Buscar usuário por ID    | Admin Key |
-| POST   | `/api/users`     | Criar usuário            | Admin Key |
-| PUT    | `/api/users/:id` | Atualizar usuário        | Admin Key |
-| DELETE | `/api/users/:id` | Deletar usuário          | Admin Key |
+### 👤 Usuários (`/api/users`)
 
-### 💬 Mensagens
+| Método | Endpoint | Descrição | Auth |
+|--------|----------|-----------|------|
+| `GET` | `/api/users` | Listar todos os usuários | Admin Key |
+| `GET` | `/api/users/:id` | Buscar usuário por ID | Admin Key |
+| `POST` | `/api/users` | Criar usuário | Admin Key |
+| `PUT` | `/api/users/:id` | Atualizar usuário | Admin Key |
+| `DELETE` | `/api/users/:id` | Deletar usuário | Admin Key |
 
-| Método | Endpoint                 | Descrição          | Auth      |
-| ------ | ------------------------ | ------------------ | --------- |
-| POST   | `/api/messages/post`     | Criar mensagem     | Não       |
-| GET    | `/api/messages/post`     | Listar mensagens   | Não       |
-| PUT    | `/api/messages/post/:id` | Atualizar mensagem | Admin Key |
-| DELETE | `/api/messages/post/:id` | Deletar mensagem   | Admin Key |
+### 💬 Mensagens (`/api/messages`)
 
-### 🚨 Denúncias
+| Método | Endpoint | Descrição | Auth |
+|--------|----------|-----------|------|
+| `POST` | `/api/messages/post` | Criar mensagem | — |
+| `GET` | `/api/messages/post` | Listar mensagens | — |
+| `PUT` | `/api/messages/post/:id` | Atualizar mensagem | Admin Key |
+| `DELETE` | `/api/messages/post/:id` | Deletar mensagem | Admin Key |
 
-| Método | Endpoint                     | Descrição          | Auth      |
-| ------ | ---------------------------- | ------------------ | --------- |
-| POST   | `/api/messages/denuncia`     | Criar denúncia     | Não       |
-| GET    | `/api/messages/denuncia`     | Listar denúncias   | Admin Key |
-| PUT    | `/api/messages/denuncia/:id` | Atualizar denúncia | Admin Key |
-| DELETE | `/api/messages/denuncia/:id` | Deletar denúncia   | Admin Key |
+### 🚨 Denúncias (`/api/messages/denuncia`)
+
+| Método | Endpoint | Descrição | Auth |
+|--------|----------|-----------|------|
+| `POST` | `/api/messages/denuncia` | Criar denúncia | — |
+| `GET` | `/api/messages/denuncia` | Listar denúncias | Admin Key |
+| `PUT` | `/api/messages/denuncia/:id` | Atualizar denúncia | Admin Key |
+| `DELETE` | `/api/messages/denuncia/:id` | Deletar denúncia | Admin Key |
+
+### 🤖 Chat com IA — PetBot (`/api/chat`)
+
+| Método | Endpoint | Descrição | Auth |
+|--------|----------|-----------|------|
+| `POST` | `/api/chat` | Enviar mensagem ao PetBot (Gemini) | — |
+| `GET` | `/api/chat/health` | Health check da integração Gemini | — |
 
 ---
+
 
 ## 📡 Endpoints dos Outros Microsserviços
 
@@ -786,69 +993,101 @@ curl -X POST https://pet-joyful-backend-1.onrender.com/api/messages/post \
 curl -X GET https://pet-joyful-backend-1.onrender.com/api/users \
   -H "x-admin-key: SUA_ADMIN_KEY_AQUI"
 ```
+### Suítes de teste
 
+| Arquivo | APIs testadas | Total de testes |
+|---------|--------------|-----------------|
+| `authController.spec.ts` | POST /register, POST /login, GET/PUT/DELETE /me | 20 |
+| `userController.spec.ts` | POST/GET/GET:id/PUT/DELETE /users | 18 |
+| `messagesController.spec.ts` | POST/GET /messages/post e /denuncia + CRUD admin | 16 |
+| `enums.spec.ts` | UserTipo, AlvoTipo | 6 |
+
+### Executar testes
+
+```bash
+# Todos os testes
+npm test
+
+# Com cobertura
+npm run test:coverage
+
+# Modo watch
+npm run test:watch
+```
+
+### Banco de dados em memória (mongodb-memory-server)
+
+Todos os testes de integração utilizam o `mongodb-memory-server`, eliminando a necessidade de um banco real:
+
+```typescript
+beforeAll(async () => {
+  mongoServer = await MongoMemoryServer.create();
+  await mongoose.connect(mongoServer.getUri());
+});
+```
+
+---
 ---
 
 ## 📁 Estrutura do Projeto
 
 ```
 Pet-Joyful-Backend/
+├── .github/
+│   └── workflows/
+│       └── ci.yml                  # Pipeline CI/CD GitHub Actions
 ├── backend/
 │   └── src/
-│       ├── controllers/           # Lógica de negócio
-│       │   ├── authController.js      # Autenticação (login/registro)
-│       │   ├── userController.js      # CRUD de usuários
-│       │   └── messagesController.js  # Mensagens e denúncias
-│       ├── models/                # Schemas MongoDB (Mongoose)
-│       │   ├── userModel.js           # Modelo de usuário
-│       │   ├── postMessageModel.js    # Modelo de mensagem
-│       │   └── denunciaMessageModel.js # Modelo de denúncia
-│       ├── routes/                # Definição de rotas Express
-│       │   ├── authRoutes.js          # Rotas de autenticação
-│       │   ├── userRoutes.js          # Rotas de usuários
-│       │   ├── messagesRoutes.js      # Rotas de mensagens
-│       │   └── index.js               # Agregador de rotas
-│       ├── middlewares/           # Middlewares customizados
-│       │   ├── ensureAuth.js          # Verificação de JWT/Admin Key
-│       │   ├── verifyToken.js         # Validação de JWT
-│       │   ├── ensureAdminKey.js      # Validação de Admin Key
-│       │   ├── verifyApiKey.js        # Validação de API Key
-│       │   └── errorHandler.js        # Tratamento de erros
-│       ├── database/              # Conexão com banco de dados
-│       │   └── connection.js          # Config MongoDB/Mongoose
-│       ├── config/                # Configurações gerais
-│       │   ├── db.js                  # Config alternativa DB
-│       │   └── swagger.json           # Config Swagger
-│       ├── app.js                 # Express App (configuração)
-│       ├── swagger.js             # Configuração Swagger Autogen
-│       └── swagger-output.json    # Documentação gerada
-├── api/
-│   └── index.js                   # Vercel Serverless Handler
-├── services/                      # Outros microsserviços (estrutura)
-│   ├── gateway-service/
-│   │   └── src/
-│   │       └── index.js
-│   └── messages-service/
-│       ├── package.json
-│       └── src/
-│           ├── index.js
-│           ├── controllers/
-│           │   └── postsController.js
-│           ├── database/
-│           │   └── connection.js
-│           ├── models/
-│           │   └── postModel.js
-│           └── routes/
-│               └── postsRoutes.js
-├── nginx/
-│   └── nginx.conf                 # Configuração Nginx (se usar)
-├── docker-compose.yml             # Orquestração Docker
-├── Dockerfile                     # Imagem Docker
-├── server.js                      # Entry point principal
-├── package.json                   # Dependências e scripts
-├── .env                           # Variáveis de ambiente (não commitar!)
-├── .gitignore                     # Arquivos ignorados pelo Git
-└── README.md                      # Este arquivo
+│       ├── config/
+│       │   ├── swagger.json        # Swagger gerado (usado em PROD)
+│       │   └── swagger-output.json # Swagger output do autogen
+│       ├── controllers/
+│       │   ├── authController.ts   # Autenticação (register/login/me)
+│       │   ├── chatController.ts   # PetBot — integração Gemini
+│       │   ├── messagesController.ts # Mensagens e denúncias
+│       │   └── userController.ts   # CRUD de usuários
+│       ├── database/
+│       │   └── connection.ts       # Conexão com MongoDB
+│       ├── logger/
+│       │   └── logger.ts           # Winston + BetterStack (Logtail)
+│       ├── middlewares/
+│       │   ├── ensureAuth.ts       # JWT + Admin Key
+│       │   ├── ensureAdminKey.ts   # Validação Admin Key
+│       │   ├── errorHandler.ts     # Middleware global de erros
+│       │   ├── requestLogger.ts    # Log de todas as requisições
+│       │   └── verifyToken.ts      # Verificação JWT
+│       ├── models/
+│       │   ├── userModel.ts        # Schema de usuário
+│       │   ├── postMessageModel.ts # Schema de mensagem
+│       │   └── denunciaMessageModel.ts # Schema de denúncia
+│       ├── routes/
+│       │   ├── authRoutes.ts
+│       │   ├── chatRoutes.ts
+│       │   ├── messagesRoutes.ts
+│       │   ├── userRoutes.ts
+│       │   └── index.ts            # Agregador de rotas
+│       ├── swagger.ts              # Gerador de documentação
+│       ├── types/
+│       │   └── index.ts            # Tipos e enums TypeScript
+│       └── app.ts                  # Express App
+├── services/
+│   ├── gateway-service/            # API Gateway (proxy)
+│   └── messages-service/           # MS de mensagens/posts
+├── test/
+│   ├── integration/
+│   │   ├── authController.spec.ts
+│   │   ├── messagesController.spec.ts
+│   │   └── userController.spec.ts
+│   └── unit/
+│       └── enums.spec.ts
+├── Dockerfile                      # Build multi-stage
+├── docker-compose.yml              # Orquestração local
+├── .dockerignore
+├── sonar-project.properties        # Configuração SonarCloud
+├── jest.config.ts                  # Configuração de testes
+├── tsconfig.json
+├── package.json
+└── server.ts                       # Entry point
 ```
 
 ---
@@ -887,11 +1126,9 @@ taskkill /PID <PID> /F
 $env:PORT=3005; npm run dev
 ```
 
-### Erro: "JWT malformed" ou "Invalid token"
+### Erro: `JWT malformed`
 
-- Verifique se o token está sendo enviado corretamente no header
-- Certifique-se de que `JWT_SECRET` está configurado no `.env`
-- Faça login novamente para obter um token válido
+Verifique se `JWT_SECRET` está configurado e faça login novamente para obter um token válido.
 
 ### Erro: "Cannot connect to other microservices"
 
@@ -902,22 +1139,53 @@ Verifique as URLs dos microsserviços:
 https://pet-joyful-events-service.onrender.com/api/events
 https://edicao-perfil-microservice.onrender.com/api/profile/me
 ```
+### Erro: `Cannot connect to MongoDB`
+
+```bash
+# Verifique a MONGO_URI no .env e o IP na whitelist do Atlas
+node -e "require('./backend/src/database/connection.js')"
+```
+
+### Erro: `Port 5000 already in use`
+
+```bash
+# Linux/Mac
+lsof -ti:5000 | xargs kill
+
+# Windows
+netstat -ano | findstr :5000
+taskkill /PID <PID> /F
+```
+
+### Erro: `connection refused` no Docker
+
+O host do MongoDB no docker-compose deve ser `mongodb` (nome do serviço), não `localhost`:
+
+```
+MONGO_URI=mongodb://admin:senha@mongodb:27017/PETJOYFUL-DB?authSource=admin
+```
+
+
 
 ---
 
+
+
 ## 🔒 Segurança
 
-### Implementações de Segurança
+| Implementação | Status |
+|---------------|--------|
+| JWT Tokens (7 dias) | ✅ |
+| Bcrypt (hash de senhas, salt 10) | ✅ |
+| CORS configurado por origin | ✅ |
+| Admin Key para rotas sensíveis | ✅ |
+| Variáveis de ambiente (sem segredos no código) | ✅ |
+| Usuário não-root no container Docker | ✅ |
+| HTTPS em produção (Render) | ✅ |
+| Middleware global de erros | ✅ |
+| Logs de segurança (BetterStack) | ✅ |
 
-- ✅ **JWT Tokens** - Autenticação stateless
-- ✅ **Bcrypt** - Hash de senhas com salt rounds
-- ✅ **CORS** - Políticas de origem cruzada configuradas
-- ✅ **Validação de Inputs** - Sanitização de dados
-- ✅ **Rate Limiting** - Proteção contra DDoS (planejado)
-- ✅ **Helmet.js** - Headers de segurança HTTP (planejado)
-- ✅ **HTTPS** - Comunicação criptografada em produção
-- ✅ **Environment Variables** - Segredos não expostos no código
-- ✅ **Admin Key** - Camada extra para operações administrativas
+---
 
 ### Boas Práticas
 
@@ -1817,39 +2085,7 @@ Contribuições são bem-vindas! Para contribuir:
 
 
 
-## 🐳 Docker
 
-### Pré-requisito
-Ter o [Docker](https://docs.docker.com/get-docker/) instalado.
-
-### Gerar a imagem
-```bash
-docker build -t pet-joyful-backend .
-```
-
-### Rodar o container
-```bash
-docker run -d --name pet-joyful-backend -p 5000:5000 -e MONGO_URI="sua_string_aqui" -e LOGTAIL_TOKEN="seu_token_aqui" -e LOGTAIL_URL="sua_url_aqui" -e GEMINI_API_KEY="sua_chave_aqui" pet-joyful-backend
-```
-
-### Verificar se está rodando
-```bash
-docker ps
-```
-
-### Ver logs
-```bash
-docker logs pet-joyful-backend
-```
-
-### Parar o container
-```bash
-docker stop pet-joyful-backend
-```
-trigger actions
-
-
----
 
 ## 📊 Observabilidade — Logs e Alertas (Better Stack)
 
@@ -1948,83 +2184,31 @@ Disparado em **13 de abril de 2026 às 20h15 GMT-5** com 120 ocorrências de sta
 ![E-mail de alerta de erros críticos](docs/images/email-alerta-1.webp)
 
 
-## 🐳 Docker Hub
-
-As imagens Docker do projeto são publicadas automaticamente no Docker Hub via GitHub Actions a cada push na branch `main`.
-
-### Repositórios
-
-| Serviço   | Imagem                                  | Link |
-|-----------|-----------------------------------------|------|
-| Backend   | `joaovitorjesus/pet-joyful-backend`     | [Docker Hub](https://hub.docker.com/r/joaovitorjesus/pet-joyful-backend) |
-| Frontend  | `joaovitorjesus/pet-joyful-frontend`    | [Docker Hub](https://hub.docker.com/r/joaovitorjesus/pet-joyful-frontend) |
-
-### Tags disponíveis (Backend)
-
-| Tag      | Descrição              |
-|----------|------------------------|
-| `latest` | Versão mais recente    |
-| `v1.4.0` | Release estável atual  |
-| `v1.3.0` | Release anterior       |
-| `v1.2.0` | Release anterior       |
-
-### Como baixar e executar a imagem
-
-```bash
-# Baixar a imagem mais recente
-docker pull joaovitorjesus/pet-joyful-backend:latest
-
-# Executar o container
-docker run -p 3000:3000 \
-  -e MONGO_URI=sua_uri \
-  -e JWT_SECRET=seu_secret \
-  joaovitorjesus/pet-joyful-backend:latest
-```
-
----
-
-## 🔍 Qualidade de Código – SonarCloud
-
-O projeto está integrado ao **SonarCloud** para análise estática contínua de qualidade de código, executada automaticamente pelo pipeline do GitHub Actions.
-
 🔗 [Ver análise no SonarCloud](https://sonarcloud.io/project/overview?id=JaoVitorz_Pet-Joyful-Backend)
 
 ### Métricas atuais
 
-| Métrica          | Resultado |
-|------------------|-----------|
-| Security         | A         |
-| Reliability      | C (1.386) |
-| Maintainability  | A (2.762) |
-| Duplications     | 32.3%     |
-| Hotspots Reviewed| 0.0%      |
-| Quality Gate     | ✅ Passed |
+| Métrica | Resultado |
+|---------|-----------|
+| Security | **A** |
+| Maintainability | **A** |
+| Reliability | C |
+| Duplications | 32.3% |
+| Quality Gate | ✅ Passed |
 
-> Última análise: **07/05/2026 às 18:29**, com aproximadamente **11k linhas de código**.
-> Snapshot atual: **0 security issues**, **2.784 open issues** e **cobertura sem dados exibidos**.
+### Configuração (`sonar-project.properties`)
 
-# 🐳 Rodando com Docker
-
-Este guia explica como executar o projeto **Pet Joyful Backend** usando Docker e Docker Compose, sem precisar instalar Node.js ou MongoDB diretamente na sua máquina.
-
----
-
-## 📋 Pré-requisitos
-
-- **Docker Engine** 24+ instalado
-- **Docker Compose** plugin instalado
-- Arquivo `.env` configurado na raiz do projeto (veja a seção de variáveis de ambiente)
-
-> **No Windows:** recomendamos usar o Docker Engine diretamente no **WSL2 (Ubuntu)**, sem Docker Desktop.
-> Para instalar o Docker Engine no WSL2:
-> ```bash
-> sudo apt update && sudo apt install -y docker.io docker-compose-plugin
-> sudo service docker start
-> sudo usermod -aG docker $USER
-> ```
-> Feche e abra o terminal novamente após esses comandos.
+```properties
+sonar.projectKey=pet-joyful-backend
+sonar.organization=jaovitorz
+sonar.sources=backend/src
+sonar.exclusions=**/*.test.ts,**/__tests__/**,**/node_modules/**,**/dist/**,coverage/**
+sonar.typescript.lcov.reportPaths=coverage/lcov.info
+```
 
 ---
+
+
 
 ## ⚙️ Configurando as variáveis de ambiente
 
@@ -2188,16 +2372,44 @@ Os serviços se comunicam internamente pela rede `pet-joyful-network`. O backend
 
 <div align="center">
 
-## 🐾 Conectando Corações e Patas
+## 🤝 Contribuindo
 
-**Pet-Joyful** - Promovendo adoção responsável e cuidados com animais através da tecnologia.
-
-**Desenvolvido com ❤️ pela Equipe Pet Joyful - Fatec São Paulo**
-
-⭐ Se este projeto foi útil, considere dar uma estrela!
+1. Fork o projeto
+2. Crie uma branch (`git checkout -b feat/MinhaFeature`)
+3. Commit usando Conventional Commits (`git commit -m 'feat: adiciona nova funcionalidade'`)
+4. Push (`git push origin feat/MinhaFeature`)
+5. Abra um Pull Request
 
 ---
 
-**[⬆ Voltar ao topo](#-pet-joyful---backend-api)**
+## 📝 Licença
+
+Este projeto está sob a licença **ISC**.
+
+Desenvolvido para fins acadêmicos como parte do Projeto Integrador da **Fatec São Paulo**.
+
+---
+
+## 📞 Contato & Suporte
+
+- **Swagger Docs:** [pet-joyful-backend.onrender.com/api-docs](https://pet-joyful-backend.onrender.com/api-docs)
+- **Repositório Backend:** [github.com/JaoVitorz/Pet-Joyful-Backend](https://github.com/JaoVitorz/Pet-Joyful-Backend)
+- **Repositório Frontend:** [github.com/JaoVitorz/Pet-Joyful---Projeto-Integrador--NextJs](https://github.com/JaoVitorz/Pet-Joyful---Projeto-Integrador--NextJs)
+- **Issues:** [GitHub Issues](https://github.com/JaoVitorz/Pet-Joyful-Backend/issues)
+- **E-mail:** joao.jesus18@fatec.sp.gov.br
+
+---
+
+<div align="center">
+
+## 🐾 Conectando Corações e Patas
+
+**Pet Joyful** — Promovendo adoção responsável através da tecnologia.
+
+**Desenvolvido com ❤️ pela Equipe Pet Joyful — Fatec São Paulo**
+
+⭐ Se este projeto foi útil, considere dar uma estrela!
+
+**[⬆ Voltar ao topo](#-pet-joyful--backend-api)**
 
 </div>
