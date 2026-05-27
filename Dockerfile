@@ -4,7 +4,6 @@ WORKDIR /app
 
 COPY package*.json ./
 
-
 RUN npm install --no-audit --no-fund
 
 COPY . .
@@ -19,10 +18,13 @@ WORKDIR /app
 
 COPY package*.json ./
 
-# 👇 mais moderno que --only=production
 RUN npm install --omit=dev --no-audit --no-fund
 
 COPY --from=builder /app/dist ./dist
+
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+USER appuser
 
 EXPOSE 5000
 
