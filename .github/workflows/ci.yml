@@ -196,7 +196,7 @@ jobs:
       - name: Definir repositório Docker
         id: repo
         run: |
-          REPO_NAME="${DOCKERHUB_USERNAME}/pet-joyful-backend"
+          REPO_NAME="${{ secrets.DOCKERHUB_USERNAME }}/pet-joyful-backend"
           echo "repo_name=${REPO_NAME}" >> $GITHUB_OUTPUT
 
       - name: Build da imagem Docker
