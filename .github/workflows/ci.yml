@@ -145,7 +145,7 @@ jobs:
       - name: Discord - Falha
         if: failure()
         run: |
-          curl -s -X POST "${DISCORD_WEBHOOK_URL}" \
+          curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
             -H "Content-Type: application/json" \
             -d '{
               "embeds": [{
@@ -162,7 +162,7 @@ jobs:
       - name: Discord - Sucesso
         if: success()
         run: |
-          curl -s -X POST "${DISCORD_WEBHOOK_URL }" \
+          curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
             -H "Content-Type: application/json" \
             -d '{
               "embeds": [{
@@ -313,7 +313,7 @@ jobs:
       - name: Discord - Deploy PROD concluído
         if: success()
         run: |
-          curl -s -X POST "${DISCORD_WEBHOOK_URL}" \
+          curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
             -H "Content-Type: application/json" \
             -d '{
               "embeds": [{

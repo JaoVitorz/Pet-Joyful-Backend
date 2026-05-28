@@ -10,11 +10,11 @@ export const register = async (
   res: Response,
 ): Promise<void> => {
   try {
-    // Aceita ambos os formatos: português (nome, senha, tipo) e inglês (name, password, type )
-    const nome = (req.body.nome || req.body.name) as string;
-    const email = req.body.email as string;
-    const senha = (req.body.senha || req.body.password) as string;
-    const tipo = (req.body.tipo || req.body.type) as string;
+    const body = req.body as Record<string, string>;
+    const nome = body.nome || body.name;
+    const email = body.email;
+    const senha = body.senha || body.password;
+    const tipo = body.tipo || body.type;
 
     if (!nome || !email || !senha || !tipo) {
       res.status(400).json({error: 'Todos os campos são obrigatórios!'});
@@ -57,8 +57,9 @@ export const login = async (
   res: Response,
 ): Promise<void> => {
   try {
-    const email = req.body.email as string;
-    const senha = (req.body.senha || req.body.password) as string;
+    const body = req.body as Record<string, string>;
+    const email = body.email;
+    const senha = body.senha || body.password;
 
     if (!email || !senha) {
       res.status(400).json({error: 'Email e senha são obrigatórios'});
@@ -141,12 +142,11 @@ export const updateProfile = async (
       return;
     }
 
-    const {nome, email, senha, tipo} = req.body as {
-      nome?: string;
-      email?: string;
-      senha?: string;
-      tipo?: string;
-    };
+    const body = req.body as Record<string, string>;
+    const nome = body.nome || body.name;
+    const email = body.email;
+    const senha = body.senha || body.password;
+    const tipo = body.tipo || body.type;
 
     const updateData: Record<string, string> = {};
     if (nome) updateData.nome = nome;

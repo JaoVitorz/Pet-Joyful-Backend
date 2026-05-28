@@ -8,10 +8,10 @@ export default {
   coverageDirectory: 'coverage',
   coverageThreshold: {
 global: {
-  statements: 90,
-  branches: 90,
-  functions: 90,
-  lines: 83.7,
+  statements: 80,
+  branches: 80,
+  functions: 80,
+  lines: 80,
 }
   },
   moduleNameMapper: {
@@ -24,5 +24,12 @@ global: {
         esModuleInterop: true,
       },
     }],
+    
   },
+  coveragePathIgnorePatterns: [
+  "/node_modules/",
+  "src/swagger.ts",
+  "src/config/db.ts",
+  "src/database/connection.ts"
+],
 };

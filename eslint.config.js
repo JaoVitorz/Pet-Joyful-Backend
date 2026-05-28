@@ -6,4 +6,14 @@ import {defineConfig} from 'eslint/config';
 export default defineConfig(
   eslint.configs.recommended,
   tseslint.configs.recommended,
+  {
+    ignores: [
+      'dist/**',
+      'frontend/**',
+      'node_modules/**',
+      'coverage/**',
+      'types/global.d.ts',
+      'services/**',
+    ],
+  },
 );

@@ -52,7 +52,11 @@ export interface AuthRequest extends Request {
   userRole?: string;
   isApiKeyValid?: boolean;
   userEmail?: string;
-  body: any;
+  body: {
+    password: string | undefined;
+    email?: string;
+    senha?: string;
+  };
 }
 
 export default {} as const;

@@ -11,12 +11,11 @@ export const createUser = async (
   res: Response,
 ): Promise<void> => {
   try {
-    const {nome, email, senha, tipo} = req.body as {
-      nome: string;
-      email: string;
-      senha: string;
-      tipo: string;
-    };
+    const body = req.body as Record<string, string>;
+    const nome = body.nome;
+    const email = body.email;
+    const senha = body.senha;
+    const tipo = body.tipo;
 
     if (!nome || !email || !senha || !tipo) {
       res.status(400).json({error: 'Todos os campos são obrigatórios!'});
@@ -110,12 +109,11 @@ export const updateUser = async (
   res: Response,
 ): Promise<void> => {
   try {
-    const {nome, email, senha, tipo} = req.body as {
-      nome?: string;
-      email?: string;
-      senha?: string;
-      tipo?: string;
-    };
+    const body = req.body as Record<string, string>;
+    const nome = body.nome;
+    const email = body.email;
+    const senha = body.senha;
+    const tipo = body.tipo;
 
     const updateData: Record<string, string> = {};
     if (nome) updateData.nome = nome;

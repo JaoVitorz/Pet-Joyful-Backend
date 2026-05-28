@@ -10,7 +10,7 @@ export const createPostMessage = async (
   res: Response,
 ): Promise<void> => {
   try {
-    const {nome, email, mensagem, postId} = req.body as {
+    const {nome, email, mensagem, postId} = req.body as unknown as {
       nome?: string;
       email: string;
       mensagem: string;
@@ -51,7 +51,7 @@ export const createDenuncia = async (
   res: Response,
 ): Promise<void> => {
   try {
-    const {nome, email, descricao, alvoId, alvoTipo} = req.body as {
+    const {nome, email, descricao, alvoId, alvoTipo} = req.body as unknown as {
       nome?: string;
       email: string;
       descricao: string;
