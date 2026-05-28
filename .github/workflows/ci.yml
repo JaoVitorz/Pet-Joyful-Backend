@@ -233,7 +233,7 @@ jobs:
 
       - name: Validar secrets
         run: |
-          if [ -z "${RENDER_API_KEY }" ]; then
+          if [ -z "${{ secrets.RENDER_API_KEY }}" ]; then
             echo "RENDER_API_KEY não definido"
             exit 1
           fi
@@ -280,14 +280,14 @@ jobs:
 
       - name: Validar secrets
         run: |
-          if [ -z "${RENDER_API_KEY }" ]; then
+          if [ -z "${{ secrets.RENDER_API_KEY }}" ]; then
             echo "RENDER_API_KEY não definido"
             exit 1
           fi
 
       - name: Deploy PROD via Render
         env:
-          RENDER_API_KEY: ${RENDER_API_KEY }
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
           SERVICE_ID: srv-d6rjffia214c73bi1r8g
           NEW_VERSION: ${{ needs.version.outputs.version_number }}
 
