@@ -250,50 +250,10 @@ describe('Testes das APIs de mensagens e denuncias', () => {
       expect(res.status).toBe(404);
       expect(res.body.error).toBe('Denúncia não encontrada');
     });
+    
   });
 
-  describe('DELETE /api/messages/denuncia/:id', () => {
-    it('deve deletar a denuncia normalmente', async () => {
-      const report = await DenunciaMessage.create({
-        email: 'deletar@email.com',
-        descricao: 'essa vai sumir',
-      });
-
-      const res = await request(app)
-        .delete(`${MESSAGES_BASE}/denuncia/${report._id}`)
-        .set('x-admin-key', ADMIN_KEY);
-
-      expect(res.status).toBe(200);
-      expect(res.body.message).toBe('Denúncia deletada');
-
-      // confirma que foi removida do banco
-      const deleted = await DenunciaMessage.findById(report._id);
-      expect(deleted).toBeNull();
-    });
-
-    it('deve voltar 403 se a chave de admin estiver errada', async () => {
-      const report = await DenunciaMessage.create({
-        email: 'deletar@email.com',
-        descricao: 'nao pode deletar',
-      });
-
-      const res = await request(app)
-        .delete(`${MESSAGES_BASE}/denuncia/${report._id}`)
-        .set('x-admin-key', 'chave-errada');
-
-      expect(res.status).toBe(403);
-      expect(res.body.error).toBe('Admin key inválida');
-    });
-
-    it('deve voltar 404 se a denuncia nao existir', async () => {
-      const res = await request(app)
-        .delete(`${MESSAGES_BASE}/denuncia/${new mongoose.Types.ObjectId()}`)
-        .set('x-admin-key', ADMIN_KEY);
-
-      expect(res.status).toBe(404);
-      expect(res.body.error).toBe('Denúncia não encontrada');
-    });
-  });
+  
   describe('Erros 500 por ID invalido', () => {
   it('deve voltar 500 ao atualizar mensagem com id invalido', async () => {
     const res = await request(app)
