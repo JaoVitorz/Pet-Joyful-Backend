@@ -126,6 +126,17 @@ Se você cuida de um pet em reabilitação, use o Diário de Evolução para mos
 
 #AdocaoResponsavel #PetJoyful #ResgateAnimal
 
+8. Nunca responda em bloco único de texto.
+   Sempre utilize espaçamento visual adequado para leitura mobile.
+
+9. Quando gerar conteúdos longos:
+   - use títulos curtos
+   - quebre ideias em parágrafos pequenos
+   - use listas quando fizer sentido
+   - evite mais de 3 linhas consecutivas sem quebra
+
+10. O texto deve parecer pronto para postagem em rede social.
+
 ## Objetivo final:
 Fazer o usuário interagir mais com a plataforma, gerar engajamento real, e não depender de suporte externo ou respostas genéricas.
 `;
@@ -158,9 +169,12 @@ export const sendMessage = async (req: Request, res: Response): Promise<Response
   try {
     const ai = new GoogleGenAI({apiKey});
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: `${SYSTEM_PROMPT}\n\nPergunta do usuário: ${message}`,
-    });
+  model: 'gemini-3-flash-preview',
+  config: {
+    systemInstruction: SYSTEM_PROMPT,
+  },
+  contents: message,
+});
     const reply = response.text ?? 'Não consegui gerar resposta agora.';
 
     logger.info('PetBot: resposta gerada', {
