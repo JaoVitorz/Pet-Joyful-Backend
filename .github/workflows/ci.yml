@@ -144,8 +144,10 @@ jobs:
 
       - name: Discord - Falha
         if: failure()
+        env: 
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
-          curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
+          curl -s -X POST "${DISCORD_WEBHOOK_URL}" \
             -H "Content-Type: application/json" \
             -d '{
               "embeds": [{
@@ -161,8 +163,10 @@ jobs:
 
       - name: Discord - Sucesso
         if: success()
+        env: 
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
-          curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
+          curl -s -X POST "${DISCORD_WEBHOOK_URL}" \
             -H "Content-Type: application/json" \
             -d '{
               "embeds": [{
@@ -195,8 +199,10 @@ jobs:
 
       - name: Definir repositório Docker
         id: repo
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
         run: |
-          REPO_NAME="${{ secrets.DOCKERHUB_USERNAME }}/pet-joyful-backend"
+          REPO_NAME="${DOCKERHUB_USERNAME}/pet-joyful-backend"
           echo "repo_name=${REPO_NAME}" >> $GITHUB_OUTPUT
 
       - name: Build da imagem Docker
@@ -232,8 +238,10 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y jq
 
       - name: Validar secrets
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
         run: |
-          if [ -z "${{ secrets.RENDER_API_KEY }}" ]; then
+          if [ -z "${RENDER_API_KEY}" ]; then
             echo "RENDER_API_KEY não definido"
             exit 1
           fi
@@ -279,8 +287,10 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y jq
 
       - name: Validar secrets
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
         run: |
-          if [ -z "${{ secrets.RENDER_API_KEY }}" ]; then
+          if [ -z "${RENDER_API_KEY}" ]; then
             echo "RENDER_API_KEY não definido"
             exit 1
           fi
@@ -312,8 +322,10 @@ jobs:
 
       - name: Discord - Deploy PROD concluído
         if: success()
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
-          curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
+          curl -s -X POST "${DISCORD_WEBHOOK_URL}" \
             -H "Content-Type: application/json" \
             -d '{
               "embeds": [{
