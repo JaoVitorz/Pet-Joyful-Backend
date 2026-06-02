@@ -72,7 +72,11 @@ Formate a resposta como uma postagem moderna de rede social.
 
 Regras obrigatórias:
 - Use parágrafos curtos de no máximo 2 ou 3 linhas.
-- Sempre adicione uma linha em branco entre parágrafos.
+- Use poucas quebras de linha.
+- Faça parágrafos compactos.
+- Use no máximo 1 linha em branco entre blocos importantes.
+- Evite separar cada frase individualmente.
+- O texto deve parecer um post moderno de Instagram/Facebook.
 - Evite blocos grandes de texto.
 - Use emojis de forma leve e organizada.
 - Destaque partes importantes com frases curtas.
