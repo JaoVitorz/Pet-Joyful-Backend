@@ -98,6 +98,12 @@ jobs:
           git push origin HEAD:${{ github.ref_name }}
           git push origin $NEW_VERSION
 
+      - name: Configurar Java 21
+        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@e44258b109568baa0df60ed515909fc6c72cba92 # v2
         with:
