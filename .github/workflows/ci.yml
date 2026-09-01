@@ -115,8 +115,16 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
+          echo "JAVA_HOME=${JAVA_HOME}"
+          java -version
+          export JAVA_HOME=$JAVA_HOME_21_X64
+          export PATH="$JAVA_HOME/bin:$PATH"
+          java -version
+
           sonar-scanner \
-            -Dsonar.token="${SONAR_TOKEN}"
+            -Dsonar.token="${SONAR_TOKEN}" \
+            -Dsonar.java.home="$JAVA_HOME" \
+            -Dsonar.scanner.skipJreProvision=true
 
       - name: Enviar e-mail em caso de falha
         if: failure()
