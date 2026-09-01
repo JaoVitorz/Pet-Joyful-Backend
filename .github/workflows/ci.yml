@@ -48,9 +48,11 @@ jobs:
 
       - name: Criar TAG inicial (se não existir)
         run: |
-          if [ -z "$(git tag)" ]; then
+          if ! git rev-parse --verify v0.0.1 >/dev/null 2>&1; then
             git tag v0.0.1
             git push origin v0.0.1
+          else
+            echo "Tag v0.0.1 já existe; pulando criação"
           fi
 
       - name: Calcular nova versão
@@ -94,9 +96,17 @@ jobs:
         run: |
           NEW_VERSION=${{ steps.versioning.outputs.new_version }}
 
-          git tag $NEW_VERSION
-          git push origin HEAD:${{ github.ref_name }}
-          git push origin $NEW_VERSION
+          git fetch origin "${{ github.ref_name }}" --tags
+          git pull --rebase origin "${{ github.ref_name }}" || true
+
+          if git rev-parse --verify "refs/tags/${NEW_VERSION}" >/dev/null 2>&1; then
+            echo "Tag ${NEW_VERSION} já existe; pulando criação"
+          else
+            git tag "$NEW_VERSION"
+            git push origin "$NEW_VERSION"
+          fi
+
+          git push origin HEAD:"${{ github.ref_name }}"
 
       - name: SonarCloud Scan
         env:
