@@ -98,33 +98,20 @@ jobs:
           git push origin HEAD:${{ github.ref_name }}
           git push origin $NEW_VERSION
 
-      - name: Configurar Java 21
-        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4
-        with:
-          distribution: temurin
-          java-version: '21'
-
-      - name: Instalar SonarScanner
-        run: |
-          curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-6.2.1.4610-linux-x64.zip
-          unzip -q sonar-scanner.zip
-          mv sonar-scanner-* sonar-scanner
-          echo "$GITHUB_WORKSPACE/sonar-scanner/bin" >> "$GITHUB_PATH"
-
       - name: SonarCloud Scan
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          echo "JAVA_HOME=${JAVA_HOME}"
-          java -version
-          export JAVA_HOME=$JAVA_HOME_21_X64
-          export PATH="$JAVA_HOME/bin:$PATH"
-          java -version
-
-          sonar-scanner \
-            -Dsonar.token="${SONAR_TOKEN}" \
-            -Dsonar.java.home="$JAVA_HOME" \
-            -Dsonar.scanner.skipJreProvision=true
+          docker run --rm \
+            -e SONAR_TOKEN="${SONAR_TOKEN}" \
+            -v "${GITHUB_WORKSPACE}:/usr/src" \
+            sonarsource/sonar-scanner-cli:latest \
+            -Dsonar.projectKey=pet-joyful-backend \
+            -Dsonar.organization=jaovitorz \
+            -Dsonar.sources=backend/src \
+            -Dsonar.exclusions="**/*.test.ts,**/__tests__/**,**/node_modules/**,**/dist/**,coverage/**" \
+            -Dsonar.typescript.lcov.reportPaths=coverage/lcov.info \
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
 
       - name: Enviar e-mail em caso de falha
         if: failure()
