@@ -92,6 +92,10 @@ export const verifyEmail = async (
     user.emailVerificationToken = undefined;
     user.emailVerificationExpires = undefined;
     await user.save();
+<<<<<<< HEAD
+=======
+
+>>>>>>> f485c1857cd5fb59419911114adafd2197b6c4b3
     res.json({message: 'E-mail confirmado com sucesso. Sua conta está ativa.'});
   } catch (error) {
     logger.error('Erro ao verificar e-mail:', {message: (error as Error).message});

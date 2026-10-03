@@ -2416,6 +2416,7 @@ Desenvolvido para fins acadêmicos como parte do Projeto Integrador da **Fatec S
 # Confirmação de e-mail
 
 Novos cadastros ficam pendentes até a confirmação do endereço. Configure as
+<<<<<<< HEAD
 variáveis SMTP descritas em `.env.example` no ambiente ou no serviço backend do
 Docker Compose. `API_BASE_URL` deve apontar para a URL pública da API; use
 `EMAIL_VERIFICATION_URL` para personalizar a URL base dos links.
@@ -2423,3 +2424,14 @@ Docker Compose. `API_BASE_URL` deve apontar para a URL pública da API; use
 O token enviado é aleatório, armazenado no banco somente como hash e expira em
 24 horas. Em desenvolvimento sem SMTP, o link aparece no log da API. Em
 produção, a ausência de configuração SMTP impede o cadastro.
+=======
+variáveis SMTP do arquivo `.env.example` no ambiente (ou no serviço backend do
+Docker Compose). `API_BASE_URL` deve apontar para a URL pública da API; use
+`EMAIL_VERIFICATION_URL` quando quiser definir uma URL base separada para os
+links enviados.
+
+O token enviado por e-mail é aleatório, armazenado no banco somente como hash e
+expira em 24 horas. Em desenvolvimento sem SMTP, o link é registrado no log da
+API. Em produção, a ausência de configuração SMTP impede o cadastro e retorna
+erro.
+>>>>>>> f485c1857cd5fb59419911114adafd2197b6c4b3
