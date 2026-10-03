@@ -4,13 +4,8 @@ import mongoose from 'mongoose';
 import {createHash} from 'node:crypto';
 import app from '../../backend/src/app';
 import userModel from '../../backend/src/models/userModel';
-import {checkCpf} from '../../backend/src/services/cpfService';
 import {sendVerificationEmail} from '../../backend/src/services/emailService';
 
-jest.mock('../../backend/src/services/cpfService', () => ({
-  ...jest.requireActual('../../backend/src/services/cpfService'),
-  checkCpf: jest.fn(),
-}));
 jest.mock('../../backend/src/services/emailService', () => ({sendVerificationEmail: jest.fn()}));
 
 process.env.JWT_SECRET = 'test-secret-key-for-tests';
@@ -36,11 +31,7 @@ describe('Testes das APIs de autenticacao', () => {
     await userModel.deleteMany({});
   });
 
-  beforeEach(() => {
-    jest.mocked(checkCpf).mockResolvedValue({status: 'regular'});
-  });
-
-  const identity = {cpf: '404.428.201-35', dataNascimento: '14/11/1970'};
+  const identity = {cpf: '404.428.201-35'};
 
   describe('POST /api/auth/register', () => {
     it('deve registrar um usuario e voltar 201', async () => {
@@ -135,37 +126,28 @@ describe('Testes das APIs de autenticacao', () => {
   });
 
   describe('Validação de CPF', () => {
-    it('rejeita CPF com dígitos inválidos antes da consulta externa', async () => {
+    it('rejeita CPF com dígitos inválidos', async () => {
       const res = await request(app).post('/api/auth/validate-cpf').send({
-        cpf: '111.111.111-11', dataNascimento: '14/11/1970',
+        cpf: '111.111.111-11',
       });
       expect(res.status).toBe(400);
-      expect(checkCpf).not.toHaveBeenCalled();
     });
 
-    it('rejeita CPF inexistente no cadastro', async () => {
-      jest.mocked(checkCpf).mockResolvedValue({status: 'not_found'});
+    it('rejeita CPF com dígito incorreto no cadastro', async () => {
       const res = await request(app).post('/api/auth/register').send({
-        nome: 'A', email: 'a@email.com', senha: '123', tipo: 'cliente', ...identity,
+        nome: 'A', email: 'a@email.com', senha: '123', tipo: 'cliente', cpf: '404.428.201-36',
       });
-      expect(res.status).toBe(422);
+      expect(res.status).toBe(400);
       expect(await userModel.countDocuments()).toBe(0);
     });
 
-    it('rejeita situação cadastral irregular', async () => {
-      jest.mocked(checkCpf).mockResolvedValue({status: 'irregular'});
+    it('valida CPF sem exigir data de nascimento', async () => {
       const res = await request(app).post('/api/auth/validate-cpf').send(identity);
-      expect(res.status).toBe(422);
-      expect(res.body.valido).toBe(false);
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({valido: true, verificacao: 'digitos_verificadores'});
     });
 
-    it('não libera cadastro quando a consulta está indisponível', async () => {
-      jest.mocked(checkCpf).mockResolvedValue({status: 'unavailable'});
-      const res = await request(app).post('/api/auth/validate-cpf').send(identity);
-      expect(res.status).toBe(503);
-    });
-
-    it('aceita CPF regular e o armazena sem devolvê-lo na resposta', async () => {
+    it('aceita CPF com dígitos válidos e o armazena sem devolvê-lo na resposta', async () => {
       const res = await request(app).post('/api/auth/register').send({
         nome: 'A', email: 'a@email.com', senha: '123', tipo: 'cliente', ...identity,
       });

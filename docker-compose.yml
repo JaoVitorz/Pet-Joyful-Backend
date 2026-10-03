@@ -44,8 +44,6 @@ services:
       SMTP_FROM: ${SMTP_FROM}
       API_BASE_URL: ${API_BASE_URL:-http://localhost:5000}
       EMAIL_VERIFICATION_URL: ${EMAIL_VERIFICATION_URL:-}
-      SERPRO_CONSUMER_KEY: ${SERPRO_CONSUMER_KEY:-}
-      SERPRO_CONSUMER_SECRET: ${SERPRO_CONSUMER_SECRET:-}
     depends_on:
       mongodb:
         condition: service_healthy

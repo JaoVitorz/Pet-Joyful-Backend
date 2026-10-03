@@ -922,8 +922,7 @@ curl -X POST https://pet-joyful-backend-1.onrender.com/api/auth/register \
     "email": "joao@email.com",
     "senha": "senha123",
     "tipo": "adotante",
-    "cpf": "<CPF do titular>",
-    "dataNascimento": "<DD/MM/AAAA>"
+    "cpf": "<CPF do titular>"
   }'
 ```
 
@@ -2429,13 +2428,13 @@ erro.
 
 ## Validação de CPF
 
-O cadastro exige `cpf` e `dataNascimento` no formato `DD/MM/AAAA`. Para validar
+O cadastro exige apenas `cpf`, com 11 dígitos (com ou sem máscara). Para validar
 antes de enviar o formulário, a tela pode chamar `POST /api/auth/validate-cpf`
-com esses dois campos. A resposta é `{ "valido": true }` para CPF regular; CPF ou
-data divergente retorna 422, dados mal formatados retornam 400 e falha na consulta
-retorna 503. O endpoint de cadastro faz a consulta novamente antes de salvar.
+com `{ "cpf": "40442820135" }`. A resposta é
+`{ "valido": true, "verificacao": "digitos_verificadores" }` quando o número passa
+na validação dos dígitos; CPF mal formatado ou com dígitos incorretos retorna 400.
+O cadastro faz a mesma validação antes de salvar.
 
-A consulta usa a API Consulta CPF v3 do Serpro. Configure `SERPRO_CONSUMER_KEY` e
-`SERPRO_CONSUMER_SECRET` no backend. Sem contrato e credenciais válidas, a
-verificação de existência não funciona e o cadastro retorna 503. A data de
-nascimento é usada na consulta, mas não é salva no banco.
+Essa verificação matemática não confirma se o CPF existe na base da Receita
+Federal nem se pertence à pessoa que está se cadastrando. Uma consulta cadastral
+externa exigirá um provedor contratado e os dados solicitados por esse provedor.

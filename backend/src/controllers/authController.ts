@@ -5,35 +5,24 @@ import type {Response} from 'express';
 import userModel from '../models/userModel.js';
 import type {AuthRequest, IUserDocument} from '../types/index.js';
 import {logger} from '../logger/logger.js';
-import {checkCpf, normalizeBirthDate, normalizeCpf} from '../services/cpfService.js';
+import {normalizeCpf} from '../services/cpfService.js';
 import {sendVerificationEmail} from '../services/emailService.js';
 
-const validateCpfInput = async (body: Record<string, unknown>) => {
+const validateCpfInput = (body: Record<string, unknown>) => {
   const cpf = normalizeCpf(body.cpf);
-  const birthDate = normalizeBirthDate(body.dataNascimento);
-  if (!cpf || !birthDate) {
-    return {status: 400, error: 'Informe CPF válido e dataNascimento no formato DD/MM/AAAA'};
-  }
-  const result = await checkCpf(cpf, birthDate);
-  if (result.status === 'unavailable') {
-    return {status: 503, error: 'Consulta de CPF indisponível. Tente novamente mais tarde.'};
-  }
-  if (result.status === 'irregular') {
-    return {status: 422, error: 'CPF não está em situação cadastral regular'};
-  }
-  if (result.status !== 'regular') {
-    return {status: 422, error: 'CPF ou data de nascimento não conferem com a Receita Federal'};
+  if (!cpf) {
+    return {status: 400, error: 'Informe um CPF válido'};
   }
   return {status: 200, cpf};
 };
 
 export const validateCpf = async (req: AuthRequest, res: Response): Promise<void> => {
-  const result = await validateCpfInput(req.body as Record<string, unknown>);
+  const result = validateCpfInput(req.body as Record<string, unknown>);
   if ('error' in result) {
     res.status(result.status).json({valido: false, error: result.error});
     return;
   }
-  res.json({valido: true});
+  res.json({valido: true, verificacao: 'digitos_verificadores'});
 };
 
 export const register = async (
@@ -58,7 +47,7 @@ export const register = async (
       return;
     }
 
-    const cpfResult = await validateCpfInput(body);
+    const cpfResult = validateCpfInput(body);
     if ('error' in cpfResult) {
       res.status(cpfResult.status).json({error: cpfResult.error});
       return;
