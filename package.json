@@ -1,7 +1,7 @@
 {
   "name": "pet-joyful-backend",
   "version": "0.0.2",
-  "description": "Backend em microsserviços para o projeto Pet Joyful (Java + Node.js + Express)",
+  "description": "Backend em microsserviços para o projeto Pet Joyful (Node.js + Express)",
   "type": "module",
   "main": "dist/server.js",
   "scripts": {
