@@ -36,14 +36,6 @@ services:
       GEMINI_API_KEY: ${GEMINI_API_KEY}
       LOGTAIL_TOKEN: ${LOGTAIL_TOKEN}
       LOGTAIL_URL: ${LOGTAIL_URL}
-      SMTP_HOST: ${SMTP_HOST}
-      SMTP_PORT: ${SMTP_PORT}
-      SMTP_SECURE: ${SMTP_SECURE:-false}
-      SMTP_USER: ${SMTP_USER}
-      SMTP_PASS: ${SMTP_PASS}
-      SMTP_FROM: ${SMTP_FROM}
-      API_BASE_URL: ${API_BASE_URL:-http://localhost:5000}
-      EMAIL_VERIFICATION_URL: ${EMAIL_VERIFICATION_URL:-}
     depends_on:
       mongodb:
         condition: service_healthy

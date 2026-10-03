@@ -22,9 +22,6 @@ export interface IUser {
 }
 
 export interface IUserDocument extends IUser, mongoose.Document {
-  emailVerified: boolean;
-  emailVerificationToken?: string;
-  emailVerificationExpires?: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 

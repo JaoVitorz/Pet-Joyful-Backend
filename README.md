@@ -162,7 +162,7 @@ O projeto adota uma **arquitetura de microsserviços** onde cada domínio de neg
 | Nº   | Nome                      | Descrição                                                             | Microsserviço |
 | ---- | ------------------------- | --------------------------------------------------------------------- | ------------- |
 | RF01 | Login                     | Fazer login na rede social                                            | Principal     |
-| RF02 | Email de confirmação      | Enviar email de confirmação para validar conta do usuário             | Principal     |
+| RF02 | Email de confirmação      | Desativado enquanto não houver provedor de envio compatível com a hospedagem | Futuro |
 | RF03 | Adicionar/Remover Amigos  | Adicionar amigos na rede social ou remover                            | Perfil        |
 | RF04 | Preferências de usuário   | Alteração das preferências do usuário                                 | Perfil        |
 | RF05 | Bloquear usuários         | Bloquear usuários que descumprirem as políticas do site               | Principal     |
@@ -930,13 +930,13 @@ curl -X POST https://pet-joyful-backend-1.onrender.com/api/auth/register \
 
 ```json
 {
-  "message": "Cadastro criado. Verifique seu e-mail para ativar a conta.",
+  "message": "Cadastro criado com sucesso.",
+  "token": "<JWT>",
   "user": {
     "id": "507f1f77bcf86cd799439011",
     "nome": "João Silva",
     "email": "joao@email.com",
-    "tipo": "adotante",
-    "emailVerified": false
+    "tipo": "adotante"
   }
 }
 ```
@@ -2413,18 +2413,11 @@ Desenvolvido para fins acadêmicos como parte do Projeto Integrador da **Fatec S
 **[⬆ Voltar ao topo](#-pet-joyful--backend-api)**
 
 </div>
-# Confirmação de e-mail
+# Cadastro
 
-Novos cadastros ficam pendentes até a confirmação do endereço. Configure as
-variáveis SMTP do arquivo `.env.example` no ambiente (ou no serviço backend do
-Docker Compose). `API_BASE_URL` deve apontar para a URL pública da API; use
-`EMAIL_VERIFICATION_URL` quando quiser definir uma URL base separada para os
-links enviados.
-
-O token enviado por e-mail é aleatório, armazenado no banco somente como hash e
-expira em 24 horas. Em desenvolvimento sem SMTP, o link é registrado no log da
-API. Em produção, a ausência de configuração SMTP impede o cadastro e retorna
-erro.
+O cadastro é concluído imediatamente e devolve um token de acesso. Não há
+confirmação por e-mail nem dependência de SMTP. Contas criadas antes dessa
+mudança que ficaram pendentes de confirmação também podem fazer login.
 
 ## Validação de CPF
 
