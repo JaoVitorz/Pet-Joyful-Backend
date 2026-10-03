@@ -5,6 +5,7 @@ import {
   getProfile,
   updateProfile,
   deleteProfile,
+  verifyEmail,
 } from '../controllers/authController.js';
 import ensureAuth from '../middlewares/ensureAuth.js';
 
@@ -13,6 +14,10 @@ const router = Router();
 // #swagger.tags = ['Auth']
 // #swagger.summary = 'Registrar novo usuário'
 router.post('/register', register);
+
+// #swagger.tags = ['Auth']
+// #swagger.summary = 'Confirmar endereço de e-mail'
+router.get('/verify-email', verifyEmail);
 
 // #swagger.tags = ['Auth']
 // #swagger.summary = 'Login do usuário'
