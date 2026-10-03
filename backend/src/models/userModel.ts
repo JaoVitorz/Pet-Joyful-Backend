@@ -7,6 +7,7 @@ const userSchema = new mongoose.Schema<IUserDocument>(
   {
     nome: {type: String, required: true},
     email: {type: String, required: true, unique: true},
+    cpf: {type: String, unique: true, sparse: true, select: false},
     senha: {type: String, required: true},
     tipo: {
       type: String,

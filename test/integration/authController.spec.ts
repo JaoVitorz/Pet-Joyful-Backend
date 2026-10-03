@@ -3,6 +3,12 @@ import {MongoMemoryServer} from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 import app from '../../backend/src/app';
 import userModel from '../../backend/src/models/userModel';
+import {checkCpf} from '../../backend/src/services/cpfService';
+
+jest.mock('../../backend/src/services/cpfService', () => ({
+  ...jest.requireActual('../../backend/src/services/cpfService'),
+  checkCpf: jest.fn(),
+}));
 
 process.env.JWT_SECRET = 'test-secret-key-for-tests';
 
@@ -26,6 +32,12 @@ describe('Testes das APIs de autenticacao', () => {
     await userModel.deleteMany({});
   });
 
+  beforeEach(() => {
+    jest.mocked(checkCpf).mockResolvedValue({status: 'regular'});
+  });
+
+  const identity = {cpf: '404.428.201-35', dataNascimento: '14/11/1970'};
+
   describe('POST /api/auth/register', () => {
     it('deve registrar um usuario e voltar 201', async () => {
       const res = await request(app).post('/api/auth/register').send({
@@ -33,6 +45,7 @@ describe('Testes das APIs de autenticacao', () => {
         email: 'admin@email.com',
         senha: '123',
         tipo: 'admin',
+        ...identity,
       });
 
       expect(res.status).toBe(201);
@@ -46,6 +59,7 @@ describe('Testes das APIs de autenticacao', () => {
         email: 'duplicado@email.com',
         senha: '123',
         tipo: 'cliente',
+        ...identity,
       });
 
       // tenta criar outro com o mesmo email
@@ -66,6 +80,47 @@ describe('Testes das APIs de autenticacao', () => {
         .send({email: 'incompleto@email.com'});
 
       expect(res.status).toBe(400);
+    });
+  });
+
+  describe('Validação de CPF', () => {
+    it('rejeita CPF com dígitos inválidos antes da consulta externa', async () => {
+      const res = await request(app).post('/api/auth/validate-cpf').send({
+        cpf: '111.111.111-11', dataNascimento: '14/11/1970',
+      });
+      expect(res.status).toBe(400);
+      expect(checkCpf).not.toHaveBeenCalled();
+    });
+
+    it('rejeita CPF inexistente no cadastro', async () => {
+      jest.mocked(checkCpf).mockResolvedValue({status: 'not_found'});
+      const res = await request(app).post('/api/auth/register').send({
+        nome: 'A', email: 'a@email.com', senha: '123', tipo: 'cliente', ...identity,
+      });
+      expect(res.status).toBe(422);
+      expect(await userModel.countDocuments()).toBe(0);
+    });
+
+    it('rejeita situação cadastral irregular', async () => {
+      jest.mocked(checkCpf).mockResolvedValue({status: 'irregular'});
+      const res = await request(app).post('/api/auth/validate-cpf').send(identity);
+      expect(res.status).toBe(422);
+      expect(res.body.valido).toBe(false);
+    });
+
+    it('não libera cadastro quando a consulta está indisponível', async () => {
+      jest.mocked(checkCpf).mockResolvedValue({status: 'unavailable'});
+      const res = await request(app).post('/api/auth/validate-cpf').send(identity);
+      expect(res.status).toBe(503);
+    });
+
+    it('aceita CPF regular e o armazena sem devolvê-lo na resposta', async () => {
+      const res = await request(app).post('/api/auth/register').send({
+        nome: 'A', email: 'a@email.com', senha: '123', tipo: 'cliente', ...identity,
+      });
+      expect(res.status).toBe(201);
+      expect(res.body.user.cpf).toBeUndefined();
+      expect((await userModel.findOne({email: 'a@email.com'}).select('+cpf'))?.cpf).toBe('40442820135');
     });
   });
 
@@ -273,6 +328,7 @@ describe('Testes das APIs de autenticacao', () => {
     email: 'test@email.com',
     senha: '123',
     tipo: 'cliente',
+    ...identity,
   });
 
   expect(res.status).toBe(500);

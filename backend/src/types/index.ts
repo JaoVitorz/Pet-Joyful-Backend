@@ -18,6 +18,7 @@ export interface IUser {
   email: string;
   senha: string;
   tipo: UserTipo | string;
+  cpf?: string;
 }
 
 export interface IUserDocument extends IUser, mongoose.Document {
