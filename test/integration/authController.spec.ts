@@ -1,6 +1,7 @@
 import request from 'supertest';
 import {MongoMemoryServer} from 'mongodb-memory-server';
 import mongoose from 'mongoose';
+import {createHash} from 'node:crypto';
 import app from '../../backend/src/app';
 import userModel from '../../backend/src/models/userModel';
 
@@ -36,7 +37,52 @@ describe('Testes das APIs de autenticacao', () => {
       });
 
       expect(res.status).toBe(201);
-      expect(res.body).toHaveProperty('token');
+      expect(res.body).not.toHaveProperty('token');
+      expect(res.body.user.emailVerified).toBe(false);
+      const user = await userModel
+        .findOne({email: 'admin@email.com'})
+        .select('+emailVerificationToken +emailVerificationExpires');
+      expect(user?.emailVerificationToken).toBeDefined();
+      expect(user?.emailVerificationExpires?.getTime()).toBeGreaterThan(Date.now());
+    });
+
+    it('deve ativar a conta com um token de verificação válido', async () => {
+      const rawToken = 'token-de-verificacao-valido';
+      await userModel.create({
+        nome: 'Pendente',
+        email: 'pendente@email.com',
+        senha: '123',
+        tipo: 'cliente',
+        emailVerified: false,
+        emailVerificationToken: createHash('sha256').update(rawToken).digest('hex'),
+        emailVerificationExpires: new Date(Date.now() + 60_000),
+      });
+
+      const res = await request(app)
+        .get('/api/auth/verify-email')
+        .query({token: rawToken});
+
+      expect(res.status).toBe(200);
+      expect((await userModel.findOne({email: 'pendente@email.com'}))?.emailVerified).toBe(true);
+    });
+
+    it('deve rejeitar um token de verificação expirado', async () => {
+      const rawToken = 'token-de-verificacao-expirado';
+      await userModel.create({
+        nome: 'Expirado',
+        email: 'expirado@email.com',
+        senha: '123',
+        tipo: 'cliente',
+        emailVerified: false,
+        emailVerificationToken: createHash('sha256').update(rawToken).digest('hex'),
+        emailVerificationExpires: new Date(Date.now() - 60_000),
+      });
+
+      const res = await request(app)
+        .get('/api/auth/verify-email')
+        .query({token: rawToken});
+
+      expect(res.status).toBe(400);
     });
 
     it('deve voltar 400 se o email ja estiver cadastrado', async () => {
@@ -46,6 +92,7 @@ describe('Testes das APIs de autenticacao', () => {
         email: 'duplicado@email.com',
         senha: '123',
         tipo: 'cliente',
+        emailVerified: true,
       });
 
       // tenta criar outro com o mesmo email
@@ -77,6 +124,7 @@ describe('Testes das APIs de autenticacao', () => {
         email: 'loginok@email.com',
         senha: '123',
         tipo: 'cliente',
+        emailVerified: true,
       });
 
       const res = await request(app)
@@ -102,6 +150,7 @@ describe('Testes das APIs de autenticacao', () => {
         email: 'login@email.com',
         senha: '123',
         tipo: 'cliente',
+        emailVerified: true,
       });
 
       const res = await request(app)
@@ -131,6 +180,7 @@ describe('Testes das APIs de autenticacao', () => {
         email: 'perfil@email.com',
         senha: '123',
         tipo: 'cliente',
+        emailVerified: true,
       });
 
       const loginRes = await request(app)
@@ -189,6 +239,7 @@ describe('Testes das APIs de autenticacao', () => {
         email: 'outro@email.com',
         senha: '123',
         tipo: 'cliente',
+        emailVerified: true,
       });
 
       const res = await request(app)

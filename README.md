@@ -2413,3 +2413,13 @@ Desenvolvido para fins acadêmicos como parte do Projeto Integrador da **Fatec S
 **[⬆ Voltar ao topo](#-pet-joyful--backend-api)**
 
 </div>
+# Confirmação de e-mail
+
+Novos cadastros ficam pendentes até a confirmação do endereço. Configure as
+variáveis SMTP descritas em `.env.example` no ambiente ou no serviço backend do
+Docker Compose. `API_BASE_URL` deve apontar para a URL pública da API; use
+`EMAIL_VERIFICATION_URL` para personalizar a URL base dos links.
+
+O token enviado é aleatório, armazenado no banco somente como hash e expira em
+24 horas. Em desenvolvimento sem SMTP, o link aparece no log da API. Em
+produção, a ausência de configuração SMTP impede o cadastro.

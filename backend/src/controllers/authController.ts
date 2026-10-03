@@ -1,9 +1,11 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import {createHash, randomBytes} from 'node:crypto';
 import type {Response} from 'express';
 import userModel from '../models/userModel.js';
 import type {AuthRequest, IUserDocument} from '../types/index.js';
 import {logger} from '../logger/logger.js';
+import {sendVerificationEmail} from '../services/emailService.js';
 
 export const register = async (
   req: AuthRequest,
@@ -27,28 +29,73 @@ export const register = async (
       return;
     }
 
-    user = new userModel({nome, email, senha, tipo});
+    const rawVerificationToken = randomBytes(32).toString('hex');
+    const emailVerificationToken = createHash('sha256').update(rawVerificationToken).digest('hex');
+    user = new userModel({
+      nome,
+      email,
+      senha,
+      tipo,
+      emailVerified: false,
+      emailVerificationToken,
+      emailVerificationExpires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    });
     await user.save();
-
-    const token = jwt.sign(
-      {userId: user._id, email: user.email, tipo: user.tipo},
-      process.env.JWT_SECRET as string,
-      {expiresIn: '7d'},
-    );
+    try {
+      await sendVerificationEmail(user.email, rawVerificationToken);
+    } catch (error) {
+      await userModel.findByIdAndDelete(user._id);
+      throw error;
+    }
 
     res.status(201).json({
-      message: 'Usuário criado com sucesso',
-      token,
+      message: 'Cadastro criado. Verifique seu e-mail para ativar a conta.',
       user: {
         id: user._id,
         nome: user.nome,
         email: user.email,
         tipo: user.tipo,
+        emailVerified: user.emailVerified,
       },
     });
   } catch (error) {
     logger.error('Erro no registro:', {message: (error as Error).message});
     res.status(500).json({error: (error as Error).message});
+  }
+};
+
+export const verifyEmail = async (
+  req: AuthRequest,
+  res: Response,
+): Promise<void> => {
+  const token = req.query.token;
+  if (typeof token !== 'string' || !token) {
+    res.status(400).json({error: 'Token de verificação é obrigatório'});
+    return;
+  }
+
+  try {
+    const hashedToken = createHash('sha256').update(token).digest('hex');
+    const user = await userModel
+      .findOne({
+        emailVerificationToken: hashedToken,
+        emailVerificationExpires: {$gt: new Date()},
+      })
+      .select('+emailVerificationToken +emailVerificationExpires');
+
+    if (!user) {
+      res.status(400).json({error: 'Token de verificação inválido ou expirado'});
+      return;
+    }
+
+    user.emailVerified = true;
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpires = undefined;
+    await user.save();
+    res.json({message: 'E-mail confirmado com sucesso. Sua conta está ativa.'});
+  } catch (error) {
+    logger.error('Erro ao verificar e-mail:', {message: (error as Error).message});
+    res.status(500).json({error: 'Não foi possível verificar o e-mail'});
   }
 };
 
@@ -82,6 +129,11 @@ export const login = async (
     if (!senhaCorreta) {
       logger.info('Login falhou: senha incorreta', {email});
       res.status(401).json({error: 'Credenciais inválidas'});
+      return;
+    }
+
+    if (user.emailVerified === false) {
+      res.status(403).json({error: 'Confirme seu e-mail antes de entrar'});
       return;
     }
 
