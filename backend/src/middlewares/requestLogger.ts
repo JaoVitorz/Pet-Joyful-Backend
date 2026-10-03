@@ -10,10 +10,10 @@ export function requestLogger(req: Request, res: Response, next: NextFunction) {
 
   logger.info('Requisição recebida', {
     method: req.method,
-    route: req.originalUrl,
+    route: req.originalUrl.split('?')[0],
     path: req.path,
     params: req.params,
-    query: req.query,
+    query: req.query.token ? {...req.query, token: '[REDACTED]'} : req.query,
     body: req.body && typeof req.body === 'object' ? redact(req.body as Record<string, unknown>) : undefined,
     headers: redact(req.headers as Record<string, unknown>),
     origin: req.get('origin'),
@@ -27,7 +27,7 @@ export function requestLogger(req: Request, res: Response, next: NextFunction) {
     const durationMs = Date.now() - startTime;
     logger.info('Resposta enviada', {
       method: req.method,
-      route: req.originalUrl,
+      route: req.originalUrl.split('?')[0],
       statusCode: res.statusCode,
       durationMs,
     });

@@ -6,6 +6,7 @@ import {
   updateProfile,
   deleteProfile,
   validateCpf,
+  verifyEmail,
 } from '../controllers/authController.js';
 import ensureAuth from '../middlewares/ensureAuth.js';
 import {cpfRateLimit} from '../middlewares/cpfRateLimit.js';
@@ -18,6 +19,10 @@ router.post('/register', cpfRateLimit, register);
 
 // Validação prévia para a tela de cadastro; o registro valida novamente.
 router.post('/validate-cpf', cpfRateLimit, validateCpf);
+
+// #swagger.tags = ['Auth']
+// #swagger.summary = 'Confirmar endereço de e-mail'
+router.get('/verify-email', verifyEmail);
 
 // #swagger.tags = ['Auth']
 // #swagger.summary = 'Login do usuário'

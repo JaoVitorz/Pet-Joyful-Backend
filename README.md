@@ -921,7 +921,9 @@ curl -X POST https://pet-joyful-backend-1.onrender.com/api/auth/register \
     "nome": "João Silva",
     "email": "joao@email.com",
     "senha": "senha123",
-    "tipo": "adotante"
+    "tipo": "adotante",
+    "cpf": "<CPF do titular>",
+    "dataNascimento": "<DD/MM/AAAA>"
   }'
 ```
 
@@ -929,14 +931,13 @@ curl -X POST https://pet-joyful-backend-1.onrender.com/api/auth/register \
 
 ```json
 {
-  "success": true,
-  "message": "Usuário cadastrado com sucesso",
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "message": "Cadastro criado. Verifique seu e-mail para ativar a conta.",
   "user": {
     "id": "507f1f77bcf86cd799439011",
     "nome": "João Silva",
     "email": "joao@email.com",
-    "tipo": "adotante"
+    "tipo": "adotante",
+    "emailVerified": false
   }
 }
 ```
@@ -2413,3 +2414,28 @@ Desenvolvido para fins acadêmicos como parte do Projeto Integrador da **Fatec S
 **[⬆ Voltar ao topo](#-pet-joyful--backend-api)**
 
 </div>
+# Confirmação de e-mail
+
+Novos cadastros ficam pendentes até a confirmação do endereço. Configure as
+variáveis SMTP do arquivo `.env.example` no ambiente (ou no serviço backend do
+Docker Compose). `API_BASE_URL` deve apontar para a URL pública da API; use
+`EMAIL_VERIFICATION_URL` quando quiser definir uma URL base separada para os
+links enviados.
+
+O token enviado por e-mail é aleatório, armazenado no banco somente como hash e
+expira em 24 horas. Em desenvolvimento sem SMTP, o link é registrado no log da
+API. Em produção, a ausência de configuração SMTP impede o cadastro e retorna
+erro.
+
+## Validação de CPF
+
+O cadastro exige `cpf` e `dataNascimento` no formato `DD/MM/AAAA`. Para validar
+antes de enviar o formulário, a tela pode chamar `POST /api/auth/validate-cpf`
+com esses dois campos. A resposta é `{ "valido": true }` para CPF regular; CPF ou
+data divergente retorna 422, dados mal formatados retornam 400 e falha na consulta
+retorna 503. O endpoint de cadastro faz a consulta novamente antes de salvar.
+
+A consulta usa a API Consulta CPF v3 do Serpro. Configure `SERPRO_CONSUMER_KEY` e
+`SERPRO_CONSUMER_SECRET` no backend. Sem contrato e credenciais válidas, a
+verificação de existência não funciona e o cadastro retorna 503. A data de
+nascimento é usada na consulta, mas não é salva no banco.

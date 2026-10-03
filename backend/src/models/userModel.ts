@@ -14,6 +14,9 @@ const userSchema = new mongoose.Schema<IUserDocument>(
       enum: Object.values(UserTipo),
       required: true,
     },
+    emailVerified: {type: Boolean, default: false},
+    emailVerificationToken: {type: String, select: false},
+    emailVerificationExpires: {type: Date, select: false},
   },
   {timestamps: true},
 );
