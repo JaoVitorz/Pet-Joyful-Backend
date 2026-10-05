@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "nodemon --watch backend/src --watch server.ts --exec tsx ./server.ts",
     "build": "tsc --build",
-    "postbuild": "copyfiles -u 2 backend/src/swagger-output.json dist/backend/src/config",
+    "postbuild": "copyfiles backend/src/config/swagger-output.json dist",
     "start": "node dist/server.js",
     "start:prod": "npm run build && npm start",
     "swagger": "tsx backend/src/swagger.ts",

@@ -4,6 +4,8 @@ import {AlvoTipo} from '../types/index.js';
 
 const denunciaMessageSchema = new mongoose.Schema<IDenunciaMessageDocument>(
   {
+    // Opcional para manter legíveis os registros antigos sem autoria comprovada.
+    userId: {type: mongoose.Schema.Types.ObjectId, ref: 'User', index: true, immutable: true},
     nome: {type: String},
     email: {type: String, required: true},
     descricao: {type: String, required: true},

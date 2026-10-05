@@ -277,7 +277,7 @@ describe('Testes das APIs de autenticacao', () => {
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(200);
-      expect(res.body.message).toBe('Conta deletada com sucesso');
+      expect(res.body.message).toBe('Conta excluída com sucesso');
     });
 
     it('deve voltar 401 se tentar deletar sem token', async () => {

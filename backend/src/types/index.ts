@@ -19,13 +19,19 @@ export interface IUser {
   senha: string;
   tipo: UserTipo | string;
   cpf?: string;
+  deletionRequestedAt?: Date;
 }
 
 export interface IUserDocument extends IUser, mongoose.Document {
+  createdAt?: Date;
+  updatedAt?: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
 export interface IPostMessageDocument extends mongoose.Document {
+  createdAt?: Date;
+  updatedAt?: Date;
+  userId?: mongoose.Types.ObjectId;
   nome?: string;
   email: string;
   mensagem: string;
@@ -33,6 +39,9 @@ export interface IPostMessageDocument extends mongoose.Document {
 }
 
 export interface IDenunciaMessageDocument extends mongoose.Document {
+  createdAt?: Date;
+  updatedAt?: Date;
+  userId?: mongoose.Types.ObjectId;
   nome?: string;
   email: string;
   descricao: string;

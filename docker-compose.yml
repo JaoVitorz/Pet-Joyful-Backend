@@ -33,6 +33,8 @@ services:
       NODE_ENV: production
       PORT: 5000
       MONGO_URI: mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongodb:27017/${MONGO_DB_NAME}?authSource=admin
+      JWT_SECRET: ${JWT_SECRET}
+      POSTS_SERVICE_URL: ${POSTS_SERVICE_URL:-}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
       LOGTAIL_TOKEN: ${LOGTAIL_TOKEN}
       LOGTAIL_URL: ${LOGTAIL_URL}

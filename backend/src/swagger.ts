@@ -1,4 +1,5 @@
 import swaggerAutogen from 'swagger-autogen';
+import {readFile, writeFile} from 'node:fs/promises';
 
 const doc = {
   openapi: '3.0.0',
@@ -55,20 +56,16 @@ const doc = {
       },
       Message: {
         type: 'object',
-        required: ['email', 'mensagem'],
+        required: ['mensagem'],
         properties: {
-          nome: {type: 'string', example: 'Maria'},
-          email: {type: 'string', example: 'maria@email.com'},
           mensagem: {type: 'string', example: 'Gostei do post!'},
           postId: {type: 'string', example: '65b8d7b2b9e'},
         },
       },
       Report: {
         type: 'object',
-        required: ['email', 'descricao'],
+        required: ['descricao'],
         properties: {
-          nome: {type: 'string', example: 'Carlos'},
-          email: {type: 'string', example: 'carlos@email.com'},
           descricao: {type: 'string', example: 'Conteúdo ofensivo detectado'},
           alvoId: {type: 'string', example: '123abc456'},
           alvoTipo: {type: 'string', example: 'post'},
@@ -119,4 +116,24 @@ const endpointsFiles = [
   './backend/src/routes/chatRoutes.ts',
 ];
 
-void swaggerAutogen({openapi: '3.0.0'})(outputFile, endpointsFiles, doc);
+await swaggerAutogen({openapi: '3.0.0'})(outputFile, endpointsFiles, doc);
+
+const generated = JSON.parse(await readFile(outputFile, 'utf8'));
+generated.paths = Object.fromEntries(
+  Object.entries(generated.paths).filter(([route]) => route === '/' || route.startsWith('/api/')),
+);
+const exportRoute = generated.paths['/api/users/{id}/data-export']?.get;
+const deleteRoute = generated.paths['/api/users/{id}']?.delete;
+if (exportRoute) {
+  exportRoute.summary = 'Baixar JSON dos dados da própria conta';
+  exportRoute.security = [{BearerAuth: []}];
+  exportRoute.responses['200'] = {
+    description: 'Arquivo JSON com conta, comentários, denúncias e posts vinculados',
+    content: {'application/json': {schema: {type: 'object'}}},
+  };
+}
+if (deleteRoute) {
+  deleteRoute.summary = 'Excluir a própria conta e tratar os dados vinculados';
+  deleteRoute.security = [{BearerAuth: []}];
+}
+await writeFile(outputFile, `${JSON.stringify(generated, null, 2)}\n`);

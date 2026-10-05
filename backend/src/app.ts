@@ -13,8 +13,9 @@ const app = express();
 
 const resolveSwaggerPath = () => {
   const candidates = [
+    path.resolve(process.cwd(), 'backend/src/config/swagger-output.json'),
+    path.resolve(process.cwd(), 'dist/backend/src/config/swagger-output.json'),
     path.resolve(process.cwd(), 'backend/src/config/swagger.json'),
-    path.resolve(process.cwd(), 'dist/backend/src/config/swagger.json'),
   ];
 
   return (

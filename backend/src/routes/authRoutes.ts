@@ -8,6 +8,7 @@ import {
   validateCpf,
 } from '../controllers/authController.js';
 import ensureAuth from '../middlewares/ensureAuth.js';
+import verifyToken from '../middlewares/verifyToken.js';
 import {cpfRateLimit} from '../middlewares/cpfRateLimit.js';
 
 const router = Router();
@@ -36,6 +37,6 @@ router.put('/me', ensureAuth, updateProfile);
 // #swagger.tags = ['Auth']
 // #swagger.summary = 'Excluir conta do usuário autenticado'
 // #swagger.security = [{ "BearerAuth": [] }]
-router.delete('/me', ensureAuth, deleteProfile);
+router.delete('/me', verifyToken, deleteProfile);
 
 export default router;

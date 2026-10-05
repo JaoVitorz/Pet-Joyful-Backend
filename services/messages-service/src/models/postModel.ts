@@ -1,6 +1,9 @@
 import mongoose from 'mongoose';
 
 export interface IPost {
+  createdAt?: Date;
+  updatedAt?: Date;
+  userId?: mongoose.Types.ObjectId;
   titulo: string;
   descricao?: string;
   imageUrl?: string | null;
@@ -9,6 +12,8 @@ export interface IPost {
 
 const postSchema = new mongoose.Schema<IPost>(
   {
+    // Os posts anteriores permanecem sem autoria atribuída.
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', index: true, immutable: true },
     titulo: { type: String, required: true },
     descricao: { type: String },
     imageUrl: { type: String },

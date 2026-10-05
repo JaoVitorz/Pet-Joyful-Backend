@@ -1,12 +1,16 @@
 import request from 'supertest';
 import {MongoMemoryServer} from 'mongodb-memory-server';
 import mongoose from 'mongoose';
+import jwt from 'jsonwebtoken';
 import app from '../../backend/src/app';
 import PostMessage from '../../backend/src/models/postMessageModel';
 import DenunciaMessage from '../../backend/src/models/denunciaMessageModel';
+import User from '../../backend/src/models/userModel';
 
 const ADMIN_KEY = 'test-admin-key';
 const MESSAGES_BASE = '/api/messages';
+const JWT_SECRET = 'messages-test-secret';
+jest.setTimeout(60_000);
 
 describe('Testes das APIs de mensagens e denuncias', () => {
   let mongoServer: MongoMemoryServer;
@@ -14,6 +18,7 @@ describe('Testes das APIs de mensagens e denuncias', () => {
   // sobe o banco em memoria antes de rodar os testes
   beforeAll(async () => {
     process.env.ADMIN_KEY = ADMIN_KEY;
+    process.env.JWT_SECRET = JWT_SECRET;
     mongoServer = await MongoMemoryServer.create();
     await mongoose.connect(mongoServer.getUri());
   });
@@ -28,14 +33,21 @@ describe('Testes das APIs de mensagens e denuncias', () => {
   afterEach(async () => {
     await PostMessage.deleteMany({});
     await DenunciaMessage.deleteMany({});
+    await User.deleteMany({});
   });
+
+  const authenticatedUser = async () => {
+    const user = await User.create({nome: 'Fulano', email: 'fulano@email.com', senha: '123', tipo: 'cliente'});
+    return {user, token: jwt.sign({userId: user._id.toString()}, JWT_SECRET)};
+  };
 
   describe('POST /api/messages/post', () => {
     it('deve salvar a mensagem e voltar 201', async () => {
+      const {user, token} = await authenticatedUser();
       // manda todos os campos preenchidos
-      const res = await request(app).post(`${MESSAGES_BASE}/post`).send({
-        nome: 'Fulano',
-        email: 'fulano@email.com',
+      const res = await request(app).post(`${MESSAGES_BASE}/post`).set('Authorization', `Bearer ${token}`).send({
+        nome: 'Pessoa falsa',
+        email: 'outra@email.com',
         mensagem: 'Quero adotar um gatinho!',
         postId: new mongoose.Types.ObjectId().toString(),
       });
@@ -44,17 +56,28 @@ describe('Testes das APIs de mensagens e denuncias', () => {
       expect(res.status).toBe(201);
       expect(res.body.message).toBe('Mensagem salva com sucesso');
       expect(res.body.data).toHaveProperty('_id');
+      expect(res.body.data.userId).toBe(user._id.toString());
+      expect(res.body.data.email).toBe(user.email);
+      expect(res.body.data.nome).toBe(user.nome);
     });
 
-    it('deve voltar 400 se nao tiver email ou mensagem', async () => {
+    it('deve voltar 400 se nao tiver mensagem', async () => {
+      const {token} = await authenticatedUser();
       // manda so o nome, sem os campos obrigatorios
       const res = await request(app)
         .post(`${MESSAGES_BASE}/post`)
+        .set('Authorization', `Bearer ${token}`)
         .send({nome: 'so o nome'});
 
       // a api tem que barrar e avisar o que ta faltando
       expect(res.status).toBe(400);
-      expect(res.body.error).toBe('Email e mensagem são obrigatórios');
+      expect(res.body.error).toBe('Mensagem é obrigatória');
+    });
+
+    it('recusa mensagem sem autenticacao', async () => {
+      const res = await request(app).post(`${MESSAGES_BASE}/post`).send({mensagem: 'oi'});
+      expect(res.status).toBe(401);
+      expect(await PostMessage.countDocuments()).toBe(0);
     });
   });
 
@@ -82,8 +105,9 @@ describe('Testes das APIs de mensagens e denuncias', () => {
 
   describe('POST /api/messages/denuncia', () => {
     it('deve registrar a denuncia e voltar 201', async () => {
+      const {user, token} = await authenticatedUser();
       // manda uma denuncia completa
-      const res = await request(app).post(`${MESSAGES_BASE}/denuncia`).send({
+      const res = await request(app).post(`${MESSAGES_BASE}/denuncia`).set('Authorization', `Bearer ${token}`).send({
         email: 'fiscal@email.com',
         descricao: 'vi um comentario ofensivo',
         alvoId: new mongoose.Types.ObjectId().toString(),
@@ -92,16 +116,28 @@ describe('Testes das APIs de mensagens e denuncias', () => {
 
       expect(res.status).toBe(201);
       expect(res.body.message).toBe('Denúncia registrada com sucesso');
+      expect(res.body.data.userId).toBe(user._id.toString());
+      expect(res.body.data.email).toBe(user.email);
     });
 
-    it('deve voltar 400 se nao mandar o email', async () => {
+    it('deve voltar 400 se nao mandar a descricao', async () => {
+      const {token} = await authenticatedUser();
       // esqueceu o email, so mandou a descricao
       const res = await request(app)
         .post(`${MESSAGES_BASE}/denuncia`)
-        .send({descricao: 'esqueci o email'});
+        .set('Authorization', `Bearer ${token}`)
+        .send({email: 'qualquer@email.com'});
 
       expect(res.status).toBe(400);
-      expect(res.body.error).toBe('Email e descrição são obrigatórios');
+      expect(res.body.error).toBe('Descrição é obrigatória');
+    });
+
+    it('recusa denuncia com token de usuario excluido', async () => {
+      const {user, token} = await authenticatedUser();
+      await User.findByIdAndDelete(user._id);
+      const res = await request(app).post(`${MESSAGES_BASE}/denuncia`).set('Authorization', `Bearer ${token}`).send({descricao: 'teste'});
+      expect(res.status).toBe(401);
+      expect(await DenunciaMessage.countDocuments()).toBe(0);
     });
   });
 

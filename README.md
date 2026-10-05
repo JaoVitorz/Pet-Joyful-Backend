@@ -796,13 +796,14 @@ http://localhost:3001/api-docs
 | `GET` | `/api/users/:id` | Buscar usuário por ID | Admin Key |
 | `POST` | `/api/users` | Criar usuário | Admin Key |
 | `PUT` | `/api/users/:id` | Atualizar usuário | Admin Key |
-| `DELETE` | `/api/users/:id` | Deletar usuário | Admin Key |
+| `GET` | `/api/users/:id/data-export` | Baixar JSON dos dados da conta e registros vinculados | Bearer Token do titular |
+| `DELETE` | `/api/users/:id` | Excluir conta e tratar registros vinculados | Bearer Token do titular |
 
 ### 💬 Mensagens (`/api/messages`)
 
 | Método | Endpoint | Descrição | Auth |
 |--------|----------|-----------|------|
-| `POST` | `/api/messages/post` | Criar mensagem | — |
+| `POST` | `/api/messages/post` | Criar mensagem vinculada ao usuário autenticado | Bearer JWT |
 | `GET` | `/api/messages/post` | Listar mensagens | — |
 | `PUT` | `/api/messages/post/:id` | Atualizar mensagem | Admin Key |
 | `DELETE` | `/api/messages/post/:id` | Deletar mensagem | Admin Key |
@@ -811,7 +812,7 @@ http://localhost:3001/api-docs
 
 | Método | Endpoint | Descrição | Auth |
 |--------|----------|-----------|------|
-| `POST` | `/api/messages/denuncia` | Criar denúncia | — |
+| `POST` | `/api/messages/denuncia` | Criar denúncia vinculada ao usuário autenticado | Bearer JWT |
 | `GET` | `/api/messages/denuncia` | Listar denúncias | Admin Key |
 | `PUT` | `/api/messages/denuncia/:id` | Atualizar denúncia | Admin Key |
 | `DELETE` | `/api/messages/denuncia/:id` | Deletar denúncia | Admin Key |
@@ -979,13 +980,26 @@ curl -X GET https://pet-joyful-backend-1.onrender.com/api/auth/me \
 ```bash
 curl -X POST https://pet-joyful-backend-1.onrender.com/api/messages/post \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer SEU_TOKEN_JWT" \
   -d '{
-    "nome": "Maria",
-    "email": "maria@email.com",
     "mensagem": "Gostei muito do post!",
     "postId": "123abc"
   }'
 ```
+
+O nome, o email e o ID do autor são obtidos da conta autenticada. Os registros anteriores a essa mudança continuam sem autoria comprovada; não devem ser atribuídos automaticamente por correspondência de email. O serviço separado de posts (`/api/posts`) também exige Bearer JWT e precisa receber o mesmo `JWT_SECRET` do backend principal.
+
+### Exportar e excluir meus dados
+
+```bash
+curl -OJ -H "Authorization: Bearer SEU_TOKEN_JWT" \
+  https://pet-joyful-backend-1.onrender.com/api/users/SEU_ID/data-export
+
+curl -X DELETE -H "Authorization: Bearer SEU_TOKEN_JWT" \
+  https://pet-joyful-backend-1.onrender.com/api/users/SEU_ID
+```
+
+O JSON inclui conta, comentários, denúncias e posts ligados ao ID autenticado. Para detalhes do tratamento por tipo de registro e dos dados antigos sem autoria comprovada, consulte [a política de dados](docs/lgpd-data-policy.md). Imagens de posts exigem `POSTS_SERVICE_URL` no backend e `POSTS_UPLOAD_DIR` no serviço de posts.
 
 ### Listar Usuários (Admin)
 

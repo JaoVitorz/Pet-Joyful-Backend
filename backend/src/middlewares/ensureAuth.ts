@@ -1,12 +1,14 @@
 import jwt from 'jsonwebtoken';
+import mongoose from 'mongoose';
 import type {Response, NextFunction} from 'express';
 import type {AuthRequest, JwtPayload} from '../types/index.js';
+import User from '../models/userModel.js';
 
-export default function ensureAuth(
+export default async function ensureAuth(
   req: AuthRequest,
   res: Response,
   next: NextFunction,
-): void {
+): Promise<void> {
   const adminKey =
     (req.headers['x-admin-key'] as string) ||
     (req.query['admin_key'] as string);
@@ -37,16 +39,33 @@ export default function ensureAuth(
   }
 
   const token = parts[1];
+  let payload: JwtPayload;
   try {
-    const payload = jwt.verify(
+    payload = jwt.verify(
       token,
       process.env.JWT_SECRET as string,
     ) as JwtPayload;
-    req.userId = payload.userId ?? payload.id ?? undefined;
-    req.userEmail = payload.email ?? undefined;
-    req.userRole = payload.tipo ?? payload.role ?? undefined;
-    return next();
   } catch {
     res.status(401).json({error: 'Token inválido'});
+    return;
+  }
+
+  req.userId = payload.userId ?? payload.id ?? undefined;
+  req.userEmail = payload.email ?? undefined;
+  req.userRole = payload.tipo ?? payload.role ?? undefined;
+  if (!req.userId || !mongoose.isValidObjectId(req.userId)) {
+    res.status(401).json({error: 'Token inválido'});
+    return;
+  }
+
+  try {
+    const user = await User.findById(req.userId).select('+deletionRequestedAt');
+    if (!user || user.deletionRequestedAt) {
+      res.status(401).json({error: 'Conta indisponível'});
+      return;
+    }
+    return next();
+  } catch {
+    res.status(503).json({error: 'Não foi possível validar a conta'});
   }
 }

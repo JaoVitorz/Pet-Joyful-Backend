@@ -1,7 +1,9 @@
 import type {Response} from 'express';
+import mongoose from 'mongoose';
 import {logger} from '../logger/logger.js';
 import PostMessage from '../models/postMessageModel.js';
 import DenunciaMessage from '../models/denunciaMessageModel.js';
+import User from '../models/userModel.js';
 import type {AuthRequest} from '../types/index.js';
 
 // Criar mensagem em post
@@ -10,19 +12,33 @@ export const createPostMessage = async (
   res: Response,
 ): Promise<void> => {
   try {
-    const {nome, email, mensagem, postId} = req.body as unknown as {
-      nome?: string;
-      email: string;
+    const {mensagem, postId} = req.body as unknown as {
       mensagem: string;
       postId?: string;
     };
 
-    if (!email || !mensagem) {
-      res.status(400).json({error: 'Email e mensagem são obrigatórios'});
+    if (!mensagem) {
+      res.status(400).json({error: 'Mensagem é obrigatória'});
       return;
     }
 
-    const msg = new PostMessage({nome, email, mensagem, postId});
+    if (!req.userId || !mongoose.isValidObjectId(req.userId)) {
+      res.status(401).json({error: 'Usuário não autenticado'});
+      return;
+    }
+    const user = await User.findById(req.userId).select('+deletionRequestedAt');
+    if (!user || user.deletionRequestedAt) {
+      res.status(401).json({error: 'Usuário não encontrado'});
+      return;
+    }
+
+    const msg = new PostMessage({
+      userId: user._id,
+      nome: user.nome,
+      email: user.email,
+      mensagem,
+      postId,
+    });
     await msg.save();
     res.status(201).json({message: 'Mensagem salva com sucesso', data: msg});
   } catch (error) {
@@ -51,20 +67,35 @@ export const createDenuncia = async (
   res: Response,
 ): Promise<void> => {
   try {
-    const {nome, email, descricao, alvoId, alvoTipo} = req.body as unknown as {
-      nome?: string;
-      email: string;
+    const {descricao, alvoId, alvoTipo} = req.body as unknown as {
       descricao: string;
       alvoId?: string;
       alvoTipo?: string;
     };
 
-    if (!email || !descricao) {
-      res.status(400).json({error: 'Email e descrição são obrigatórios'});
+    if (!descricao) {
+      res.status(400).json({error: 'Descrição é obrigatória'});
       return;
     }
 
-    const den = new DenunciaMessage({nome, email, descricao, alvoId, alvoTipo});
+    if (!req.userId || !mongoose.isValidObjectId(req.userId)) {
+      res.status(401).json({error: 'Usuário não autenticado'});
+      return;
+    }
+    const user = await User.findById(req.userId).select('+deletionRequestedAt');
+    if (!user || user.deletionRequestedAt) {
+      res.status(401).json({error: 'Usuário não encontrado'});
+      return;
+    }
+
+    const den = new DenunciaMessage({
+      userId: user._id,
+      nome: user.nome,
+      email: user.email,
+      descricao,
+      alvoId,
+      alvoTipo,
+    });
     await den.save();
     res
       .status(201)

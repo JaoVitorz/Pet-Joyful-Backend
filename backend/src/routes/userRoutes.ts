@@ -5,9 +5,11 @@ import {
   getUserById,
   updateUser,
   deleteUser,
+  exportUserData,
 } from "../controllers/userController.js";
 
 import ensureAdminKey from "../middlewares/ensureAdminKey.js";
+import verifyToken from "../middlewares/verifyToken.js";
 
 const router = Router();
 
@@ -80,8 +82,15 @@ router.get("/:id", ensureAdminKey, getUserById);
 router.put("/:id", ensureAdminKey, updateUser);
 
 /* #swagger.tags = ['Users']
-   #swagger.summary = 'Deletar usuário por ID'
-   #swagger.security = [{ "BearerAuth": [], "ApiKeyAuth": [] }]
+   #swagger.summary = 'Baixar JSON dos dados da própria conta'
+   #swagger.security = [{ "BearerAuth": [] }]
+   #swagger.produces = ['application/json']
+*/
+router.get('/:id/data-export', verifyToken, exportUserData);
+
+/* #swagger.tags = ['Users']
+   #swagger.summary = 'Excluir a própria conta e tratar dados vinculados'
+   #swagger.security = [{ "BearerAuth": [] }]
    #swagger.parameters['id'] = {
      in: 'path',
      required: true,
@@ -120,6 +129,6 @@ router.put("/:id", ensureAdminKey, updateUser);
      }
    }
 */
-router.delete("/:id", ensureAdminKey, deleteUser); // DELETE - apenas admin via x-admin-key
+router.delete("/:id", verifyToken, deleteUser);
 
 export default router;

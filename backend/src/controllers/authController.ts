@@ -5,6 +5,7 @@ import userModel from '../models/userModel.js';
 import type {AuthRequest, IUserDocument} from '../types/index.js';
 import {logger} from '../logger/logger.js';
 import {normalizeCpf} from '../services/cpfService.js';
+import {eraseUserData, MediaCleanupError} from '../services/userDataService.js';
 
 const validateCpfInput = (body: Record<string, unknown>) => {
   const cpf = normalizeCpf(body.cpf);
@@ -96,11 +97,16 @@ export const login = async (
     }
 
     logger.info('Tentativa de login', {email});
-    const user = await userModel.findOne({email});
+    const user = await userModel.findOne({email}).select('+deletionRequestedAt');
 
     if (!user) {
       logger.info('Login falhou: usuário não encontrado', {email});
       res.status(401).json({error: 'Credenciais inválidas'});
+      return;
+    }
+
+    if (user.deletionRequestedAt) {
+      res.status(403).json({error: 'Conta em processo de exclusão'});
       return;
     }
 
@@ -220,15 +226,17 @@ export const deleteProfile = async (
       return;
     }
 
-    const user = await userModel.findByIdAndDelete(userId);
-    if (!user) {
+    const token = req.headers.authorization?.split(' ')[1] ?? '';
+    const result = await eraseUserData(userId, token);
+    if (!result) {
       res.status(404).json({error: 'Usuário não encontrado'});
       return;
     }
-
-    res.json({message: 'Conta deletada com sucesso'});
+    res.json({message: 'Conta excluída com sucesso', ...result});
   } catch (error) {
     logger.error('Erro em deleteProfile:', {message: (error as Error).message});
-    res.status(500).json({error: (error as Error).message});
+    res.status(error instanceof MediaCleanupError ? 503 : 500).json({
+      error: 'Não foi possível concluir a exclusão. Tente novamente.',
+    });
   }
 };
