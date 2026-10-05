@@ -20,16 +20,27 @@ jest.setTimeout(60_000);
 describe('Exportação e exclusão de dados pessoais', () => {
   let mongoServer: MongoMemoryServer;
 
+  it('mantém modelos independentes para a mesma coleção de posts', () => {
+    expect(Post.modelName).toBe('Post');
+    expect(ServicePost.modelName).toBe('ServicePost');
+    expect(Post.collection.name).toBe('posts');
+    expect(ServicePost.collection.name).toBe('posts');
+  });
+
   beforeAll(async () => {
     process.env.JWT_SECRET = secret;
     mongoServer = await MongoMemoryServer.create();
     await mongoose.connect(mongoServer.getUri());
-    await ServicePost.db.openUri(mongoServer.getUri());
+    if (ServicePost.db !== mongoose.connection) {
+      await ServicePost.db.openUri(mongoServer.getUri());
+    }
   });
 
   afterAll(async () => {
+    if (ServicePost.db !== mongoose.connection) {
+      await ServicePost.db.close();
+    }
     await mongoose.disconnect();
-    await ServicePost.db.close();
     await mongoServer.stop();
   });
 

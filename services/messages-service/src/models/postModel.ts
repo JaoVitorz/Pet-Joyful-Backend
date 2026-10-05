@@ -19,9 +19,11 @@ const postSchema = new mongoose.Schema<IPost>(
     imageUrl: { type: String },
     publishedAt: { type: Date, default: Date.now },
   },
-  { timestamps: true },
+  { timestamps: true, collection: 'posts' },
 );
 
-const Post = mongoose.model('Post', postSchema);
+// Nome distinto do modelo usado pelo backend principal, mesmo quando os testes
+// resolvem as duas importações para a mesma instância do Mongoose.
+const Post = mongoose.model<IPost>('ServicePost', postSchema);
 
 export default Post;
