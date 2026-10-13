@@ -5,26 +5,29 @@ import app from '../../backend/src/app';
 import userModel from '../../backend/src/models/userModel';
 
 process.env.JWT_SECRET = 'test-secret-key-for-tests';
+jest.setTimeout(60_000);
 
 describe('Testes das APIs de autenticacao', () => {
   let mongoServer: MongoMemoryServer;
 
   // sobe o banco em memoria antes de tudo
   beforeAll(async () => {
-    mongoServer = await MongoMemoryServer.create();
+    mongoServer = await MongoMemoryServer.create({instance: {launchTimeout: 30_000}});
     await mongoose.connect(mongoServer.getUri());
   });
 
   // desliga tudo depois que acabar
   afterAll(async () => {
     await mongoose.disconnect();
-    await mongoServer.stop();
+    if (mongoServer) await mongoServer.stop();
   });
 
   // limpa os usuarios do banco depois de cada teste
   afterEach(async () => {
     await userModel.deleteMany({});
   });
+
+  const identity = {cpf: '404.428.201-35'};
 
   describe('POST /api/auth/register', () => {
     it('deve registrar um usuario e voltar 201', async () => {
@@ -33,10 +36,17 @@ describe('Testes das APIs de autenticacao', () => {
         email: 'admin@email.com',
         senha: '123',
         tipo: 'admin',
+        ...identity,
       });
 
       expect(res.status).toBe(201);
       expect(res.body).toHaveProperty('token');
+      expect(await userModel.findOne({email: 'admin@email.com'})).not.toBeNull();
+
+      const login = await request(app).post('/api/auth/login').send({
+        email: 'admin@email.com', senha: '123',
+      });
+      expect(login.status).toBe(200);
     });
 
     it('deve voltar 400 se o email ja estiver cadastrado', async () => {
@@ -46,6 +56,7 @@ describe('Testes das APIs de autenticacao', () => {
         email: 'duplicado@email.com',
         senha: '123',
         tipo: 'cliente',
+        ...identity,
       });
 
       // tenta criar outro com o mesmo email
@@ -66,6 +77,38 @@ describe('Testes das APIs de autenticacao', () => {
         .send({email: 'incompleto@email.com'});
 
       expect(res.status).toBe(400);
+    });
+  });
+
+  describe('Validação de CPF', () => {
+    it('rejeita CPF com dígitos inválidos', async () => {
+      const res = await request(app).post('/api/auth/validate-cpf').send({
+        cpf: '111.111.111-11',
+      });
+      expect(res.status).toBe(400);
+    });
+
+    it('rejeita CPF com dígito incorreto no cadastro', async () => {
+      const res = await request(app).post('/api/auth/register').send({
+        nome: 'A', email: 'a@email.com', senha: '123', tipo: 'cliente', cpf: '404.428.201-36',
+      });
+      expect(res.status).toBe(400);
+      expect(await userModel.countDocuments()).toBe(0);
+    });
+
+    it('valida CPF sem exigir data de nascimento', async () => {
+      const res = await request(app).post('/api/auth/validate-cpf').send(identity);
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({valido: true, verificacao: 'digitos_verificadores'});
+    });
+
+    it('aceita CPF com dígitos válidos e o armazena sem devolvê-lo na resposta', async () => {
+      const res = await request(app).post('/api/auth/register').send({
+        nome: 'A', email: 'a@email.com', senha: '123', tipo: 'cliente', ...identity,
+      });
+      expect(res.status).toBe(201);
+      expect(res.body.user.cpf).toBeUndefined();
+      expect((await userModel.findOne({email: 'a@email.com'}).select('+cpf'))?.cpf).toBe('40442820135');
     });
   });
 
@@ -234,7 +277,7 @@ describe('Testes das APIs de autenticacao', () => {
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(200);
-      expect(res.body.message).toBe('Conta deletada com sucesso');
+      expect(res.body.message).toBe('Conta excluída com sucesso');
     });
 
     it('deve voltar 401 se tentar deletar sem token', async () => {
@@ -273,6 +316,7 @@ describe('Testes das APIs de autenticacao', () => {
     email: 'test@email.com',
     senha: '123',
     tipo: 'cliente',
+    ...identity,
   });
 
   expect(res.status).toBe(500);

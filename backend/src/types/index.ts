@@ -18,13 +18,30 @@ export interface IUser {
   email: string;
   senha: string;
   tipo: UserTipo | string;
+  cpf?: string;
+  deletionRequestedAt?: Date;
+  mfaEnabled?: boolean;
+  mfaSecret?: string;
+  mfaPendingSecret?: string;
+  mfaPendingExpiresAt?: Date;
+  mfaLastUsedStep?: number;
+  mfaRecoveryCodes?: string[];
+  mfaChallengeNonce?: string;
+  mfaFailedAttempts?: number;
+  mfaLockedUntil?: Date;
+  authVersion?: number;
 }
 
 export interface IUserDocument extends IUser, mongoose.Document {
+  createdAt?: Date;
+  updatedAt?: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
 export interface IPostMessageDocument extends mongoose.Document {
+  createdAt?: Date;
+  updatedAt?: Date;
+  userId?: mongoose.Types.ObjectId;
   nome?: string;
   email: string;
   mensagem: string;
@@ -32,6 +49,9 @@ export interface IPostMessageDocument extends mongoose.Document {
 }
 
 export interface IDenunciaMessageDocument extends mongoose.Document {
+  createdAt?: Date;
+  updatedAt?: Date;
+  userId?: mongoose.Types.ObjectId;
   nome?: string;
   email: string;
   descricao: string;
@@ -45,6 +65,10 @@ export interface JwtPayload {
   email?: string;
   tipo?: string;
   role?: string;
+  tokenUse?: 'access' | 'mfa_challenge';
+  authVersion?: number;
+  mfa?: boolean;
+  jti?: string;
 }
 
 export interface AuthRequest extends Request {

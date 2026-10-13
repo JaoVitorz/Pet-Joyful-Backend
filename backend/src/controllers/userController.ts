@@ -1,9 +1,11 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import mongoose from 'mongoose';
 import type {Response} from 'express';
 import {logger} from '../logger/logger.js';
 import User from '../models/userModel.js';
 import type {AuthRequest, JwtPayload} from '../types/index.js';
+import {buildUserExport, eraseUserData, MediaCleanupError} from '../services/userDataService.js';
 
 // CREATE
 export const createUser = async (
@@ -158,28 +160,60 @@ export const deleteUser = async (
   res: Response,
 ): Promise<void> => {
   try {
-    const requesterId = req.userId;
-    const isApiKey = req.isApiKeyValid;
-    const isAdmin = req.userRole === 'admin';
-
-    if (
-      !isApiKey &&
-      !isAdmin &&
-      (!requesterId || requesterId.toString() !== req.params.id)
-    ) {
+    if (!req.userId) {
+      res.status(401).json({error: 'Não autenticado'});
+      return;
+    }
+    if (req.userId !== req.params.id) {
       res.status(403).json({error: 'Não autorizado a deletar este usuário.'});
       return;
     }
-
-    const user = await User.findByIdAndDelete(req.params.id);
-    if (!user) {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      res.status(400).json({error: 'ID inválido'});
+      return;
+    }
+    const token = req.headers.authorization?.split(' ')[1] ?? '';
+    const result = await eraseUserData(req.params.id, token);
+    if (!result) {
       res.status(404).json({error: 'Usuário não encontrado!'});
       return;
     }
-
-    res.json({message: 'Usuário deletado com sucesso!'});
+    res.json({message: 'Conta excluída com sucesso', ...result});
   } catch (error) {
     logger.error('Erro em deleteUser:', error);
-    res.status(500).json({error: (error as Error).message});
+    res.status(error instanceof MediaCleanupError ? 503 : 500).json({
+      error: 'Não foi possível concluir a exclusão. Tente novamente.',
+    });
+  }
+};
+
+export const exportUserData = async (
+  req: AuthRequest,
+  res: Response,
+): Promise<void> => {
+  try {
+    if (!req.userId) {
+      res.status(401).json({error: 'Não autenticado'});
+      return;
+    }
+    if (req.userId !== req.params.id) {
+      res.status(403).json({error: 'Não autorizado a exportar estes dados'});
+      return;
+    }
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      res.status(400).json({error: 'ID inválido'});
+      return;
+    }
+    const data = await buildUserExport(req.params.id);
+    if (!data) {
+      res.status(404).json({error: 'Conta não encontrada'});
+      return;
+    }
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="pet-joyful-data-${req.params.id}.json"`);
+    res.status(200).json(data);
+  } catch (error) {
+    logger.error('Erro em exportUserData:', error);
+    res.status(500).json({error: 'Não foi possível exportar os dados'});
   }
 };

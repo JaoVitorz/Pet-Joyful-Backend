@@ -1,4 +1,5 @@
 import swaggerAutogen from 'swagger-autogen';
+import {readFile, writeFile} from 'node:fs/promises';
 
 const doc = {
   openapi: '3.0.0',
@@ -55,20 +56,16 @@ const doc = {
       },
       Message: {
         type: 'object',
-        required: ['email', 'mensagem'],
+        required: ['mensagem'],
         properties: {
-          nome: {type: 'string', example: 'Maria'},
-          email: {type: 'string', example: 'maria@email.com'},
           mensagem: {type: 'string', example: 'Gostei do post!'},
           postId: {type: 'string', example: '65b8d7b2b9e'},
         },
       },
       Report: {
         type: 'object',
-        required: ['email', 'descricao'],
+        required: ['descricao'],
         properties: {
-          nome: {type: 'string', example: 'Carlos'},
-          email: {type: 'string', example: 'carlos@email.com'},
           descricao: {type: 'string', example: 'Conteúdo ofensivo detectado'},
           alvoId: {type: 'string', example: '123abc456'},
           alvoTipo: {type: 'string', example: 'post'},
@@ -100,6 +97,7 @@ const doc = {
   security: [{BearerAuth: []}],
   tags: [
     {name: 'Auth', description: 'Autenticação e gerenciamento de sessão'},
+    {name: 'MFA', description: 'Autenticação em duas etapas por TOTP'},
     {name: 'Users', description: 'Operações relacionadas a usuários'},
     {name: 'Messages', description: 'Mensagens e comentários em postagens'},
     {name: 'Reports', description: 'Denúncias e moderação de conteúdo'},
@@ -119,4 +117,57 @@ const endpointsFiles = [
   './backend/src/routes/chatRoutes.ts',
 ];
 
-void swaggerAutogen({openapi: '3.0.0'})(outputFile, endpointsFiles, doc);
+await swaggerAutogen({openapi: '3.0.0'})(outputFile, endpointsFiles, doc);
+
+const generated = JSON.parse(await readFile(outputFile, 'utf8'));
+generated.paths = Object.fromEntries(
+  Object.entries(generated.paths).filter(([route]) => route === '/' || route.startsWith('/api/')),
+);
+const exportRoute = generated.paths['/api/users/{id}/data-export']?.get;
+const deleteRoute = generated.paths['/api/users/{id}']?.delete;
+const sessionRoute = generated.paths['/api/auth/session']?.get;
+if (sessionRoute) {
+  sessionRoute.tags = ['Auth'];
+  sessionRoute.summary = 'Validar JWT de acesso e revogação da sessão';
+  sessionRoute.security = [{BearerAuth: []}];
+  sessionRoute.responses = {'200': {description: 'Sessão ativa'},
+    '401': {description: 'Sessão inválida ou revogada'}};
+}
+if (exportRoute) {
+  exportRoute.summary = 'Baixar JSON dos dados da própria conta';
+  exportRoute.security = [{BearerAuth: []}];
+  exportRoute.responses['200'] = {
+    description: 'Arquivo JSON com conta, comentários, denúncias e posts vinculados',
+    content: {'application/json': {schema: {type: 'object'}}},
+  };
+}
+if (deleteRoute) {
+  deleteRoute.summary = 'Excluir a própria conta e tratar os dados vinculados';
+  deleteRoute.security = [{BearerAuth: []}];
+}
+const mfaOperations: Array<[string, string, string, object | null]> = [
+  ['/api/auth/mfa', 'get', 'Consultar estado do MFA', null],
+  ['/api/auth/mfa/setup', 'post', 'Iniciar configuração TOTP', {password: 'string'}],
+  ['/api/auth/mfa/setup', 'delete', 'Cancelar configuração pendente', null],
+  ['/api/auth/mfa/confirm', 'post', 'Confirmar TOTP e ativar MFA', {code: 'string'}],
+  ['/api/auth/mfa/verify', 'post', 'Concluir desafio de login', {challengeToken: 'string', code: 'string', recoveryCode: 'string'}],
+  ['/api/auth/mfa/recovery-codes', 'post', 'Renovar códigos de recuperação', {password: 'string', code: 'string', recoveryCode: 'string'}],
+  ['/api/auth/mfa/disable', 'post', 'Desativar MFA', {password: 'string', code: 'string', recoveryCode: 'string'}],
+];
+for (const [route, method, summary, fields] of mfaOperations) {
+  const operation = generated.paths[route]?.[method];
+  if (!operation) continue;
+  operation.tags = ['MFA'];
+  operation.summary = summary;
+  operation.security = route.endsWith('/verify') ? [] : [{BearerAuth: []}];
+  if (fields) {
+    operation.requestBody = {required: true, content: {'application/json': {schema: {
+      type: 'object', properties: Object.fromEntries(Object.keys(fields).map(key =>
+        [key, {type: 'string'}])),
+    }}}};
+  }
+  operation.responses = {'200': {description: 'Operação concluída'},
+    '400': {description: 'Dados inválidos'}, '401': {description: 'Não autorizado'},
+    '429': {description: 'Tentativas excedidas'}};
+}
+await writeFile(outputFile, `${JSON.stringify(generated, null, 2)}\n`);

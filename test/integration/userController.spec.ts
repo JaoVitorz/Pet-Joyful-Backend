@@ -1,6 +1,7 @@
 import request from 'supertest';
 import {MongoMemoryServer} from 'mongodb-memory-server';
 import mongoose from 'mongoose';
+import jwt from 'jsonwebtoken';
 import app from '../../backend/src/app';
 import User from '../../backend/src/models/userModel';
 
@@ -223,28 +224,28 @@ describe('Testes das APIs de usuarios', () => {
 
       const res = await request(app)
         .delete(`/api/users/${usuario._id}`)
-        .set('x-admin-key', 'chave-admin-secreta');
+        .set('Authorization', `Bearer ${jwt.sign({userId: usuario._id.toString()}, process.env.JWT_SECRET!)}`);
 
       expect(res.status).toBe(200);
-      expect(res.body.message).toBe('Usuário deletado com sucesso!');
+      expect(res.body.message).toBe('Conta excluída com sucesso');
     });
 
-    it('deve voltar 404 se o usuario nao existir no banco', async () => {
+    it('deve voltar 401 se o token apontar para usuário inexistente', async () => {
       const idFake = new mongoose.Types.ObjectId();
 
       const res = await request(app)
         .delete(`/api/users/${idFake}`)
-        .set('x-admin-key', 'chave-admin-secreta');
+        .set('Authorization', `Bearer ${jwt.sign({userId: idFake.toString()}, process.env.JWT_SECRET!)}`);
 
-      expect(res.status).toBe(404);
+      expect(res.status).toBe(401);
     });
 
-    it('deve voltar 500 se o id tiver num formato invalido', async () => {
+    it('deve voltar 401 se o token contiver ID inválido', async () => {
       const res = await request(app)
         .delete('/api/users/invalid-id')
-        .set('x-admin-key', 'chave-admin-secreta');
+        .set('Authorization', `Bearer ${jwt.sign({userId: 'invalid-id'}, process.env.JWT_SECRET!)}`);
 
-      expect(res.status).toBe(500);
+      expect(res.status).toBe(401);
     });
   });
 });

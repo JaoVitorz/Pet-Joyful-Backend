@@ -46,14 +46,17 @@ function toLogMeta(meta?: unknown): Record<string, unknown> {
   }
   if (meta instanceof Error) {
     return {
-      message: meta.message,
-      ...(meta.stack !== undefined ? {stack: meta.stack} : {}),
+      name: meta.name,
     };
   }
   if (typeof meta === 'object' && !Array.isArray(meta)) {
-    return meta as Record<string, unknown>;
+    const allowed = new Set(['name', 'code', 'status', 'statusCode', 'durationMs', 'method']);
+    return Object.fromEntries(
+      Object.entries(meta).filter(([key, value]) => allowed.has(key) &&
+        (typeof value === 'string' || typeof value === 'number')),
+    );
   }
-  return {value: meta};
+  return {};
 }
 
 export const logger = {

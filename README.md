@@ -162,7 +162,7 @@ O projeto adota uma **arquitetura de microsserviços** onde cada domínio de neg
 | Nº   | Nome                      | Descrição                                                             | Microsserviço |
 | ---- | ------------------------- | --------------------------------------------------------------------- | ------------- |
 | RF01 | Login                     | Fazer login na rede social                                            | Principal     |
-| RF02 | Email de confirmação      | Enviar email de confirmação para validar conta do usuário             | Principal     |
+| RF02 | Email de confirmação      | Desativado enquanto não houver provedor de envio compatível com a hospedagem | Futuro |
 | RF03 | Adicionar/Remover Amigos  | Adicionar amigos na rede social ou remover                            | Perfil        |
 | RF04 | Preferências de usuário   | Alteração das preferências do usuário                                 | Perfil        |
 | RF05 | Bloquear usuários         | Bloquear usuários que descumprirem as políticas do site               | Principal     |
@@ -603,6 +603,7 @@ O pipeline detecta automaticamente o tipo de versão com base nos commits:
 | `DISCORD_WEBHOOK_URL` | CI | Notificação no Discord |
 | `MONGO_URI` | HML + PROD | Conexão com MongoDB |
 | `JWT_SECRET` | HML + PROD | Assinatura de tokens |
+| `MFA_ENCRYPTION_KEY` | HML + PROD | Chave hexadecimal de 32 bytes para cifrar segredos TOTP |
 | `ADMIN_KEY` | HML + PROD | Chave de acesso administrativo |
 | `LOGTAIL_TOKEN` + `LOGTAIL_URL` | HML + PROD | Envio de logs ao Better Stack |
 | `GEMINI_API_KEY` | HML + PROD | API do PetBot (Gemini) |
@@ -720,6 +721,7 @@ MONGO_URI=mongodb+srv://usuario:senha@cluster.mongodb.net/petjoyful?retryWrites=
 
 # JWT
 JWT_SECRET=sua_chave_secreta_super_segura_aqui
+MFA_ENCRYPTION_KEY=64_caracteres_hexadecimais_gerados_aleatoriamente
 JWT_EXPIRES_IN=7d
 
 # Admin
@@ -796,13 +798,14 @@ http://localhost:3001/api-docs
 | `GET` | `/api/users/:id` | Buscar usuário por ID | Admin Key |
 | `POST` | `/api/users` | Criar usuário | Admin Key |
 | `PUT` | `/api/users/:id` | Atualizar usuário | Admin Key |
-| `DELETE` | `/api/users/:id` | Deletar usuário | Admin Key |
+| `GET` | `/api/users/:id/data-export` | Baixar JSON dos dados da conta e registros vinculados | Bearer Token do titular |
+| `DELETE` | `/api/users/:id` | Excluir conta e tratar registros vinculados | Bearer Token do titular |
 
 ### 💬 Mensagens (`/api/messages`)
 
 | Método | Endpoint | Descrição | Auth |
 |--------|----------|-----------|------|
-| `POST` | `/api/messages/post` | Criar mensagem | — |
+| `POST` | `/api/messages/post` | Criar mensagem vinculada ao usuário autenticado | Bearer JWT |
 | `GET` | `/api/messages/post` | Listar mensagens | — |
 | `PUT` | `/api/messages/post/:id` | Atualizar mensagem | Admin Key |
 | `DELETE` | `/api/messages/post/:id` | Deletar mensagem | Admin Key |
@@ -811,7 +814,7 @@ http://localhost:3001/api-docs
 
 | Método | Endpoint | Descrição | Auth |
 |--------|----------|-----------|------|
-| `POST` | `/api/messages/denuncia` | Criar denúncia | — |
+| `POST` | `/api/messages/denuncia` | Criar denúncia vinculada ao usuário autenticado | Bearer JWT |
 | `GET` | `/api/messages/denuncia` | Listar denúncias | Admin Key |
 | `PUT` | `/api/messages/denuncia/:id` | Atualizar denúncia | Admin Key |
 | `DELETE` | `/api/messages/denuncia/:id` | Deletar denúncia | Admin Key |
@@ -863,10 +866,14 @@ Authorization: Bearer {token}
 
 **Características:**
 
-- Gerado no registro e login
+- Gerado no registro e no login de contas sem MFA; contas com MFA recebem o token após confirmar o segundo fator
 - Validade padrão: 7 dias (configurável)
 - Usado em rotas de perfil (`/api/auth/me`)
 - Contém informações do usuário (id, email, tipo)
+
+### MFA por aplicativo autenticador (TOTP)
+
+O MFA opcional protege o login com um código do aplicativo autenticador. A API usa um desafio temporário após a senha e só emite o JWT de acesso depois de validar TOTP ou um código de recuperação. Consulte [o contrato e as instruções de implantação](docs/MFA_TOTP.md).
 
 ### Admin Key (Operações Administrativas)
 
@@ -921,7 +928,8 @@ curl -X POST https://pet-joyful-backend-1.onrender.com/api/auth/register \
     "nome": "João Silva",
     "email": "joao@email.com",
     "senha": "senha123",
-    "tipo": "adotante"
+    "tipo": "adotante",
+    "cpf": "<CPF do titular>"
   }'
 ```
 
@@ -929,9 +937,8 @@ curl -X POST https://pet-joyful-backend-1.onrender.com/api/auth/register \
 
 ```json
 {
-  "success": true,
-  "message": "Usuário cadastrado com sucesso",
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "message": "Cadastro criado com sucesso.",
+  "token": "<JWT>",
   "user": {
     "id": "507f1f77bcf86cd799439011",
     "nome": "João Silva",
@@ -979,13 +986,26 @@ curl -X GET https://pet-joyful-backend-1.onrender.com/api/auth/me \
 ```bash
 curl -X POST https://pet-joyful-backend-1.onrender.com/api/messages/post \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer SEU_TOKEN_JWT" \
   -d '{
-    "nome": "Maria",
-    "email": "maria@email.com",
     "mensagem": "Gostei muito do post!",
     "postId": "123abc"
   }'
 ```
+
+O nome, o email e o ID do autor são obtidos da conta autenticada. Os registros anteriores a essa mudança continuam sem autoria comprovada; não devem ser atribuídos automaticamente por correspondência de email. O serviço separado de posts (`/api/posts`) também exige Bearer JWT e precisa receber o mesmo `JWT_SECRET` do backend principal.
+
+### Exportar e excluir meus dados
+
+```bash
+curl -OJ -H "Authorization: Bearer SEU_TOKEN_JWT" \
+  https://pet-joyful-backend-1.onrender.com/api/users/SEU_ID/data-export
+
+curl -X DELETE -H "Authorization: Bearer SEU_TOKEN_JWT" \
+  https://pet-joyful-backend-1.onrender.com/api/users/SEU_ID
+```
+
+O JSON inclui conta, comentários, denúncias e posts ligados ao ID autenticado. Para detalhes do tratamento por tipo de registro e dos dados antigos sem autoria comprovada, consulte [a política de dados](docs/lgpd-data-policy.md). Imagens de posts exigem `POSTS_SERVICE_URL` no backend e `POSTS_UPLOAD_DIR` no serviço de posts.
 
 ### Listar Usuários (Admin)
 
@@ -2224,6 +2244,7 @@ MONGO_DB_NAME=PETJOYFUL-DB
 PORT=5000
 NODE_ENV=production
 JWT_SECRET=sua_chave_jwt_super_segura
+MFA_ENCRYPTION_KEY=64_caracteres_hexadecimais_gerados_aleatoriamente
 GEMINI_API_KEY=sua_chave_gemini
 
 # Observabilidade (Better Stack / Logtail)
@@ -2413,3 +2434,21 @@ Desenvolvido para fins acadêmicos como parte do Projeto Integrador da **Fatec S
 **[⬆ Voltar ao topo](#-pet-joyful--backend-api)**
 
 </div>
+# Cadastro
+
+O cadastro é concluído imediatamente e devolve um token de acesso. Não há
+confirmação por e-mail nem dependência de SMTP. Contas criadas antes dessa
+mudança que ficaram pendentes de confirmação também podem fazer login.
+
+## Validação de CPF
+
+O cadastro exige apenas `cpf`, com 11 dígitos (com ou sem máscara). Para validar
+antes de enviar o formulário, a tela pode chamar `POST /api/auth/validate-cpf`
+com `{ "cpf": "40442820135" }`. A resposta é
+`{ "valido": true, "verificacao": "digitos_verificadores" }` quando o número passa
+na validação dos dígitos; CPF mal formatado ou com dígitos incorretos retorna 400.
+O cadastro faz a mesma validação antes de salvar.
+
+Essa verificação matemática não confirma se o CPF existe na base da Receita
+Federal nem se pertence à pessoa que está se cadastrando. Uma consulta cadastral
+externa exigirá um provedor contratado e os dados solicitados por esse provedor.
