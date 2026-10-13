@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import crypto from 'node:crypto';
 import bcrypt from 'bcryptjs';
 import type {Response} from 'express';
 import userModel from '../models/userModel.js';
@@ -6,6 +6,27 @@ import type {AuthRequest, IUserDocument} from '../types/index.js';
 import {logger} from '../logger/logger.js';
 import {normalizeCpf} from '../services/cpfService.js';
 import {eraseUserData, MediaCleanupError} from '../services/userDataService.js';
+import {signAccessToken, signChallengeToken} from '../services/mfaService.js';
+
+const loginFailures = new Map<string, {count: number; until: number}>();
+const loginWindowMs = 15 * 60_000;
+
+function recordLoginFailure(key: string): void {
+  const now = Date.now();
+  const previous = loginFailures.get(key);
+  const count = previous && previous.until > now ? previous.count + 1 : 1;
+  loginFailures.set(key, {count, until: now + loginWindowMs});
+  if (loginFailures.size > 10_000) {
+    for (const [entry, value] of loginFailures) {
+      if (value.until <= now) loginFailures.delete(entry);
+    }
+    while (loginFailures.size > 10_000) {
+      const oldest = loginFailures.keys().next().value;
+      if (oldest === undefined) break;
+      loginFailures.delete(oldest);
+    }
+  }
+}
 
 const validateCpfInput = (body: Record<string, unknown>) => {
   const cpf = normalizeCpf(body.cpf);
@@ -60,11 +81,7 @@ export const register = async (
     });
     await user.save();
 
-    const token = jwt.sign(
-      {userId: user._id, email: user.email, tipo: user.tipo},
-      process.env.JWT_SECRET as string,
-      {expiresIn: '7d'},
-    );
+    const token = signAccessToken(user);
 
     res.status(201).json({
       message: 'Cadastro criado com sucesso.',
@@ -78,7 +95,7 @@ export const register = async (
     });
   } catch (error) {
     logger.error('Erro no registro:', {message: (error as Error).message});
-    res.status(500).json({error: (error as Error).message});
+    res.status(500).json({error: 'Não foi possível concluir o cadastro'});
   }
 };
 
@@ -91,15 +108,24 @@ export const login = async (
     const email = body.email;
     const senha = body.senha || body.password;
 
-    if (!email || !senha) {
+    if (typeof email !== 'string' || typeof senha !== 'string' ||
+      !email || !senha || email.length > 254) {
       res.status(400).json({error: 'Email e senha são obrigatórios'});
       return;
     }
 
+    const failureKey = `${req.ip ?? 'unknown'}:${email.trim().toLowerCase()}`;
+    const failures = loginFailures.get(failureKey);
+    if (failures && failures.until > Date.now() && failures.count >= 10) {
+      res.status(429).json({error: 'Tente novamente mais tarde'});
+      return;
+    }
+
     logger.info('Tentativa de login', {email});
-    const user = await userModel.findOne({email}).select('+deletionRequestedAt');
+    const user = await userModel.findOne({email}).select('+deletionRequestedAt +mfaLockedUntil');
 
     if (!user) {
+      recordLoginFailure(failureKey);
       logger.info('Login falhou: usuário não encontrado', {email});
       res.status(401).json({error: 'Credenciais inválidas'});
       return;
@@ -115,16 +141,27 @@ export const login = async (
     const senhaCorreta = await user.comparePassword(senha);
 
     if (!senhaCorreta) {
+      recordLoginFailure(failureKey);
       logger.info('Login falhou: senha incorreta', {email});
       res.status(401).json({error: 'Credenciais inválidas'});
       return;
     }
 
-    const token = jwt.sign(
-      {userId: user._id, email: user.email, tipo: user.tipo},
-      process.env.JWT_SECRET as string,
-      {expiresIn: '7d'},
-    );
+    if (user.mfaEnabled) {
+      if (user.mfaLockedUntil && user.mfaLockedUntil.getTime() > Date.now()) {
+        res.status(429).json({error: 'Tente novamente mais tarde'});
+        return;
+      }
+      const nonce = crypto.randomBytes(24).toString('base64url');
+      await userModel.updateOne({_id: user._id, mfaEnabled: true},
+        {$set: {mfaChallengeNonce: nonce}});
+      res.json({mfaRequired: true, challengeToken: signChallengeToken(user, nonce)});
+      return;
+    }
+
+    loginFailures.delete(failureKey);
+
+    const token = signAccessToken(user);
 
     res.json({
       token,
@@ -137,7 +174,7 @@ export const login = async (
     });
   } catch (error) {
     logger.error('Erro no login:', {message: (error as Error).message});
-    res.status(500).json({error: (error as Error).message});
+    res.status(500).json({error: 'Não foi possível concluir o login'});
   }
 };
 
@@ -239,4 +276,8 @@ export const deleteProfile = async (
       error: 'Não foi possível concluir a exclusão. Tente novamente.',
     });
   }
+};
+
+export const getSession = (req: AuthRequest, res: Response): void => {
+  res.json({active: true, userId: req.userId});
 };

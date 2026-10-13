@@ -18,15 +18,11 @@ export default function errorHandler(
     stack: err.stack,
     method: req.method,
     route: req.originalUrl,
-    params: req.params,
-    query: req.query,
-    body: req.body,
   });
 
   const status = err.status ?? 500;
   res.status(status).json({
     success: false,
     message: 'Erro interno no servidor',
-    detail: err.message,
   });
 }

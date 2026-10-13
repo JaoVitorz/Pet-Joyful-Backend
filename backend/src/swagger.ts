@@ -97,6 +97,7 @@ const doc = {
   security: [{BearerAuth: []}],
   tags: [
     {name: 'Auth', description: 'Autenticação e gerenciamento de sessão'},
+    {name: 'MFA', description: 'Autenticação em duas etapas por TOTP'},
     {name: 'Users', description: 'Operações relacionadas a usuários'},
     {name: 'Messages', description: 'Mensagens e comentários em postagens'},
     {name: 'Reports', description: 'Denúncias e moderação de conteúdo'},
@@ -124,6 +125,14 @@ generated.paths = Object.fromEntries(
 );
 const exportRoute = generated.paths['/api/users/{id}/data-export']?.get;
 const deleteRoute = generated.paths['/api/users/{id}']?.delete;
+const sessionRoute = generated.paths['/api/auth/session']?.get;
+if (sessionRoute) {
+  sessionRoute.tags = ['Auth'];
+  sessionRoute.summary = 'Validar JWT de acesso e revogação da sessão';
+  sessionRoute.security = [{BearerAuth: []}];
+  sessionRoute.responses = {'200': {description: 'Sessão ativa'},
+    '401': {description: 'Sessão inválida ou revogada'}};
+}
 if (exportRoute) {
   exportRoute.summary = 'Baixar JSON dos dados da própria conta';
   exportRoute.security = [{BearerAuth: []}];
@@ -135,5 +144,30 @@ if (exportRoute) {
 if (deleteRoute) {
   deleteRoute.summary = 'Excluir a própria conta e tratar os dados vinculados';
   deleteRoute.security = [{BearerAuth: []}];
+}
+const mfaOperations: Array<[string, string, string, object | null]> = [
+  ['/api/auth/mfa', 'get', 'Consultar estado do MFA', null],
+  ['/api/auth/mfa/setup', 'post', 'Iniciar configuração TOTP', {password: 'string'}],
+  ['/api/auth/mfa/setup', 'delete', 'Cancelar configuração pendente', null],
+  ['/api/auth/mfa/confirm', 'post', 'Confirmar TOTP e ativar MFA', {code: 'string'}],
+  ['/api/auth/mfa/verify', 'post', 'Concluir desafio de login', {challengeToken: 'string', code: 'string', recoveryCode: 'string'}],
+  ['/api/auth/mfa/recovery-codes', 'post', 'Renovar códigos de recuperação', {password: 'string', code: 'string', recoveryCode: 'string'}],
+  ['/api/auth/mfa/disable', 'post', 'Desativar MFA', {password: 'string', code: 'string', recoveryCode: 'string'}],
+];
+for (const [route, method, summary, fields] of mfaOperations) {
+  const operation = generated.paths[route]?.[method];
+  if (!operation) continue;
+  operation.tags = ['MFA'];
+  operation.summary = summary;
+  operation.security = route.endsWith('/verify') ? [] : [{BearerAuth: []}];
+  if (fields) {
+    operation.requestBody = {required: true, content: {'application/json': {schema: {
+      type: 'object', properties: Object.fromEntries(Object.keys(fields).map(key =>
+        [key, {type: 'string'}])),
+    }}}};
+  }
+  operation.responses = {'200': {description: 'Operação concluída'},
+    '400': {description: 'Dados inválidos'}, '401': {description: 'Não autorizado'},
+    '429': {description: 'Tentativas excedidas'}};
 }
 await writeFile(outputFile, `${JSON.stringify(generated, null, 2)}\n`);

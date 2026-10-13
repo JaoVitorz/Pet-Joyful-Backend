@@ -2,7 +2,7 @@ import { Router } from 'express';
 import multer from 'multer';
 import fs from 'node:fs';
 import {createPost, removeUserMedia} from '../controllers/postsController.js';
-import requireUser, {requireActiveUser} from '../middlewares/requireUser.js';
+import requireUser, {requireActiveUser, requireDeletionUser} from '../middlewares/requireUser.js';
 import {uploadsDir} from '../uploads.js';
 
 const router = Router();
@@ -32,6 +32,6 @@ const upload = multer({ storage });
 
 // POST /api/posts - cria post com titulo, descricao e opcionalmente imagem
 router.post('/', requireUser, requireActiveUser, upload.single('image'), createPost);
-router.delete('/me/media', requireUser, removeUserMedia);
+router.delete('/me/media', requireUser, requireDeletionUser, removeUserMedia);
 
 export default router;

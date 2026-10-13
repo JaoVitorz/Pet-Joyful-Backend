@@ -230,22 +230,22 @@ describe('Testes das APIs de usuarios', () => {
       expect(res.body.message).toBe('Conta excluída com sucesso');
     });
 
-    it('deve voltar 404 se o usuario nao existir no banco', async () => {
+    it('deve voltar 401 se o token apontar para usuário inexistente', async () => {
       const idFake = new mongoose.Types.ObjectId();
 
       const res = await request(app)
         .delete(`/api/users/${idFake}`)
         .set('Authorization', `Bearer ${jwt.sign({userId: idFake.toString()}, process.env.JWT_SECRET!)}`);
 
-      expect(res.status).toBe(404);
+      expect(res.status).toBe(401);
     });
 
-    it('deve voltar 400 se o id tiver num formato invalido', async () => {
+    it('deve voltar 401 se o token contiver ID inválido', async () => {
       const res = await request(app)
         .delete('/api/users/invalid-id')
         .set('Authorization', `Bearer ${jwt.sign({userId: 'invalid-id'}, process.env.JWT_SECRET!)}`);
 
-      expect(res.status).toBe(400);
+      expect(res.status).toBe(401);
     });
   });
 });

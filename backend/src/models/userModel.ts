@@ -10,6 +10,16 @@ const userSchema = new mongoose.Schema<IUserDocument>(
     cpf: {type: String, unique: true, sparse: true, select: false},
     deletionRequestedAt: {type: Date, select: false},
     senha: {type: String, required: true},
+    mfaEnabled: {type: Boolean, default: false},
+    mfaSecret: {type: String, select: false},
+    mfaPendingSecret: {type: String, select: false},
+    mfaPendingExpiresAt: {type: Date, select: false},
+    mfaLastUsedStep: {type: Number, select: false},
+    mfaRecoveryCodes: {type: [String], select: false, default: []},
+    mfaChallengeNonce: {type: String, select: false},
+    mfaFailedAttempts: {type: Number, select: false, default: 0},
+    mfaLockedUntil: {type: Date, select: false},
+    authVersion: {type: Number, default: 0},
     tipo: {
       type: String,
       enum: Object.values(UserTipo),
@@ -18,6 +28,18 @@ const userSchema = new mongoose.Schema<IUserDocument>(
   },
   {timestamps: true},
 );
+
+userSchema.set('toJSON', {
+  transform: (_document, result) => {
+    const safe = result as unknown as Record<string, unknown>;
+    for (const key of ['senha', 'cpf', 'mfaSecret', 'mfaPendingSecret',
+      'mfaPendingExpiresAt', 'mfaLastUsedStep', 'mfaRecoveryCodes',
+      'mfaChallengeNonce', 'mfaFailedAttempts', 'mfaLockedUntil']) {
+      delete safe[key];
+    }
+    return result;
+  },
+});
 
 // Hash da senha antes de salvar (somente se modificada)
 userSchema.pre('save', async function (next) {

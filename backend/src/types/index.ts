@@ -20,6 +20,16 @@ export interface IUser {
   tipo: UserTipo | string;
   cpf?: string;
   deletionRequestedAt?: Date;
+  mfaEnabled?: boolean;
+  mfaSecret?: string;
+  mfaPendingSecret?: string;
+  mfaPendingExpiresAt?: Date;
+  mfaLastUsedStep?: number;
+  mfaRecoveryCodes?: string[];
+  mfaChallengeNonce?: string;
+  mfaFailedAttempts?: number;
+  mfaLockedUntil?: Date;
+  authVersion?: number;
 }
 
 export interface IUserDocument extends IUser, mongoose.Document {
@@ -55,6 +65,10 @@ export interface JwtPayload {
   email?: string;
   tipo?: string;
   role?: string;
+  tokenUse?: 'access' | 'mfa_challenge';
+  authVersion?: number;
+  mfa?: boolean;
+  jti?: string;
 }
 
 export interface AuthRequest extends Request {
