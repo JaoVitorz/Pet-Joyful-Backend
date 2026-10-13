@@ -21,6 +21,10 @@
       "description": "Autenticação e gerenciamento de sessão"
     },
     {
+      "name": "MFA",
+      "description": "Autenticação em duas etapas por TOTP"
+    },
+    {
       "name": "Users",
       "description": "Operações relacionadas a usuários"
     },
@@ -502,6 +506,9 @@
           "403": {
             "description": "Forbidden"
           },
+          "429": {
+            "description": "Too Many Requests"
+          },
           "500": {
             "description": "Internal Server Error"
           }
@@ -520,6 +527,311 @@
                   },
                   "password": {
                     "example": "any"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/session": {
+      "get": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Sessão ativa"
+          },
+          "401": {
+            "description": "Sessão inválida ou revogada"
+          }
+        },
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Validar JWT de acesso e revogação da sessão",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/auth/mfa/verify": {
+      "post": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Operação concluída"
+          },
+          "400": {
+            "description": "Dados inválidos"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "429": {
+            "description": "Tentativas excedidas"
+          }
+        },
+        "tags": [
+          "MFA"
+        ],
+        "summary": "Concluir desafio de login",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "challengeToken": {
+                    "type": "string"
+                  },
+                  "code": {
+                    "type": "string"
+                  },
+                  "recoveryCode": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/mfa": {
+      "get": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Operação concluída"
+          },
+          "400": {
+            "description": "Dados inválidos"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "429": {
+            "description": "Tentativas excedidas"
+          }
+        },
+        "tags": [
+          "MFA"
+        ],
+        "summary": "Consultar estado do MFA",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/auth/mfa/setup": {
+      "post": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Operação concluída"
+          },
+          "400": {
+            "description": "Dados inválidos"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "429": {
+            "description": "Tentativas excedidas"
+          }
+        },
+        "tags": [
+          "MFA"
+        ],
+        "summary": "Iniciar configuração TOTP",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "password": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Operação concluída"
+          },
+          "400": {
+            "description": "Dados inválidos"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "429": {
+            "description": "Tentativas excedidas"
+          }
+        },
+        "tags": [
+          "MFA"
+        ],
+        "summary": "Cancelar configuração pendente",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/auth/mfa/confirm": {
+      "post": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Operação concluída"
+          },
+          "400": {
+            "description": "Dados inválidos"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "429": {
+            "description": "Tentativas excedidas"
+          }
+        },
+        "tags": [
+          "MFA"
+        ],
+        "summary": "Confirmar TOTP e ativar MFA",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/mfa/recovery-codes": {
+      "post": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Operação concluída"
+          },
+          "400": {
+            "description": "Dados inválidos"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "429": {
+            "description": "Tentativas excedidas"
+          }
+        },
+        "tags": [
+          "MFA"
+        ],
+        "summary": "Renovar códigos de recuperação",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "password": {
+                    "type": "string"
+                  },
+                  "code": {
+                    "type": "string"
+                  },
+                  "recoveryCode": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/mfa/disable": {
+      "post": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Operação concluída"
+          },
+          "400": {
+            "description": "Dados inválidos"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "429": {
+            "description": "Tentativas excedidas"
+          }
+        },
+        "tags": [
+          "MFA"
+        ],
+        "summary": "Desativar MFA",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "password": {
+                    "type": "string"
+                  },
+                  "code": {
+                    "type": "string"
+                  },
+                  "recoveryCode": {
+                    "type": "string"
                   }
                 }
               }

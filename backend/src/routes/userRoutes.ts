@@ -9,7 +9,7 @@ import {
 } from "../controllers/userController.js";
 
 import ensureAdminKey from "../middlewares/ensureAdminKey.js";
-import verifyToken from "../middlewares/verifyToken.js";
+import verifyToken, {verifyDeletionToken} from "../middlewares/verifyToken.js";
 
 const router = Router();
 
@@ -129,6 +129,6 @@ router.get('/:id/data-export', verifyToken, exportUserData);
      }
    }
 */
-router.delete("/:id", verifyToken, deleteUser);
+router.delete("/:id", verifyDeletionToken, deleteUser);
 
 export default router;

@@ -603,6 +603,7 @@ O pipeline detecta automaticamente o tipo de versão com base nos commits:
 | `DISCORD_WEBHOOK_URL` | CI | Notificação no Discord |
 | `MONGO_URI` | HML + PROD | Conexão com MongoDB |
 | `JWT_SECRET` | HML + PROD | Assinatura de tokens |
+| `MFA_ENCRYPTION_KEY` | HML + PROD | Chave hexadecimal de 32 bytes para cifrar segredos TOTP |
 | `ADMIN_KEY` | HML + PROD | Chave de acesso administrativo |
 | `LOGTAIL_TOKEN` + `LOGTAIL_URL` | HML + PROD | Envio de logs ao Better Stack |
 | `GEMINI_API_KEY` | HML + PROD | API do PetBot (Gemini) |
@@ -720,6 +721,7 @@ MONGO_URI=mongodb+srv://usuario:senha@cluster.mongodb.net/petjoyful?retryWrites=
 
 # JWT
 JWT_SECRET=sua_chave_secreta_super_segura_aqui
+MFA_ENCRYPTION_KEY=64_caracteres_hexadecimais_gerados_aleatoriamente
 JWT_EXPIRES_IN=7d
 
 # Admin
@@ -864,10 +866,14 @@ Authorization: Bearer {token}
 
 **Características:**
 
-- Gerado no registro e login
+- Gerado no registro e no login de contas sem MFA; contas com MFA recebem o token após confirmar o segundo fator
 - Validade padrão: 7 dias (configurável)
 - Usado em rotas de perfil (`/api/auth/me`)
 - Contém informações do usuário (id, email, tipo)
+
+### MFA por aplicativo autenticador (TOTP)
+
+O MFA opcional protege o login com um código do aplicativo autenticador. A API usa um desafio temporário após a senha e só emite o JWT de acesso depois de validar TOTP ou um código de recuperação. Consulte [o contrato e as instruções de implantação](docs/MFA_TOTP.md).
 
 ### Admin Key (Operações Administrativas)
 
@@ -2238,6 +2244,7 @@ MONGO_DB_NAME=PETJOYFUL-DB
 PORT=5000
 NODE_ENV=production
 JWT_SECRET=sua_chave_jwt_super_segura
+MFA_ENCRYPTION_KEY=64_caracteres_hexadecimais_gerados_aleatoriamente
 GEMINI_API_KEY=sua_chave_gemini
 
 # Observabilidade (Better Stack / Logtail)
