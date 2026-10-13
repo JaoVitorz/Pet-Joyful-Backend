@@ -1,5 +1,5 @@
 import {Router} from 'express';
-import { loginLimiter } from "../middlewares/rateLimiter";
+import {loginLimiter} from '../middlewares/rateLimiter.js';
 import {
   register,
   login,

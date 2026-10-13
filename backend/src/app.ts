@@ -8,7 +8,7 @@ import chatRoutes from './routes/chatRoutes.js';
 import {requestLogger} from './middlewares/requestLogger.js';
 import {logger} from './logger/logger.js';
 import errorHandler from './middlewares/errorHandler.js';
-import { apiLimiter } from "./middlewares/rateLimiter";
+import {apiLimiter} from './middlewares/rateLimiter.js';
 
 const app = express();
 

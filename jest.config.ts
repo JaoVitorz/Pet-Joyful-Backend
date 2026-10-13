@@ -2,6 +2,7 @@ export default {
   preset: 'ts-jest',
   testEnvironment: 'node',
   testMatch: ['**/*.spec.ts'],
+  setupFilesAfterEnv: ['<rootDir>/test/setupRateLimit.ts'],
   clearMocks: true,
   restoreMocks: true,
   collectCoverageFrom: ['backend/src/**/*.ts'],
