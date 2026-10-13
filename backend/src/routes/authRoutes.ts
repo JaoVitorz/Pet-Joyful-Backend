@@ -1,4 +1,5 @@
 import {Router} from 'express';
+import { loginLimiter } from "../middlewares/rateLimiter";
 import {
   register,
   login,
@@ -26,7 +27,7 @@ router.post('/validate-cpf', cpfRateLimit, validateCpf);
 
 // #swagger.tags = ['Auth']
 // #swagger.summary = 'Login do usuário'
-router.post('/login', login);
+router.post('/login', loginLimiter, login);
 router.get('/session', verifyToken, getSession);
 
 // #swagger.tags = ['MFA']
