@@ -91,7 +91,8 @@ export function verifyTotp(secret: string, code: unknown, now = Date.now()): num
 }
 
 export function provisioningUri(email: string, secret: string): string {
-  return `otpauth://totp/${encodeURIComponent(`Pet Joyful:${email}`)}?secret=${secret}&issuer=${encodeURIComponent('Pet Joyful')}&algorithm=SHA1&digits=6&period=30`;
+  const label = encodeURIComponent(`Pet Joyful:${email}`);
+  return `otpauth://totp/${label}?secret=${secret}&issuer=${encodeURIComponent('Pet Joyful')}&algorithm=SHA1&digits=6&period=30`;
 }
 
 export function generateRecoveryCodes(): {codes: string[]; hashes: string[]} {

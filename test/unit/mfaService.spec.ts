@@ -8,8 +8,8 @@ describe('TOTP e segurança dos segredos', () => {
   it('valida o vetor SHA-1 da RFC 6238 em seis dígitos', () => {
     const secret = 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ';
     expect(verifyTotp(secret, '287082', 59_000)).toBe(1);
-    expect(verifyTotp(secret, '287082', 119_000)).toBe(null);
-    expect(verifyTotp(secret, 'abc', 59_000)).toBe(null);
+    expect(verifyTotp(secret, '287082', 119_000)).toBeNull();
+    expect(verifyTotp(secret, 'abc', 59_000)).toBeNull();
   });
 
   it('protege o segredo em repouso e gera códigos independentes', () => {

@@ -138,10 +138,11 @@ async function authorizedChange(req: AuthRequest): Promise<{
   step?: number; recoveryHash?: string;
 } | null> {
   const body = bodyOf(req);
-  if (typeof body.password !== 'string' && typeof body.senha !== 'string') return null;
+  const password = body.password ?? body.senha;
+  if (typeof password !== 'string') return null;
   const user = await userModel.findById(req.userId).select(privateFields);
-  if (!user || !user.mfaEnabled || !user.mfaSecret || locked(user) ||
-    !(await user.comparePassword(String(body.password ?? body.senha)))) return null;
+  if (!user?.mfaEnabled || !user.mfaSecret || locked(user) ||
+    !(await user.comparePassword(password))) return null;
   const step = verifyTotp(decryptSecret(user.mfaSecret), body.code);
   if (step !== null && step > (user.mfaLastUsedStep ?? -1)) {
     return {userId: String(user._id), authVersion: user.authVersion ?? 0,
