@@ -73,6 +73,21 @@ describe('MFA via TOTP', () => {
     expect(confirmed.status).toBe(200);
     expect(confirmed.body.recoveryCodes).toHaveLength(10);
     const enabledToken = confirmed.body.token as string;
+    const enabledStatus = await request(app).get('/api/auth/mfa')
+      .set('Authorization', `Bearer ${enabledToken}`);
+    expect(enabledStatus.body.enabled).toBe(true);
+    expect((await request(app).post('/api/auth/mfa/setup')
+      .set('Authorization', `Bearer ${enabledToken}`)
+      .send({password: 'senha-forte'})).status).toBe(401);
+    expect((await request(app).post('/api/auth/mfa/disable')
+      .set('Authorization', `Bearer ${enabledToken}`)
+      .send({recoveryCode: confirmed.body.recoveryCodes[0]})).status).toBe(401);
+    expect((await request(app).post('/api/auth/mfa/disable')
+      .set('Authorization', `Bearer ${enabledToken}`)
+      .send({password: 'senha-errada', recoveryCode: confirmed.body.recoveryCodes[0]})).status).toBe(401);
+    expect((await request(app).post('/api/auth/mfa/disable')
+      .set('Authorization', `Bearer ${enabledToken}`)
+      .send({password: 'senha-forte'})).status).toBe(401);
     expect((await request(app).get('/api/auth/me').set('Authorization', `Bearer ${oldToken}`)).status).toBe(401);
     expect((await request(app).get('/api/auth/session').set('Authorization', `Bearer ${oldToken}`)).status).toBe(401);
     expect((await request(mediaApp).delete('/api/posts/me/media')
@@ -155,5 +170,40 @@ describe('MFA via TOTP', () => {
       request(app).post('/api/auth/mfa/verify')
         .send({challengeToken: second.body.challengeToken, recoveryCode})));
     expect(concurrent.map(result => result.status).sort()).toEqual([200, 401]);
+  });
+
+  it('rejeita configuração inválida, cancelada ou expirada', async () => {
+    await userModel.create({nome: 'Configuração', email: 'config@email.com',
+      senha: 'senha-forte', tipo: 'cliente'});
+    const login = await request(app).post('/api/auth/login')
+      .send({email: 'config@email.com', senha: 'senha-forte'});
+    const authorization = `Bearer ${login.body.token}`;
+    const setupRequest = () => request(app).post('/api/auth/mfa/setup')
+      .set('Authorization', authorization);
+    const confirmRequest = (code: string) => request(app).post('/api/auth/mfa/confirm')
+      .set('Authorization', authorization).send({code});
+
+    const initialStatus = await request(app).get('/api/auth/mfa')
+      .set('Authorization', authorization);
+    expect(initialStatus.status).toBe(200);
+    expect(initialStatus.body.enabled).toBe(false);
+    expect((await setupRequest().send({})).status).toBe(400);
+    expect((await setupRequest().send({password: 'senha-errada'})).status).toBe(401);
+    expect((await confirmRequest('123456')).status).toBe(400);
+
+    const setup = await setupRequest().send({password: 'senha-forte'});
+    expect(setup.status).toBe(200);
+    expect((await confirmRequest('invalid')).status).toBe(401);
+    expect((await request(app).delete('/api/auth/mfa/setup')
+      .set('Authorization', authorization)).status).toBe(204);
+    expect((await confirmRequest(codeFor(setup.body.secret, Date.now()))).status).toBe(400);
+
+    const renewed = await setupRequest().send({password: 'senha-forte'});
+    expect(renewed.status).toBe(200);
+    jest.spyOn(Date, 'now').mockReturnValue(new Date(renewed.body.expiresAt).getTime() + 1);
+    expect((await confirmRequest(codeFor(renewed.body.secret, Date.now()))).status).toBe(400);
+    const finalStatus = await request(app).get('/api/auth/mfa')
+      .set('Authorization', authorization);
+    expect(finalStatus.body.enabled).toBe(false);
   });
 });
