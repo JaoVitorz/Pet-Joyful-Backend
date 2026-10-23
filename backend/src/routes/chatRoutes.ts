@@ -1,7 +1,7 @@
 import {Router} from 'express';
 import {sendMessage} from '../controllers/chatController.js';
 import verifyToken from '../middlewares/verifyToken.js';
-import {apiLimiter} from '../middlewares/rateLimiter.js';
+import {directChatLimiter} from '../middlewares/rateLimiter.js';
 import {
   createConversation,
   listChatUsers,
@@ -50,11 +50,11 @@ const router: Router = Router();
 router.post('/', sendMessage);
 
 // Conversas individuais entre usuários autenticados. O chat IA acima permanece separado.
-router.get('/users', verifyToken, apiLimiter, listChatUsers);
-router.get('/conversations', verifyToken, apiLimiter, listConversations);
-router.post('/conversations', verifyToken, apiLimiter, createConversation);
-router.get('/conversations/:id/messages', verifyToken, apiLimiter, listConversationMessages);
-router.post('/conversations/:id/messages', verifyToken, apiLimiter, sendConversationMessage);
+router.get('/users', verifyToken, directChatLimiter, listChatUsers);
+router.get('/conversations', verifyToken, directChatLimiter, listConversations);
+router.post('/conversations', verifyToken, directChatLimiter, createConversation);
+router.get('/conversations/:id/messages', verifyToken, directChatLimiter, listConversationMessages);
+router.post('/conversations/:id/messages', verifyToken, directChatLimiter, sendConversationMessage);
 
 /*
   #swagger.tags = ['Chat']

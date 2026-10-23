@@ -10,6 +10,7 @@ import {requestLogger} from './middlewares/requestLogger.js';
 import {logger} from './logger/logger.js';
 import errorHandler from './middlewares/errorHandler.js';
 import {apiLimiter} from './middlewares/rateLimiter.js';
+import {allowedOrigins} from './config/allowedOrigins.js';
 
 const app = express();
 
@@ -43,11 +44,7 @@ app.use(
 );
 app.use(
   cors({
-    origin: [
-      'https://pet-joyful-backend-1.onrender.com',
-      'http://localhost:3000',
-      'http://localhost:8081'
-    ],
+    origin: allowedOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key', 'accept'],

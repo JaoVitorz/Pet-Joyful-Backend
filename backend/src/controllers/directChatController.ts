@@ -4,6 +4,7 @@ import type {AuthRequest} from '../types/index.js';
 import User from '../models/userModel.js';
 import DirectConversation from '../models/directConversationModel.js';
 import DirectMessage from '../models/directMessageModel.js';
+import {emitDirectMessage} from '../services/chatRealtime.js';
 
 const MAX_MESSAGE_LENGTH = 2000;
 const MAX_PAGE_SIZE = 100;
@@ -101,7 +102,7 @@ export async function createConversation(req: AuthRequest, res: Response): Promi
 
 export async function listConversationMessages(req: AuthRequest, res: Response): Promise<Response> {
   const currentUserId = req.userId;
-  const conversationId = req.params.id;
+  const conversationId = typeof req.params.id === 'string' ? req.params.id : '';
   if (!currentUserId) return res.status(401).json({error: 'Usuário não autenticado'});
   if (!mongoose.isValidObjectId(conversationId)) return res.status(400).json({error: 'ID da conversa inválido'});
 
@@ -128,7 +129,7 @@ export async function listConversationMessages(req: AuthRequest, res: Response):
 
 export async function sendConversationMessage(req: AuthRequest, res: Response): Promise<Response> {
   const currentUserId = req.userId;
-  const conversationId = req.params.id;
+  const conversationId = typeof req.params.id === 'string' ? req.params.id : '';
   const body = req.body as {text?: unknown};
   const text = typeof body.text === 'string' ? body.text.trim() : '';
   if (!currentUserId) return res.status(401).json({error: 'Usuário não autenticado'});
@@ -145,6 +146,16 @@ export async function sendConversationMessage(req: AuthRequest, res: Response): 
     DirectMessage.create({conversationId, senderId: currentUserId, text}),
     DirectConversation.updateOne({_id: conversationId}, {$set: {lastMessage: text, lastMessageAt: now}}),
   ]);
+
+  emitDirectMessage(conversation.participants, {
+    conversationId,
+    message: {
+      id: String(message._id),
+      senderId: currentUserId,
+      text: message.text,
+      createdAt: message.createdAt,
+    },
+  });
 
   return res.status(201).json({success: true, message: {
     id: String(message._id),

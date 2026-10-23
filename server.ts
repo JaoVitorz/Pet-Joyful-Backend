@@ -1,6 +1,8 @@
 import 'dotenv/config';
+import {createServer} from 'node:http';
 import connectDB from './backend/src/database/connection.js';
 import app from './backend/src/app.js';
+import {initializeChatRealtime} from './backend/src/services/chatRealtime.js';
 import bcrypt from 'bcryptjs';
 import userModel from './backend/src/models/userModel.js';
 import type {Request, Response} from 'express';
@@ -8,6 +10,8 @@ import { logger } from './backend/src/logger/logger.js';
 import { requestLogger } from './backend/src/middlewares/requestLogger.js';
 
 const PORT = process.env.PORT || 5000;
+const httpServer = createServer(app);
+initializeChatRealtime(httpServer);
 
 app.use(requestLogger)
 
@@ -50,7 +54,7 @@ app.post('/test-user', async (req: Request, res: Response) => {
   }
 });
 
-app.listen(Number(PORT), '0.0.0.0', () =>
+httpServer.listen(Number(PORT), '0.0.0.0', () =>
   logger.info(`✅ Servidor rodando na porta ${PORT}`),
 );
 

@@ -1,11 +1,14 @@
+import {createServer, type Server as HttpServer} from 'node:http';
 import request from 'supertest';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import {MongoMemoryServer} from 'mongodb-memory-server';
+import {io as connectSocket, type Socket as ClientSocket} from 'socket.io-client';
 import app from '../../backend/src/app';
 import User from '../../backend/src/models/userModel';
 import DirectConversation from '../../backend/src/models/directConversationModel';
 import DirectMessage from '../../backend/src/models/directMessageModel';
+import {initializeChatRealtime} from '../../backend/src/services/chatRealtime';
 
 const secret = 'direct-chat-test-secret';
 const base = '/api/chat';
@@ -13,19 +16,31 @@ jest.setTimeout(60_000);
 
 describe('Chat individual entre usuários', () => {
   let mongoServer: MongoMemoryServer;
+  let httpServer: HttpServer;
+  let realtimeServer: ReturnType<typeof initializeChatRealtime>;
+  let realtimeUrl: string;
+  const sockets: ClientSocket[] = [];
 
   beforeAll(async () => {
     process.env.JWT_SECRET = secret;
     mongoServer = await MongoMemoryServer.create();
     await mongoose.connect(mongoServer.getUri());
+    httpServer = createServer(app);
+    realtimeServer = initializeChatRealtime(httpServer);
+    await new Promise<void>(resolve => httpServer.listen(0, '127.0.0.1', resolve));
+    const address = httpServer.address();
+    if (!address || typeof address === 'string') throw new Error('Servidor de teste não iniciou');
+    realtimeUrl = `http://127.0.0.1:${address.port}`;
   });
 
   afterAll(async () => {
+    await new Promise<void>(resolve => realtimeServer.close(() => resolve()));
     await mongoose.disconnect();
     await mongoServer.stop();
   });
 
   afterEach(async () => {
+    for (const socket of sockets.splice(0)) socket.disconnect();
     await Promise.all([
       User.deleteMany({}),
       DirectConversation.deleteMany({}),
@@ -37,6 +52,28 @@ describe('Chat individual entre usuários', () => {
     const user = await User.create({nome, email, senha: 'segredo', tipo: 'cliente'});
     const token = jwt.sign({userId: String(user._id)}, secret);
     return {user, token};
+  }
+
+  async function connectUser(token: string): Promise<ClientSocket> {
+    const socket = connectSocket(realtimeUrl, {
+      auth: {token},
+      transports: ['websocket'],
+      reconnection: false,
+    });
+    sockets.push(socket);
+    await new Promise<void>((resolve, reject) => {
+      socket.once('connect', resolve);
+      socket.once('connect_error', reject);
+    });
+    return socket;
+  }
+
+  async function expectSocketRejected(socket: ClientSocket): Promise<void> {
+    sockets.push(socket);
+    await new Promise<void>((resolve, reject) => {
+      socket.once('connect_error', () => resolve());
+      socket.once('connect', () => reject(new Error('Socket conectou sem uma sessão válida')));
+    });
   }
 
   it('busca usuários sem expor a própria conta ou contas em exclusão', async () => {
@@ -125,6 +162,52 @@ describe('Chat individual entre usuários', () => {
     expect((await request(app).get(`${messageUrl}?limit=0`).set(auth)).body.messages).toHaveLength(2);
     expect((await request(app).get(`${base}/conversations`).set(auth)).body.conversations[0].lastMessage).toBe('Oi!');
     expect(await DirectMessage.countDocuments({conversationId})).toBe(2);
+  });
+
+  it('entrega mensagem em tempo real ao outro participante após persistir', async () => {
+    const owner = await createUser('owner@email.com');
+    const other = await createUser('other@email.com');
+    const conversation = await request(app)
+      .post(`${base}/conversations`)
+      .set('Authorization', `Bearer ${owner.token}`)
+      .send({userId: String(other.user._id)});
+    const recipientSocket = await connectUser(other.token);
+    const received = new Promise<unknown>(resolve => recipientSocket.once('direct-message:new', resolve));
+
+    const sent = await request(app)
+      .post(`${base}/conversations/${conversation.body.conversation.id}/messages`)
+      .set('Authorization', `Bearer ${owner.token}`)
+      .send({text: 'Mensagem ao vivo'});
+
+    expect(sent.status).toBe(201);
+    expect(await received).toMatchObject({
+      conversationId: conversation.body.conversation.id,
+      message: {
+        id: sent.body.message.id,
+        senderId: String(owner.user._id),
+        text: 'Mensagem ao vivo',
+      },
+    });
+  });
+
+  it('rejeita conexões Socket.IO sem token válido ou de conta em exclusão', async () => {
+    await expectSocketRejected(connectSocket(realtimeUrl, {
+      transports: ['websocket'],
+      reconnection: false,
+    }));
+    await expectSocketRejected(connectSocket(realtimeUrl, {
+      auth: {token: 'token-inválido'},
+      transports: ['websocket'],
+      reconnection: false,
+    }));
+
+    const deletingUser = await createUser('deleting-socket@email.com');
+    await User.updateOne({_id: deletingUser.user._id}, {$set: {deletionRequestedAt: new Date()}});
+    await expectSocketRejected(connectSocket(realtimeUrl, {
+      auth: {token: deletingUser.token},
+      transports: ['websocket'],
+      reconnection: false,
+    }));
   });
 
   it('valida que a conversa individual tenha exatamente dois participantes', async () => {

@@ -838,7 +838,7 @@ Todas as rotas abaixo exigem `Authorization: Bearer <token>`. Usuários e conver
 | `GET` | `/api/chat/conversations/:id/messages` | Carregar até 100 mensagens recentes da conversa |
 | `POST` | `/api/chat/conversations/:id/messages` | Enviar e persistir mensagem; corpo: `{"text":"Olá!"}` (até 2000 caracteres) |
 
-O envio e a leitura só são permitidos aos dois participantes. O endpoint de exportação de dados da conta também inclui mensagens diretas; ao excluir uma conta, as conversas e mensagens associadas são removidas.
+O envio e a leitura só são permitidos aos dois participantes. Após salvar a mensagem no MongoDB, o backend emite `direct-message:new` via Socket.IO para os dispositivos conectados dos participantes. O cliente conecta ao mesmo host da API com `auth: { token: <JWT> }`; o JWT e a conta são validados no handshake. O endpoint de exportação de dados da conta também inclui mensagens diretas; ao excluir uma conta, as conversas e mensagens associadas são removidas.
 
 ---
 
