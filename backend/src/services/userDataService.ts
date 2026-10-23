@@ -2,6 +2,8 @@ import PostMessage from '../models/postMessageModel.js';
 import DenunciaMessage from '../models/denunciaMessageModel.js';
 import User from '../models/userModel.js';
 import Post from '../models/postModel.js';
+import DirectConversation from '../models/directConversationModel.js';
+import DirectMessage from '../models/directMessageModel.js';
 
 export class MediaCleanupError extends Error {}
 
@@ -9,11 +11,16 @@ export async function buildUserExport(userId: string) {
   const user = await User.findById(userId).select('-senha +cpf +deletionRequestedAt').lean();
   if (!user || user.deletionRequestedAt) return null;
 
-  const [comments, reports, posts] = await Promise.all([
+  const [comments, reports, posts, conversations] = await Promise.all([
     PostMessage.find({userId}).sort({createdAt: 1}).lean(),
     DenunciaMessage.find({userId}).sort({createdAt: 1}).lean(),
     Post.find({userId}).sort({createdAt: 1}).lean(),
+    DirectConversation.find({participants: userId}).select('participants').lean(),
   ]);
+  const conversationIds = conversations.map(conversation => conversation._id);
+  const directMessages = conversationIds.length
+    ? await DirectMessage.find({conversationId: {$in: conversationIds}}).sort({createdAt: 1}).lean()
+    : [];
 
   return {
     exportedAt: new Date().toISOString(),
@@ -52,6 +59,13 @@ export async function buildUserExport(userId: string) {
       publishedAt: post.publishedAt,
       createdAt: post.createdAt,
       updatedAt: post.updatedAt,
+    })),
+    directMessages: directMessages.map(message => ({
+      id: String(message._id),
+      conversationId: String(message.conversationId),
+      senderId: String(message.senderId),
+      text: message.text,
+      createdAt: message.createdAt,
     })),
   };
 }
@@ -92,6 +106,14 @@ export async function eraseUserData(userId: string, bearerToken: string) {
 
   const comments = await PostMessage.deleteMany({userId});
   const reports = await DenunciaMessage.deleteMany({userId});
+  const conversations = await DirectConversation.find({participants: userId}).select('_id').lean();
+  const conversationIds = conversations.map(conversation => conversation._id);
+  const directMessages = conversationIds.length
+    ? await DirectMessage.deleteMany({conversationId: {$in: conversationIds}})
+    : {deletedCount: 0};
+  const directConversations = conversationIds.length
+    ? await DirectConversation.deleteMany({_id: {$in: conversationIds}})
+    : {deletedCount: 0};
   let anonymizedPosts = 0;
   while (true) {
     const postIds = await Post.find({userId: user._id}).select('_id').limit(500).lean();
@@ -112,7 +134,13 @@ export async function eraseUserData(userId: string, bearerToken: string) {
 
   await User.findByIdAndDelete(userId);
   return {
-    deleted: {comments: comments.deletedCount, reports: reports.deletedCount, account: true},
+    deleted: {
+      comments: comments.deletedCount,
+      reports: reports.deletedCount,
+      directMessages: directMessages.deletedCount,
+      directConversations: directConversations.deletedCount,
+      account: true,
+    },
     anonymized: {posts: anonymizedPosts, reportsAboutAccount: targetReports.modifiedCount},
     retainedRecords: [{
       type: 'anonymizedPostPlaceholders',

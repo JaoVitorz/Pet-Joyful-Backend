@@ -826,6 +826,20 @@ http://localhost:3001/api-docs
 | `POST` | `/api/chat` | Enviar mensagem ao PetBot (Gemini) | — |
 | `GET` | `/api/chat/health` | Health check da integração Gemini | — |
 
+### 💬 Conversas entre usuários (`/api/chat/conversations`)
+
+Todas as rotas abaixo exigem `Authorization: Bearer <token>`. Usuários e conversas são carregados do MongoDB; uma conversa individual é reutilizada para o mesmo par de usuários.
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| `GET` | `/api/chat/users?q=nome` | Buscar usuários para iniciar uma conversa (exclui a própria conta) |
+| `GET` | `/api/chat/conversations` | Listar conversas do usuário autenticado, com prévia da última mensagem |
+| `POST` | `/api/chat/conversations` | Abrir ou criar conversa; corpo: `{"userId":"<id do destinatário>"}` |
+| `GET` | `/api/chat/conversations/:id/messages` | Carregar até 100 mensagens recentes da conversa |
+| `POST` | `/api/chat/conversations/:id/messages` | Enviar e persistir mensagem; corpo: `{"text":"Olá!"}` (até 2000 caracteres) |
+
+O envio e a leitura só são permitidos aos dois participantes. O endpoint de exportação de dados da conta também inclui mensagens diretas; ao excluir uma conta, as conversas e mensagens associadas são removidas.
+
 ---
 
 
