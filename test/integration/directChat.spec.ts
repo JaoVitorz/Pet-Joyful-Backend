@@ -164,6 +164,29 @@ describe('Chat individual entre usuários', () => {
     expect(await DirectMessage.countDocuments({conversationId})).toBe(2);
   });
 
+  it('contabiliza mensagens não lidas e zera ao marcar uma conversa como lida', async () => {
+    const owner = await createUser('owner@email.com', 'Ana');
+    const recipient = await createUser('recipient@email.com', 'Beto');
+    const outsider = await createUser('outsider@email.com');
+    const ownerAuth = {Authorization: `Bearer ${owner.token}`} as const;
+    const recipientAuth = {Authorization: `Bearer ${recipient.token}`} as const;
+    const outsiderAuth = {Authorization: `Bearer ${outsider.token}`} as const;
+    const created = await request(app).post(`${base}/conversations`).set(ownerAuth).send({userId: String(recipient.user._id)});
+    const conversationId = created.body.conversation.id;
+
+    await request(app).post(`${base}/conversations/${conversationId}/messages`).set(ownerAuth).send({text: 'Oi, Beto'});
+    const unread = await request(app).get(`${base}/conversations`).set(recipientAuth);
+    expect(unread.body.conversations[0].unreadCount).toBe(1);
+    expect((await request(app).get(`${base}/conversations`).set(ownerAuth)).body.conversations[0].unreadCount).toBe(0);
+
+    expect((await request(app).post(`${base}/conversations/${conversationId}/read`)).status).toBe(401);
+    expect((await request(app).post(`${base}/conversations/inválido/read`).set(recipientAuth)).status).toBe(400);
+    expect((await request(app).post(`${base}/conversations/${new mongoose.Types.ObjectId()}/read`).set(recipientAuth)).status).toBe(404);
+    expect((await request(app).post(`${base}/conversations/${conversationId}/read`).set(outsiderAuth)).status).toBe(403);
+    expect((await request(app).post(`${base}/conversations/${conversationId}/read`).set(recipientAuth)).status).toBe(200);
+    expect((await request(app).get(`${base}/conversations`).set(recipientAuth)).body.conversations[0].unreadCount).toBe(0);
+  });
+
   it('entrega mensagem em tempo real ao outro participante após persistir', async () => {
     const owner = await createUser('owner@email.com');
     const other = await createUser('other@email.com');
@@ -182,6 +205,7 @@ describe('Chat individual entre usuários', () => {
     expect(sent.status).toBe(201);
     expect(await received).toMatchObject({
       conversationId: conversation.body.conversation.id,
+      senderName: 'owner',
       message: {
         id: sent.body.message.id,
         senderId: String(owner.user._id),
