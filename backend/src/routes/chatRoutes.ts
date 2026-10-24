@@ -7,6 +7,7 @@ import {
   listChatUsers,
   listConversationMessages,
   listConversations,
+  markConversationRead,
   sendConversationMessage,
 } from '../controllers/directChatController.js';
 
@@ -54,6 +55,7 @@ router.get('/users', verifyToken, directChatLimiter, listChatUsers);
 router.get('/conversations', verifyToken, directChatLimiter, listConversations);
 router.post('/conversations', verifyToken, directChatLimiter, createConversation);
 router.get('/conversations/:id/messages', verifyToken, directChatLimiter, listConversationMessages);
+router.post('/conversations/:id/read', verifyToken, directChatLimiter, markConversationRead);
 router.post('/conversations/:id/messages', verifyToken, directChatLimiter, sendConversationMessage);
 
 /*

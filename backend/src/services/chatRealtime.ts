@@ -9,6 +9,7 @@ import {accessTokenMatchesUser} from './mfaService.js';
 
 type DirectMessageEvent = {
   conversationId: string;
+  senderName?: string;
   message: {
     id: string;
     senderId: string;

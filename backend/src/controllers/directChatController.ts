@@ -49,6 +49,19 @@ export async function listConversations(req: AuthRequest, res: Response): Promis
     .populate({path: 'participants', select: 'nome tipo deletionRequestedAt'})
     .lean();
 
+  const unreadCounts = new Map<string, number>();
+  if (conversations.length) {
+    const unread = await DirectMessage.aggregate<{_id: mongoose.Types.ObjectId; count: number}>([
+      {$match: {
+        conversationId: {$in: conversations.map(conversation => conversation._id)},
+        senderId: {$ne: new mongoose.Types.ObjectId(currentUserId)},
+        readBy: {$ne: new mongoose.Types.ObjectId(currentUserId)},
+      }},
+      {$group: {_id: '$conversationId', count: {$sum: 1}}},
+    ]);
+    for (const item of unread) unreadCounts.set(String(item._id), item.count);
+  }
+
   return res.json({success: true, conversations: conversations.map(conversation => {
     const participants = (conversation.participants as unknown as Array<{
       _id: mongoose.Types.ObjectId; nome: string; tipo: string;
@@ -59,6 +72,7 @@ export async function listConversations(req: AuthRequest, res: Response): Promis
       user: otherUser ? {id: String(otherUser._id), name: otherUser.nome, nome: otherUser.nome, tipo: otherUser.tipo} : null,
       lastMessage: conversation.lastMessage ?? '',
       lastMessageAt: conversation.lastMessageAt ?? null,
+      unreadCount: unreadCounts.get(String(conversation._id)) ?? 0,
       updatedAt: conversation.updatedAt,
     };
   }).filter(conversation => conversation.user !== null)});
@@ -127,6 +141,24 @@ export async function listConversationMessages(req: AuthRequest, res: Response):
   }))});
 }
 
+export async function markConversationRead(req: AuthRequest, res: Response): Promise<Response> {
+  const currentUserId = req.userId;
+  const conversationId = typeof req.params.id === 'string' ? req.params.id : '';
+  if (!currentUserId) return res.status(401).json({error: 'Usuário não autenticado'});
+  if (!mongoose.isValidObjectId(conversationId)) return res.status(400).json({error: 'ID da conversa inválido'});
+
+  const conversation = await DirectConversation.findById(conversationId).select('participants').lean();
+  if (!conversation) return res.status(404).json({error: 'Conversa não encontrada'});
+  if (!isParticipant(conversation, currentUserId)) return res.status(403).json({error: 'Você não participa desta conversa'});
+
+  const userObjectId = new mongoose.Types.ObjectId(currentUserId);
+  await DirectMessage.updateMany(
+    {conversationId, senderId: {$ne: userObjectId}, readBy: {$ne: userObjectId}},
+    {$addToSet: {readBy: userObjectId}},
+  );
+  return res.json({success: true});
+}
+
 export async function sendConversationMessage(req: AuthRequest, res: Response): Promise<Response> {
   const currentUserId = req.userId;
   const conversationId = typeof req.params.id === 'string' ? req.params.id : '';
@@ -149,6 +181,7 @@ export async function sendConversationMessage(req: AuthRequest, res: Response): 
 
   emitDirectMessage(conversation.participants, {
     conversationId,
+    senderName: (await User.findById(currentUserId).select('nome').lean())?.nome,
     message: {
       id: String(message._id),
       senderId: currentUserId,
