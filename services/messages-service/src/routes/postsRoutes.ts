@@ -37,7 +37,7 @@ const upload = multer({
   fileFilter: (
     _req: Express.Request,
     file: Express.Multer.File,
-    cb: multer.FileFilterCallback,
+    cb: (error: Error | null, acceptFile?: boolean) => void,
   ) => {
     if (['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.mimetype)) cb(null, true);
     else cb(Object.assign(new Error('Tipo de arquivo inválido'), {code: 'INVALID_FILE_TYPE'}));
