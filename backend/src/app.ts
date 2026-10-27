@@ -6,6 +6,7 @@ import fs from 'fs';
 import swaggerUi from 'swagger-ui-express';
 import routes from './routes/index.js';
 import chatRoutes from './routes/chatRoutes.js';
+import {checkCompatibility} from './controllers/compatibilityController.js';
 import {requestLogger} from './middlewares/requestLogger.js';
 import {logger} from './logger/logger.js';
 import errorHandler from './middlewares/errorHandler.js';
@@ -46,7 +47,11 @@ app.use(
     origin: [
       'https://pet-joyful-backend-1.onrender.com',
       'http://localhost:3000',
-      'http://localhost:8081'
+      'http://localhost:8081',
+      ...(process.env.CORS_ORIGINS ?? '')
+        .split(',')
+        .map(origin => origin.trim())
+        .filter(Boolean),
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -78,6 +83,7 @@ app.get('/api/slow', async (_req, res) => {
 app.use('/api/chat', chatRoutes);
 // Rotas principais
 app.use("/api", apiLimiter);
+app.post('/api/compatibilidade', checkCompatibility);
 app.use('/api', routes);
 
 // Rota base (teste)

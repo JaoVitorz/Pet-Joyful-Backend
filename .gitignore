@@ -1,5 +1,8 @@
 # Node.js dependencies
 node_modules/
+.cloudstack-local/
+hyperv-inventory.tmp.json
+hyperv-switches.tmp.json
 .npm-cache/
 
 # Environment variables

@@ -1,0 +1,66 @@
+3f45e0d4b05d3bca842a7770d818a2d4
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const chatController_js_1 = require("../controllers/chatController.js");
+const router = (0, express_1.Router)();
+/*
+  #swagger.tags = ['Chat']
+  #swagger.summary = 'Enviar mensagem para o chat com IA (Gemini)'
+  #swagger.description = 'Envia uma pergunta sobre pets para o modelo Gemini e retorna a resposta gerada pela IA.'
+  #swagger.requestBody = {
+    required: true,
+    content: {
+      "application/json": {
+        schema: { $ref: "#/components/schemas/ChatRequest" }
+      }
+    }
+  }
+  #swagger.responses[200] = {
+    description: "Resposta gerada pela IA com sucesso",
+    content: {
+      "application/json": {
+        schema: { $ref: "#/components/schemas/ChatResponse" }
+      }
+    }
+  }
+  #swagger.responses[500] = {
+    description: "Erro interno ao processar a mensagem",
+    content: {
+      "application/json": {
+        schema: {
+          type: "object",
+          properties: {
+            success: { type: "boolean", example: false },
+            error: { type: "string", example: "Erro ao processar mensagem" }
+          }
+        }
+      }
+    }
+  }
+*/
+router.post('/', chatController_js_1.sendMessage);
+/*
+  #swagger.tags = ['Chat']
+  #swagger.summary = 'Health check do serviço de chat com IA'
+  #swagger.description = 'Verifica se a integração com a Gemini API está online.'
+  #swagger.responses[200] = {
+    description: "Serviço online",
+    content: {
+      "application/json": {
+        schema: {
+          type: "object",
+          properties: {
+            success: { type: "boolean", example: true },
+            message: { type: "string", example: "🤖 Gemini API online!" }
+          }
+        }
+      }
+    }
+  }
+*/
+router.get('/health', (_req, res) => {
+    res.json({ success: true, message: '🤖 Gemini API online!' });
+});
+exports.default = router;
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJmaWxlIjoiQzpcXFVzZXJzXFxBbHVub3NcXERvY3VtZW50c1xcR2l0SHViXFxQZXQtSm95ZnVsLUJhY2tlbmRcXGJhY2tlbmRcXHNyY1xccm91dGVzXFxjaGF0Um91dGVzLnRzIiwibWFwcGluZ3MiOiI7O0FBQUEscUNBQStCO0FBQy9CLHdFQUE2RDtBQUU3RCxNQUFNLE1BQU0sR0FBVyxJQUFBLGdCQUFNLEdBQUUsQ0FBQztBQUVoQzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztFQWtDRTtBQUNGLE1BQU0sQ0FBQyxJQUFJLENBQUMsR0FBRyxFQUFFLCtCQUFXLENBQUMsQ0FBQztBQUU5Qjs7Ozs7Ozs7Ozs7Ozs7Ozs7O0VBa0JFO0FBQ0YsTUFBTSxDQUFDLEdBQUcsQ0FBQyxTQUFTLEVBQUUsQ0FBQyxJQUFJLEVBQUUsR0FBRyxFQUFFLEVBQUU7SUFDbEMsR0FBRyxDQUFDLElBQUksQ0FBQyxFQUFDLE9BQU8sRUFBRSxJQUFJLEVBQUUsT0FBTyxFQUFFLHVCQUF1QixFQUFDLENBQUMsQ0FBQztBQUM5RCxDQUFDLENBQUMsQ0FBQztBQUVILGtCQUFlLE1BQU0sQ0FBQyIsIm5hbWVzIjpbXSwic291cmNlcyI6WyJDOlxcVXNlcnNcXEFsdW5vc1xcRG9jdW1lbnRzXFxHaXRIdWJcXFBldC1Kb3lmdWwtQmFja2VuZFxcYmFja2VuZFxcc3JjXFxyb3V0ZXNcXGNoYXRSb3V0ZXMudHMiXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHtSb3V0ZXJ9IGZyb20gJ2V4cHJlc3MnO1xyXG5pbXBvcnQge3NlbmRNZXNzYWdlfSBmcm9tICcuLi9jb250cm9sbGVycy9jaGF0Q29udHJvbGxlci5qcyc7XHJcblxyXG5jb25zdCByb3V0ZXI6IFJvdXRlciA9IFJvdXRlcigpO1xyXG5cclxuLypcclxuICAjc3dhZ2dlci50YWdzID0gWydDaGF0J11cclxuICAjc3dhZ2dlci5zdW1tYXJ5ID0gJ0VudmlhciBtZW5zYWdlbSBwYXJhIG8gY2hhdCBjb20gSUEgKEdlbWluaSknXHJcbiAgI3N3YWdnZXIuZGVzY3JpcHRpb24gPSAnRW52aWEgdW1hIHBlcmd1bnRhIHNvYnJlIHBldHMgcGFyYSBvIG1vZGVsbyBHZW1pbmkgZSByZXRvcm5hIGEgcmVzcG9zdGEgZ2VyYWRhIHBlbGEgSUEuJ1xyXG4gICNzd2FnZ2VyLnJlcXVlc3RCb2R5ID0ge1xyXG4gICAgcmVxdWlyZWQ6IHRydWUsXHJcbiAgICBjb250ZW50OiB7XHJcbiAgICAgIFwiYXBwbGljYXRpb24vanNvblwiOiB7XHJcbiAgICAgICAgc2NoZW1hOiB7ICRyZWY6IFwiIy9jb21wb25lbnRzL3NjaGVtYXMvQ2hhdFJlcXVlc3RcIiB9XHJcbiAgICAgIH1cclxuICAgIH1cclxuICB9XHJcbiAgI3N3YWdnZXIucmVzcG9uc2VzWzIwMF0gPSB7XHJcbiAgICBkZXNjcmlwdGlvbjogXCJSZXNwb3N0YSBnZXJhZGEgcGVsYSBJQSBjb20gc3VjZXNzb1wiLFxyXG4gICAgY29udGVudDoge1xyXG4gICAgICBcImFwcGxpY2F0aW9uL2pzb25cIjoge1xyXG4gICAgICAgIHNjaGVtYTogeyAkcmVmOiBcIiMvY29tcG9uZW50cy9zY2hlbWFzL0NoYXRSZXNwb25zZVwiIH1cclxuICAgICAgfVxyXG4gICAgfVxyXG4gIH1cclxuICAjc3dhZ2dlci5yZXNwb25zZXNbNTAwXSA9IHtcclxuICAgIGRlc2NyaXB0aW9uOiBcIkVycm8gaW50ZXJubyBhbyBwcm9jZXNzYXIgYSBtZW5zYWdlbVwiLFxyXG4gICAgY29udGVudDoge1xyXG4gICAgICBcImFwcGxpY2F0aW9uL2pzb25cIjoge1xyXG4gICAgICAgIHNjaGVtYToge1xyXG4gICAgICAgICAgdHlwZTogXCJvYmplY3RcIixcclxuICAgICAgICAgIHByb3BlcnRpZXM6IHtcclxuICAgICAgICAgICAgc3VjY2VzczogeyB0eXBlOiBcImJvb2xlYW5cIiwgZXhhbXBsZTogZmFsc2UgfSxcclxuICAgICAgICAgICAgZXJyb3I6IHsgdHlwZTogXCJzdHJpbmdcIiwgZXhhbXBsZTogXCJFcnJvIGFvIHByb2Nlc3NhciBtZW5zYWdlbVwiIH1cclxuICAgICAgICAgIH1cclxuICAgICAgICB9XHJcbiAgICAgIH1cclxuICAgIH1cclxuICB9XHJcbiovXHJcbnJvdXRlci5wb3N0KCcvJywgc2VuZE1lc3NhZ2UpO1xyXG5cclxuLypcclxuICAjc3dhZ2dlci50YWdzID0gWydDaGF0J11cclxuICAjc3dhZ2dlci5zdW1tYXJ5ID0gJ0hlYWx0aCBjaGVjayBkbyBzZXJ2acOnbyBkZSBjaGF0IGNvbSBJQSdcclxuICAjc3dhZ2dlci5kZXNjcmlwdGlvbiA9ICdWZXJpZmljYSBzZSBhIGludGVncmHDp8OjbyBjb20gYSBHZW1pbmkgQVBJIGVzdMOhIG9ubGluZS4nXHJcbiAgI3N3YWdnZXIucmVzcG9uc2VzWzIwMF0gPSB7XHJcbiAgICBkZXNjcmlwdGlvbjogXCJTZXJ2acOnbyBvbmxpbmVcIixcclxuICAgIGNvbnRlbnQ6IHtcclxuICAgICAgXCJhcHBsaWNhdGlvbi9qc29uXCI6IHtcclxuICAgICAgICBzY2hlbWE6IHtcclxuICAgICAgICAgIHR5cGU6IFwib2JqZWN0XCIsXHJcbiAgICAgICAgICBwcm9wZXJ0aWVzOiB7XHJcbiAgICAgICAgICAgIHN1Y2Nlc3M6IHsgdHlwZTogXCJib29sZWFuXCIsIGV4YW1wbGU6IHRydWUgfSxcclxuICAgICAgICAgICAgbWVzc2FnZTogeyB0eXBlOiBcInN0cmluZ1wiLCBleGFtcGxlOiBcIvCfpJYgR2VtaW5pIEFQSSBvbmxpbmUhXCIgfVxyXG4gICAgICAgICAgfVxyXG4gICAgICAgIH1cclxuICAgICAgfVxyXG4gICAgfVxyXG4gIH1cclxuKi9cclxucm91dGVyLmdldCgnL2hlYWx0aCcsIChfcmVxLCByZXMpID0+IHtcclxuICByZXMuanNvbih7c3VjY2VzczogdHJ1ZSwgbWVzc2FnZTogJ/CfpJYgR2VtaW5pIEFQSSBvbmxpbmUhJ30pO1xyXG59KTtcclxuXHJcbmV4cG9ydCBkZWZhdWx0IHJvdXRlcjsiXSwidmVyc2lvbiI6M30=

@@ -1,0 +1,81 @@
+041a5345c70f8e8a287d5e344e418b46
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const rateLimiter_js_1 = require("../middlewares/rateLimiter.js");
+const authController_js_1 = require("../controllers/authController.js");
+const ensureAuth_js_1 = __importDefault(require("../middlewares/ensureAuth.js"));
+const verifyToken_js_1 = __importStar(require("../middlewares/verifyToken.js"));
+const cpfRateLimit_js_1 = require("../middlewares/cpfRateLimit.js");
+const mfaController_js_1 = require("../controllers/mfaController.js");
+const router = (0, express_1.Router)();
+// #swagger.tags = ['Auth']
+// #swagger.summary = 'Registrar novo usuário'
+router.post('/register', cpfRateLimit_js_1.cpfRateLimit, authController_js_1.register);
+// Validação prévia para a tela de cadastro; o registro valida novamente.
+router.post('/validate-cpf', cpfRateLimit_js_1.cpfRateLimit, authController_js_1.validateCpf);
+// #swagger.tags = ['Auth']
+// #swagger.summary = 'Login do usuário'
+router.post('/login', rateLimiter_js_1.loginLimiter, authController_js_1.login);
+router.get('/session', verifyToken_js_1.default, authController_js_1.getSession);
+// #swagger.tags = ['MFA']
+// #swagger.summary = 'Concluir desafio MFA após login com senha'
+router.post('/mfa/verify', mfaController_js_1.verifyChallenge);
+// #swagger.tags = ['MFA']
+// #swagger.security = [{ "BearerAuth": [] }]
+router.get('/mfa', verifyToken_js_1.default, mfaController_js_1.status);
+router.post('/mfa/setup', verifyToken_js_1.default, mfaController_js_1.setup);
+router.delete('/mfa/setup', verifyToken_js_1.default, mfaController_js_1.cancelSetup);
+router.post('/mfa/confirm', verifyToken_js_1.default, mfaController_js_1.confirmSetup);
+router.post('/mfa/recovery-codes', verifyToken_js_1.default, mfaController_js_1.regenerateRecovery);
+router.post('/mfa/disable', verifyToken_js_1.default, mfaController_js_1.disable);
+// #swagger.tags = ['Auth']
+// #swagger.summary = 'Obter dados do usuário autenticado'
+// #swagger.security = [{ "BearerAuth": [] }]
+router.get('/me', ensureAuth_js_1.default, authController_js_1.getProfile);
+// #swagger.tags = ['Auth']
+// #swagger.summary = 'Atualizar dados do usuário autenticado'
+// #swagger.security = [{ "BearerAuth": [] }]
+router.put('/me', ensureAuth_js_1.default, authController_js_1.updateProfile);
+// #swagger.tags = ['Auth']
+// #swagger.summary = 'Excluir conta do usuário autenticado'
+// #swagger.security = [{ "BearerAuth": [] }]
+router.delete('/me', verifyToken_js_1.verifyDeletionToken, authController_js_1.deleteProfile);
+exports.default = router;
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJmaWxlIjoiQzpcXFVzZXJzXFxBbHVub3NcXERvY3VtZW50c1xcR2l0SHViXFxQZXQtSm95ZnVsLUJhY2tlbmRcXGJhY2tlbmRcXHNyY1xccm91dGVzXFxhdXRoUm91dGVzLnRzIiwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0FBQUEscUNBQStCO0FBQy9CLGtFQUEyRDtBQUMzRCx3RUFRMEM7QUFDMUMsaUZBQXNEO0FBQ3RELGdGQUErRTtBQUMvRSxvRUFBNEQ7QUFDNUQsc0VBRTZHO0FBRTdHLE1BQU0sTUFBTSxHQUFHLElBQUEsZ0JBQU0sR0FBRSxDQUFDO0FBRXhCLDJCQUEyQjtBQUMzQiw4Q0FBOEM7QUFDOUMsTUFBTSxDQUFDLElBQUksQ0FBQyxXQUFXLEVBQUUsOEJBQVksRUFBRSw0QkFBUSxDQUFDLENBQUM7QUFFakQseUVBQXlFO0FBQ3pFLE1BQU0sQ0FBQyxJQUFJLENBQUMsZUFBZSxFQUFFLDhCQUFZLEVBQUUsK0JBQVcsQ0FBQyxDQUFDO0FBRXhELDJCQUEyQjtBQUMzQix3Q0FBd0M7QUFDeEMsTUFBTSxDQUFDLElBQUksQ0FBQyxRQUFRLEVBQUUsNkJBQVksRUFBRSx5QkFBSyxDQUFDLENBQUM7QUFDM0MsTUFBTSxDQUFDLEdBQUcsQ0FBQyxVQUFVLEVBQUUsd0JBQVcsRUFBRSw4QkFBVSxDQUFDLENBQUM7QUFFaEQsMEJBQTBCO0FBQzFCLGlFQUFpRTtBQUNqRSxNQUFNLENBQUMsSUFBSSxDQUFDLGFBQWEsRUFBRSxrQ0FBa0IsQ0FBQyxDQUFDO0FBRS9DLDBCQUEwQjtBQUMxQiw2Q0FBNkM7QUFDN0MsTUFBTSxDQUFDLEdBQUcsQ0FBQyxNQUFNLEVBQUUsd0JBQVcsRUFBRSx5QkFBUyxDQUFDLENBQUM7QUFDM0MsTUFBTSxDQUFDLElBQUksQ0FBQyxZQUFZLEVBQUUsd0JBQVcsRUFBRSx3QkFBUSxDQUFDLENBQUM7QUFDakQsTUFBTSxDQUFDLE1BQU0sQ0FBQyxZQUFZLEVBQUUsd0JBQVcsRUFBRSw4QkFBYyxDQUFDLENBQUM7QUFDekQsTUFBTSxDQUFDLElBQUksQ0FBQyxjQUFjLEVBQUUsd0JBQVcsRUFBRSwrQkFBZSxDQUFDLENBQUM7QUFDMUQsTUFBTSxDQUFDLElBQUksQ0FBQyxxQkFBcUIsRUFBRSx3QkFBVyxFQUFFLHFDQUFxQixDQUFDLENBQUM7QUFDdkUsTUFBTSxDQUFDLElBQUksQ0FBQyxjQUFjLEVBQUUsd0JBQVcsRUFBRSwwQkFBVSxDQUFDLENBQUM7QUFFckQsMkJBQTJCO0FBQzNCLDBEQUEwRDtBQUMxRCw2Q0FBNkM7QUFDN0MsTUFBTSxDQUFDLEdBQUcsQ0FBQyxLQUFLLEVBQUUsdUJBQVUsRUFBRSw4QkFBVSxDQUFDLENBQUM7QUFFMUMsMkJBQTJCO0FBQzNCLDhEQUE4RDtBQUM5RCw2Q0FBNkM7QUFDN0MsTUFBTSxDQUFDLEdBQUcsQ0FBQyxLQUFLLEVBQUUsdUJBQVUsRUFBRSxpQ0FBYSxDQUFDLENBQUM7QUFFN0MsMkJBQTJCO0FBQzNCLDREQUE0RDtBQUM1RCw2Q0FBNkM7QUFDN0MsTUFBTSxDQUFDLE1BQU0sQ0FBQyxLQUFLLEVBQUUsb0NBQW1CLEVBQUUsaUNBQWEsQ0FBQyxDQUFDO0FBRXpELGtCQUFlLE1BQU0sQ0FBQyIsIm5hbWVzIjpbXSwic291cmNlcyI6WyJDOlxcVXNlcnNcXEFsdW5vc1xcRG9jdW1lbnRzXFxHaXRIdWJcXFBldC1Kb3lmdWwtQmFja2VuZFxcYmFja2VuZFxcc3JjXFxyb3V0ZXNcXGF1dGhSb3V0ZXMudHMiXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHtSb3V0ZXJ9IGZyb20gJ2V4cHJlc3MnO1xyXG5pbXBvcnQge2xvZ2luTGltaXRlcn0gZnJvbSAnLi4vbWlkZGxld2FyZXMvcmF0ZUxpbWl0ZXIuanMnO1xyXG5pbXBvcnQge1xyXG4gIHJlZ2lzdGVyLFxyXG4gIGxvZ2luLFxyXG4gIGdldFNlc3Npb24sXHJcbiAgZ2V0UHJvZmlsZSxcclxuICB1cGRhdGVQcm9maWxlLFxyXG4gIGRlbGV0ZVByb2ZpbGUsXHJcbiAgdmFsaWRhdGVDcGYsXHJcbn0gZnJvbSAnLi4vY29udHJvbGxlcnMvYXV0aENvbnRyb2xsZXIuanMnO1xyXG5pbXBvcnQgZW5zdXJlQXV0aCBmcm9tICcuLi9taWRkbGV3YXJlcy9lbnN1cmVBdXRoLmpzJztcclxuaW1wb3J0IHZlcmlmeVRva2VuLCB7dmVyaWZ5RGVsZXRpb25Ub2tlbn0gZnJvbSAnLi4vbWlkZGxld2FyZXMvdmVyaWZ5VG9rZW4uanMnO1xyXG5pbXBvcnQge2NwZlJhdGVMaW1pdH0gZnJvbSAnLi4vbWlkZGxld2FyZXMvY3BmUmF0ZUxpbWl0LmpzJztcclxuaW1wb3J0IHtzdGF0dXMgYXMgbWZhU3RhdHVzLCBzZXR1cCBhcyBtZmFTZXR1cCwgY2FuY2VsU2V0dXAgYXMgbWZhQ2FuY2VsU2V0dXAsXHJcbiAgY29uZmlybVNldHVwIGFzIG1mYUNvbmZpcm1TZXR1cCwgdmVyaWZ5Q2hhbGxlbmdlIGFzIG1mYVZlcmlmeUNoYWxsZW5nZSxcclxuICByZWdlbmVyYXRlUmVjb3ZlcnkgYXMgbWZhUmVnZW5lcmF0ZVJlY292ZXJ5LCBkaXNhYmxlIGFzIG1mYURpc2FibGV9IGZyb20gJy4uL2NvbnRyb2xsZXJzL21mYUNvbnRyb2xsZXIuanMnO1xyXG5cclxuY29uc3Qgcm91dGVyID0gUm91dGVyKCk7XHJcblxyXG4vLyAjc3dhZ2dlci50YWdzID0gWydBdXRoJ11cclxuLy8gI3N3YWdnZXIuc3VtbWFyeSA9ICdSZWdpc3RyYXIgbm92byB1c3XDoXJpbydcclxucm91dGVyLnBvc3QoJy9yZWdpc3RlcicsIGNwZlJhdGVMaW1pdCwgcmVnaXN0ZXIpO1xyXG5cclxuLy8gVmFsaWRhw6fDo28gcHLDqXZpYSBwYXJhIGEgdGVsYSBkZSBjYWRhc3RybzsgbyByZWdpc3RybyB2YWxpZGEgbm92YW1lbnRlLlxyXG5yb3V0ZXIucG9zdCgnL3ZhbGlkYXRlLWNwZicsIGNwZlJhdGVMaW1pdCwgdmFsaWRhdGVDcGYpO1xyXG5cclxuLy8gI3N3YWdnZXIudGFncyA9IFsnQXV0aCddXHJcbi8vICNzd2FnZ2VyLnN1bW1hcnkgPSAnTG9naW4gZG8gdXN1w6FyaW8nXHJcbnJvdXRlci5wb3N0KCcvbG9naW4nLCBsb2dpbkxpbWl0ZXIsIGxvZ2luKTtcclxucm91dGVyLmdldCgnL3Nlc3Npb24nLCB2ZXJpZnlUb2tlbiwgZ2V0U2Vzc2lvbik7XHJcblxyXG4vLyAjc3dhZ2dlci50YWdzID0gWydNRkEnXVxyXG4vLyAjc3dhZ2dlci5zdW1tYXJ5ID0gJ0NvbmNsdWlyIGRlc2FmaW8gTUZBIGFww7NzIGxvZ2luIGNvbSBzZW5oYSdcclxucm91dGVyLnBvc3QoJy9tZmEvdmVyaWZ5JywgbWZhVmVyaWZ5Q2hhbGxlbmdlKTtcclxuXHJcbi8vICNzd2FnZ2VyLnRhZ3MgPSBbJ01GQSddXHJcbi8vICNzd2FnZ2VyLnNlY3VyaXR5ID0gW3sgXCJCZWFyZXJBdXRoXCI6IFtdIH1dXHJcbnJvdXRlci5nZXQoJy9tZmEnLCB2ZXJpZnlUb2tlbiwgbWZhU3RhdHVzKTtcclxucm91dGVyLnBvc3QoJy9tZmEvc2V0dXAnLCB2ZXJpZnlUb2tlbiwgbWZhU2V0dXApO1xyXG5yb3V0ZXIuZGVsZXRlKCcvbWZhL3NldHVwJywgdmVyaWZ5VG9rZW4sIG1mYUNhbmNlbFNldHVwKTtcclxucm91dGVyLnBvc3QoJy9tZmEvY29uZmlybScsIHZlcmlmeVRva2VuLCBtZmFDb25maXJtU2V0dXApO1xyXG5yb3V0ZXIucG9zdCgnL21mYS9yZWNvdmVyeS1jb2RlcycsIHZlcmlmeVRva2VuLCBtZmFSZWdlbmVyYXRlUmVjb3ZlcnkpO1xyXG5yb3V0ZXIucG9zdCgnL21mYS9kaXNhYmxlJywgdmVyaWZ5VG9rZW4sIG1mYURpc2FibGUpO1xyXG5cclxuLy8gI3N3YWdnZXIudGFncyA9IFsnQXV0aCddXHJcbi8vICNzd2FnZ2VyLnN1bW1hcnkgPSAnT2J0ZXIgZGFkb3MgZG8gdXN1w6FyaW8gYXV0ZW50aWNhZG8nXHJcbi8vICNzd2FnZ2VyLnNlY3VyaXR5ID0gW3sgXCJCZWFyZXJBdXRoXCI6IFtdIH1dXHJcbnJvdXRlci5nZXQoJy9tZScsIGVuc3VyZUF1dGgsIGdldFByb2ZpbGUpO1xyXG5cclxuLy8gI3N3YWdnZXIudGFncyA9IFsnQXV0aCddXHJcbi8vICNzd2FnZ2VyLnN1bW1hcnkgPSAnQXR1YWxpemFyIGRhZG9zIGRvIHVzdcOhcmlvIGF1dGVudGljYWRvJ1xyXG4vLyAjc3dhZ2dlci5zZWN1cml0eSA9IFt7IFwiQmVhcmVyQXV0aFwiOiBbXSB9XVxyXG5yb3V0ZXIucHV0KCcvbWUnLCBlbnN1cmVBdXRoLCB1cGRhdGVQcm9maWxlKTtcclxuXHJcbi8vICNzd2FnZ2VyLnRhZ3MgPSBbJ0F1dGgnXVxyXG4vLyAjc3dhZ2dlci5zdW1tYXJ5ID0gJ0V4Y2x1aXIgY29udGEgZG8gdXN1w6FyaW8gYXV0ZW50aWNhZG8nXHJcbi8vICNzd2FnZ2VyLnNlY3VyaXR5ID0gW3sgXCJCZWFyZXJBdXRoXCI6IFtdIH1dXHJcbnJvdXRlci5kZWxldGUoJy9tZScsIHZlcmlmeURlbGV0aW9uVG9rZW4sIGRlbGV0ZVByb2ZpbGUpO1xyXG5cclxuZXhwb3J0IGRlZmF1bHQgcm91dGVyO1xyXG4iXSwidmVyc2lvbiI6M30=

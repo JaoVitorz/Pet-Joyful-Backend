@@ -2,24 +2,23 @@
 
 services:
   mongodb:
-    image: mongo:7
+    image: ghcr.io/ferretdb/ferretdb:1.24
     container_name: pet-joyful-db
     restart: unless-stopped
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
-      MONGO_INITDB_DATABASE: ${MONGO_DB_NAME}
+      FERRETDB_HANDLER: sqlite
     ports:
-      - "27017:27017"
+      - "127.0.0.1:27017:27017"
     volumes:
-      - mongo_data:/data/db
-    networks:
-      - pet-joyful-network
+      - ferretdb_data:/state
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      test: ["CMD", "/ferretdb", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 30s
+    networks:
+      - pet-joyful-network
 
   backend:
     container_name: pet-joyful-backend
@@ -32,7 +31,8 @@ services:
     environment:
       NODE_ENV: production
       PORT: 5000
-      MONGO_URI: mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongodb:27017/${MONGO_DB_NAME}?authSource=admin
+      MONGO_URI: ${MONGO_URI:-mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongodb:27017/${MONGO_DB_NAME}?authSource=admin}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
       JWT_SECRET: ${JWT_SECRET}
       MFA_ENCRYPTION_KEY: ${MFA_ENCRYPTION_KEY}
       POSTS_SERVICE_URL: ${POSTS_SERVICE_URL:-}
@@ -50,18 +50,26 @@ services:
     build:
       context: ${FRONTEND_CONTEXT:-./frontend}
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:5000}
+        NEXT_PUBLIC_AUTH_API_URL: ${NEXT_PUBLIC_AUTH_API_URL:-http://localhost:5000}
+        NEXT_PUBLIC_EVENTS_API_URL: ${NEXT_PUBLIC_EVENTS_API_URL:-http://localhost:3002}
+        NEXT_PUBLIC_PROFILE_API_URL: ${NEXT_PUBLIC_PROFILE_API_URL:-https://edicao-perfil-microservice.onrender.com}
+        NEXT_PUBLIC_POSTS_API_URL: ${NEXT_PUBLIC_POSTS_API_URL:-https://pet-joyful-posts-service.onrender.com}
     restart: unless-stopped
     ports:
       - "3000:3000"
     environment:
-      NEXT_PUBLIC_API_URL: http://backend:5000
+      AUTH_SERVICE_URL: ${AUTH_SERVICE_URL:-http://backend:5000}
+      EVENTS_SERVICE_URL: ${EVENTS_SERVICE_URL:-https://pet-joyful-events-service.onrender.com}
+      POSTS_SERVICE_URL: ${POSTS_SERVICE_URL:-https://pet-joyful-posts-service.onrender.com}
     depends_on:
       - backend
     networks:
       - pet-joyful-network
 
 volumes:
-  mongo_data:
+  ferretdb_data:
 
 networks:
   pet-joyful-network:

@@ -1,0 +1,158 @@
+2c36c128880e5c726ace1352231de987
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const userController_js_1 = require("../controllers/userController.js");
+const ensureAdminKey_js_1 = __importDefault(require("../middlewares/ensureAdminKey.js"));
+const verifyToken_js_1 = __importStar(require("../middlewares/verifyToken.js"));
+const router = (0, express_1.Router)();
+/*
+   #swagger.tags = ['Users']
+   #swagger.summary = 'Criar novo usuário (admin)'
+   #swagger.security = [{ "ApiKeyAuth": [] }]
+   #swagger.requestBody = {
+     required: true,
+     content: {
+       "application/json": {
+         schema: { $ref: "#/components/schemas/User" }
+       }
+     }
+   }
+   #swagger.responses[403] = {
+     description: "Acesso negado",
+     content: {
+       "application/json": {
+         schema: {
+           type: "object",
+           properties: {
+             error: {
+               type: "string",
+               example: "Criação de usuário admin requer API key ou token admin"
+             }
+           }
+         }
+       }
+     }
+   }
+*/
+router.post("/", ensureAdminKey_js_1.default, userController_js_1.createUser); // Apenas admin via x-admin-key
+/*
+  #swagger.tags = ['Users']
+  #swagger.summary = 'Listar todos os usuários (apenas admin)'
+  #swagger.security = [{ "ApiKeyAuth": [] }]
+*/
+router.get("/", ensureAdminKey_js_1.default, userController_js_1.getUsers);
+/*
+   #swagger.tags = ['Users']
+   #swagger.summary = 'Buscar usuário por ID'
+   #swagger.parameters['id'] = {
+     in: 'path',
+     required: true,
+     schema: { type: 'string' }
+   }
+*/
+router.get("/:id", ensureAdminKey_js_1.default, userController_js_1.getUserById);
+/*
+   #swagger.tags = ['Users']
+   #swagger.summary = 'Atualizar usuário por ID'
+   #swagger.security = [{ "BearerAuth": [], "ApiKeyAuth": [] }]
+   #swagger.parameters['id'] = {
+     in: 'path',
+     required: true,
+     schema: { type: 'string' }
+   }
+   #swagger.requestBody = {
+     content: {
+       "application/json": {
+         schema: { $ref: "#/components/schemas/User" }
+       }
+     }
+   }
+*/
+router.put("/:id", ensureAdminKey_js_1.default, userController_js_1.updateUser);
+/* #swagger.tags = ['Users']
+   #swagger.summary = 'Baixar JSON dos dados da própria conta'
+   #swagger.security = [{ "BearerAuth": [] }]
+   #swagger.produces = ['application/json']
+*/
+router.get('/:id/data-export', verifyToken_js_1.default, userController_js_1.exportUserData);
+/* #swagger.tags = ['Users']
+   #swagger.summary = 'Excluir a própria conta e tratar dados vinculados'
+   #swagger.security = [{ "BearerAuth": [] }]
+   #swagger.parameters['id'] = {
+     in: 'path',
+     required: true,
+     schema: { type: 'string' }
+   }
+   #swagger.responses[401] = {
+     description: "Unauthorized - Token JWT não fornecido ou inválido",
+     content: {
+       "application/json": {
+         schema: {
+           type: "object",
+           properties: {
+             error: {
+               type: "string",
+               example: "Token não fornecido"
+             }
+           }
+         }
+       }
+     }
+   }
+   #swagger.responses[403] = {
+     description: "Forbidden - Usuário não tem permissão",
+     content: {
+       "application/json": {
+         schema: {
+           type: "object",
+           properties: {
+             error: {
+               type: "string",
+               example: "Você não tem permissão para deletar este usuário"
+             }
+           }
+         }
+       }
+     }
+   }
+*/
+router.delete("/:id", verifyToken_js_1.verifyDeletionToken, userController_js_1.deleteUser);
+exports.default = router;
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJmaWxlIjoiQzpcXFVzZXJzXFxBbHVub3NcXERvY3VtZW50c1xcR2l0SHViXFxQZXQtSm95ZnVsLUJhY2tlbmRcXGJhY2tlbmRcXHNyY1xccm91dGVzXFx1c2VyUm91dGVzLnRzIiwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0FBQUEscUNBQWlDO0FBQ2pDLHdFQU8wQztBQUUxQyx5RkFBOEQ7QUFDOUQsZ0ZBQStFO0FBRS9FLE1BQU0sTUFBTSxHQUFHLElBQUEsZ0JBQU0sR0FBRSxDQUFDO0FBRXhCOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0VBNEJFO0FBQ0YsTUFBTSxDQUFDLElBQUksQ0FBQyxHQUFHLEVBQUUsMkJBQWMsRUFBRSw4QkFBVSxDQUFDLENBQUMsQ0FBQywrQkFBK0I7QUFFN0U7Ozs7RUFJRTtBQUNGLE1BQU0sQ0FBQyxHQUFHLENBQUMsR0FBRyxFQUFFLDJCQUFjLEVBQUUsNEJBQVEsQ0FBQyxDQUFDO0FBRTFDOzs7Ozs7OztFQVFFO0FBQ0YsTUFBTSxDQUFDLEdBQUcsQ0FBQyxNQUFNLEVBQUUsMkJBQWMsRUFBRSwrQkFBVyxDQUFDLENBQUM7QUFFaEQ7Ozs7Ozs7Ozs7Ozs7Ozs7RUFnQkU7QUFDRixNQUFNLENBQUMsR0FBRyxDQUFDLE1BQU0sRUFBRSwyQkFBYyxFQUFFLDhCQUFVLENBQUMsQ0FBQztBQUUvQzs7OztFQUlFO0FBQ0YsTUFBTSxDQUFDLEdBQUcsQ0FBQyxrQkFBa0IsRUFBRSx3QkFBVyxFQUFFLGtDQUFjLENBQUMsQ0FBQztBQUU1RDs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztFQXdDRTtBQUNGLE1BQU0sQ0FBQyxNQUFNLENBQUMsTUFBTSxFQUFFLG9DQUFtQixFQUFFLDhCQUFVLENBQUMsQ0FBQztBQUV2RCxrQkFBZSxNQUFNLENBQUMiLCJuYW1lcyI6W10sInNvdXJjZXMiOlsiQzpcXFVzZXJzXFxBbHVub3NcXERvY3VtZW50c1xcR2l0SHViXFxQZXQtSm95ZnVsLUJhY2tlbmRcXGJhY2tlbmRcXHNyY1xccm91dGVzXFx1c2VyUm91dGVzLnRzIl0sInNvdXJjZXNDb250ZW50IjpbImltcG9ydCB7IFJvdXRlciB9IGZyb20gXCJleHByZXNzXCI7XHJcbmltcG9ydCB7XHJcbiAgY3JlYXRlVXNlcixcclxuICBnZXRVc2VycyxcclxuICBnZXRVc2VyQnlJZCxcclxuICB1cGRhdGVVc2VyLFxyXG4gIGRlbGV0ZVVzZXIsXHJcbiAgZXhwb3J0VXNlckRhdGEsXHJcbn0gZnJvbSBcIi4uL2NvbnRyb2xsZXJzL3VzZXJDb250cm9sbGVyLmpzXCI7XHJcblxyXG5pbXBvcnQgZW5zdXJlQWRtaW5LZXkgZnJvbSBcIi4uL21pZGRsZXdhcmVzL2Vuc3VyZUFkbWluS2V5LmpzXCI7XHJcbmltcG9ydCB2ZXJpZnlUb2tlbiwge3ZlcmlmeURlbGV0aW9uVG9rZW59IGZyb20gXCIuLi9taWRkbGV3YXJlcy92ZXJpZnlUb2tlbi5qc1wiO1xyXG5cclxuY29uc3Qgcm91dGVyID0gUm91dGVyKCk7XHJcblxyXG4vKiBcclxuICAgI3N3YWdnZXIudGFncyA9IFsnVXNlcnMnXVxyXG4gICAjc3dhZ2dlci5zdW1tYXJ5ID0gJ0NyaWFyIG5vdm8gdXN1w6FyaW8gKGFkbWluKSdcclxuICAgI3N3YWdnZXIuc2VjdXJpdHkgPSBbeyBcIkFwaUtleUF1dGhcIjogW10gfV1cclxuICAgI3N3YWdnZXIucmVxdWVzdEJvZHkgPSB7XHJcbiAgICAgcmVxdWlyZWQ6IHRydWUsXHJcbiAgICAgY29udGVudDoge1xyXG4gICAgICAgXCJhcHBsaWNhdGlvbi9qc29uXCI6IHtcclxuICAgICAgICAgc2NoZW1hOiB7ICRyZWY6IFwiIy9jb21wb25lbnRzL3NjaGVtYXMvVXNlclwiIH1cclxuICAgICAgIH1cclxuICAgICB9XHJcbiAgIH1cclxuICAgI3N3YWdnZXIucmVzcG9uc2VzWzQwM10gPSB7XHJcbiAgICAgZGVzY3JpcHRpb246IFwiQWNlc3NvIG5lZ2Fkb1wiLFxyXG4gICAgIGNvbnRlbnQ6IHtcclxuICAgICAgIFwiYXBwbGljYXRpb24vanNvblwiOiB7XHJcbiAgICAgICAgIHNjaGVtYToge1xyXG4gICAgICAgICAgIHR5cGU6IFwib2JqZWN0XCIsXHJcbiAgICAgICAgICAgcHJvcGVydGllczoge1xyXG4gICAgICAgICAgICAgZXJyb3I6IHtcclxuICAgICAgICAgICAgICAgdHlwZTogXCJzdHJpbmdcIixcclxuICAgICAgICAgICAgICAgZXhhbXBsZTogXCJDcmlhw6fDo28gZGUgdXN1w6FyaW8gYWRtaW4gcmVxdWVyIEFQSSBrZXkgb3UgdG9rZW4gYWRtaW5cIlxyXG4gICAgICAgICAgICAgfVxyXG4gICAgICAgICAgIH1cclxuICAgICAgICAgfVxyXG4gICAgICAgfVxyXG4gICAgIH1cclxuICAgfVxyXG4qL1xyXG5yb3V0ZXIucG9zdChcIi9cIiwgZW5zdXJlQWRtaW5LZXksIGNyZWF0ZVVzZXIpOyAvLyBBcGVuYXMgYWRtaW4gdmlhIHgtYWRtaW4ta2V5XHJcblxyXG4vKlxyXG4gICNzd2FnZ2VyLnRhZ3MgPSBbJ1VzZXJzJ11cclxuICAjc3dhZ2dlci5zdW1tYXJ5ID0gJ0xpc3RhciB0b2RvcyBvcyB1c3XDoXJpb3MgKGFwZW5hcyBhZG1pbiknXHJcbiAgI3N3YWdnZXIuc2VjdXJpdHkgPSBbeyBcIkFwaUtleUF1dGhcIjogW10gfV1cclxuKi9cclxucm91dGVyLmdldChcIi9cIiwgZW5zdXJlQWRtaW5LZXksIGdldFVzZXJzKTtcclxuXHJcbi8qXHJcbiAgICNzd2FnZ2VyLnRhZ3MgPSBbJ1VzZXJzJ11cclxuICAgI3N3YWdnZXIuc3VtbWFyeSA9ICdCdXNjYXIgdXN1w6FyaW8gcG9yIElEJ1xyXG4gICAjc3dhZ2dlci5wYXJhbWV0ZXJzWydpZCddID0ge1xyXG4gICAgIGluOiAncGF0aCcsXHJcbiAgICAgcmVxdWlyZWQ6IHRydWUsXHJcbiAgICAgc2NoZW1hOiB7IHR5cGU6ICdzdHJpbmcnIH1cclxuICAgfVxyXG4qL1xyXG5yb3V0ZXIuZ2V0KFwiLzppZFwiLCBlbnN1cmVBZG1pbktleSwgZ2V0VXNlckJ5SWQpO1xyXG5cclxuLyogXHJcbiAgICNzd2FnZ2VyLnRhZ3MgPSBbJ1VzZXJzJ11cclxuICAgI3N3YWdnZXIuc3VtbWFyeSA9ICdBdHVhbGl6YXIgdXN1w6FyaW8gcG9yIElEJ1xyXG4gICAjc3dhZ2dlci5zZWN1cml0eSA9IFt7IFwiQmVhcmVyQXV0aFwiOiBbXSwgXCJBcGlLZXlBdXRoXCI6IFtdIH1dXHJcbiAgICNzd2FnZ2VyLnBhcmFtZXRlcnNbJ2lkJ10gPSB7XHJcbiAgICAgaW46ICdwYXRoJyxcclxuICAgICByZXF1aXJlZDogdHJ1ZSxcclxuICAgICBzY2hlbWE6IHsgdHlwZTogJ3N0cmluZycgfVxyXG4gICB9XHJcbiAgICNzd2FnZ2VyLnJlcXVlc3RCb2R5ID0ge1xyXG4gICAgIGNvbnRlbnQ6IHtcclxuICAgICAgIFwiYXBwbGljYXRpb24vanNvblwiOiB7XHJcbiAgICAgICAgIHNjaGVtYTogeyAkcmVmOiBcIiMvY29tcG9uZW50cy9zY2hlbWFzL1VzZXJcIiB9XHJcbiAgICAgICB9XHJcbiAgICAgfVxyXG4gICB9XHJcbiovXHJcbnJvdXRlci5wdXQoXCIvOmlkXCIsIGVuc3VyZUFkbWluS2V5LCB1cGRhdGVVc2VyKTtcclxuXHJcbi8qICNzd2FnZ2VyLnRhZ3MgPSBbJ1VzZXJzJ11cclxuICAgI3N3YWdnZXIuc3VtbWFyeSA9ICdCYWl4YXIgSlNPTiBkb3MgZGFkb3MgZGEgcHLDs3ByaWEgY29udGEnXHJcbiAgICNzd2FnZ2VyLnNlY3VyaXR5ID0gW3sgXCJCZWFyZXJBdXRoXCI6IFtdIH1dXHJcbiAgICNzd2FnZ2VyLnByb2R1Y2VzID0gWydhcHBsaWNhdGlvbi9qc29uJ11cclxuKi9cclxucm91dGVyLmdldCgnLzppZC9kYXRhLWV4cG9ydCcsIHZlcmlmeVRva2VuLCBleHBvcnRVc2VyRGF0YSk7XHJcblxyXG4vKiAjc3dhZ2dlci50YWdzID0gWydVc2VycyddXHJcbiAgICNzd2FnZ2VyLnN1bW1hcnkgPSAnRXhjbHVpciBhIHByw7NwcmlhIGNvbnRhIGUgdHJhdGFyIGRhZG9zIHZpbmN1bGFkb3MnXHJcbiAgICNzd2FnZ2VyLnNlY3VyaXR5ID0gW3sgXCJCZWFyZXJBdXRoXCI6IFtdIH1dXHJcbiAgICNzd2FnZ2VyLnBhcmFtZXRlcnNbJ2lkJ10gPSB7XHJcbiAgICAgaW46ICdwYXRoJyxcclxuICAgICByZXF1aXJlZDogdHJ1ZSxcclxuICAgICBzY2hlbWE6IHsgdHlwZTogJ3N0cmluZycgfVxyXG4gICB9XHJcbiAgICNzd2FnZ2VyLnJlc3BvbnNlc1s0MDFdID0ge1xyXG4gICAgIGRlc2NyaXB0aW9uOiBcIlVuYXV0aG9yaXplZCAtIFRva2VuIEpXVCBuw6NvIGZvcm5lY2lkbyBvdSBpbnbDoWxpZG9cIixcclxuICAgICBjb250ZW50OiB7XHJcbiAgICAgICBcImFwcGxpY2F0aW9uL2pzb25cIjoge1xyXG4gICAgICAgICBzY2hlbWE6IHtcclxuICAgICAgICAgICB0eXBlOiBcIm9iamVjdFwiLFxyXG4gICAgICAgICAgIHByb3BlcnRpZXM6IHtcclxuICAgICAgICAgICAgIGVycm9yOiB7XHJcbiAgICAgICAgICAgICAgIHR5cGU6IFwic3RyaW5nXCIsXHJcbiAgICAgICAgICAgICAgIGV4YW1wbGU6IFwiVG9rZW4gbsOjbyBmb3JuZWNpZG9cIlxyXG4gICAgICAgICAgICAgfVxyXG4gICAgICAgICAgIH1cclxuICAgICAgICAgfVxyXG4gICAgICAgfVxyXG4gICAgIH1cclxuICAgfVxyXG4gICAjc3dhZ2dlci5yZXNwb25zZXNbNDAzXSA9IHtcclxuICAgICBkZXNjcmlwdGlvbjogXCJGb3JiaWRkZW4gLSBVc3XDoXJpbyBuw6NvIHRlbSBwZXJtaXNzw6NvXCIsXHJcbiAgICAgY29udGVudDoge1xyXG4gICAgICAgXCJhcHBsaWNhdGlvbi9qc29uXCI6IHtcclxuICAgICAgICAgc2NoZW1hOiB7XHJcbiAgICAgICAgICAgdHlwZTogXCJvYmplY3RcIixcclxuICAgICAgICAgICBwcm9wZXJ0aWVzOiB7XHJcbiAgICAgICAgICAgICBlcnJvcjoge1xyXG4gICAgICAgICAgICAgICB0eXBlOiBcInN0cmluZ1wiLFxyXG4gICAgICAgICAgICAgICBleGFtcGxlOiBcIlZvY8OqIG7Do28gdGVtIHBlcm1pc3PDo28gcGFyYSBkZWxldGFyIGVzdGUgdXN1w6FyaW9cIlxyXG4gICAgICAgICAgICAgfVxyXG4gICAgICAgICAgIH1cclxuICAgICAgICAgfVxyXG4gICAgICAgfVxyXG4gICAgIH1cclxuICAgfVxyXG4qL1xyXG5yb3V0ZXIuZGVsZXRlKFwiLzppZFwiLCB2ZXJpZnlEZWxldGlvblRva2VuLCBkZWxldGVVc2VyKTtcclxuXHJcbmV4cG9ydCBkZWZhdWx0IHJvdXRlcjtcclxuIl0sInZlcnNpb24iOjN9

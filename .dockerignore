@@ -41,3 +41,6 @@ npm-debug.log
 jspm_packages
 /.sass-cache
 /.cache
+.cloudstack-local
+hyperv-inventory.tmp.json
+hyperv-switches.tmp.json
