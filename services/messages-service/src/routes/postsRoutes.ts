@@ -34,7 +34,11 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage,
   limits: {fileSize: 10 * 1024 * 1024},
-  fileFilter: (_req, file, cb) => {
+  fileFilter: (
+    _req: Express.Request,
+    file: Express.Multer.File,
+    cb: multer.FileFilterCallback,
+  ) => {
     if (['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.mimetype)) cb(null, true);
     else cb(Object.assign(new Error('Tipo de arquivo inválido'), {code: 'INVALID_FILE_TYPE'}));
   },
