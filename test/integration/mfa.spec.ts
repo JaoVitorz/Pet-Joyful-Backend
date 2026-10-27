@@ -81,13 +81,13 @@ describe('MFA via TOTP', () => {
       .send({password: 'senha-forte'})).status).toBe(401);
     expect((await request(app).post('/api/auth/mfa/disable')
       .set('Authorization', `Bearer ${enabledToken}`)
-      .send({recoveryCode: confirmed.body.recoveryCodes[0]})).status).toBe(401);
+      .send({recoveryCode: confirmed.body.recoveryCodes[0]})).status).toBe(400);
     expect((await request(app).post('/api/auth/mfa/disable')
       .set('Authorization', `Bearer ${enabledToken}`)
       .send({password: 'senha-errada', recoveryCode: confirmed.body.recoveryCodes[0]})).status).toBe(401);
     expect((await request(app).post('/api/auth/mfa/disable')
       .set('Authorization', `Bearer ${enabledToken}`)
-      .send({password: 'senha-forte'})).status).toBe(401);
+      .send({password: 'senha-forte'})).status).toBe(400);
     expect((await request(app).get('/api/auth/me').set('Authorization', `Bearer ${oldToken}`)).status).toBe(401);
     expect((await request(app).get('/api/auth/session').set('Authorization', `Bearer ${oldToken}`)).status).toBe(401);
     expect((await request(mediaApp).delete('/api/posts/me/media')
@@ -159,7 +159,7 @@ describe('MFA via TOTP', () => {
     const first = await login();
     const challengeToken = first.body.challengeToken as string;
     const attempts = await Promise.all([1, 2, 3, 4, 5].map(() =>
-      request(app).post('/api/auth/mfa/verify').send({challengeToken, code: 'invalid'})));
+      request(app).post('/api/auth/mfa/verify').send({challengeToken, code: '000000'})));
     expect(attempts.every(result => result.status === 401)).toBe(true);
     expect((await request(app).post('/api/auth/mfa/verify')
       .send({challengeToken, recoveryCode})).status).toBe(429);
@@ -193,7 +193,7 @@ describe('MFA via TOTP', () => {
 
     const setup = await setupRequest().send({password: 'senha-forte'});
     expect(setup.status).toBe(200);
-    expect((await confirmRequest('invalid')).status).toBe(401);
+    expect((await confirmRequest('invalid')).status).toBe(400);
     expect((await request(app).delete('/api/auth/mfa/setup')
       .set('Authorization', authorization)).status).toBe(204);
     expect((await confirmRequest(codeFor(setup.body.secret, Date.now()))).status).toBe(400);

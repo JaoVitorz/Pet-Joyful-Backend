@@ -38,45 +38,52 @@ const doc = {
     schemas: {
       User: {
         type: 'object',
-        required: ['nome', 'email', 'senha'],
+        required: ['nome', 'email', 'senha', 'tipo'],
+        additionalProperties: false,
         properties: {
-          nome: {type: 'string', example: 'João Silva'},
-          email: {type: 'string', example: 'joao@email.com'},
-          senha: {type: 'string', example: '123456'},
-          tipo: {type: 'string', example: 'adotante'},
+          nome: {type: 'string', minLength: 1, maxLength: 120, example: 'João Silva'},
+          email: {type: 'string', format: 'email', maxLength: 254, example: 'joao@email.com'},
+          senha: {type: 'string', minLength: 8, example: 'senha123456'},
+          tipo: {type: 'string', enum: ['adotante', 'cliente', 'admin'], example: 'adotante'},
         },
       },
       Login: {
         type: 'object',
         required: ['email', 'senha'],
+        additionalProperties: false,
         properties: {
-          email: {type: 'string', example: 'joao@email.com'},
-          senha: {type: 'string', example: '123456'},
+          email: {type: 'string', format: 'email', maxLength: 254, example: 'joao@email.com'},
+          senha: {type: 'string', example: 'senha123456'},
         },
       },
       Message: {
         type: 'object',
         required: ['mensagem'],
+        additionalProperties: false,
         properties: {
-          mensagem: {type: 'string', example: 'Gostei do post!'},
-          postId: {type: 'string', example: '65b8d7b2b9e'},
+          mensagem: {type: 'string', minLength: 1, maxLength: 5000, example: 'Gostei do post!'},
+          postId: {type: 'string', maxLength: 200, example: '65b8d7b2b9e'},
         },
       },
       Report: {
         type: 'object',
         required: ['descricao'],
+        additionalProperties: false,
         properties: {
-          descricao: {type: 'string', example: 'Conteúdo ofensivo detectado'},
-          alvoId: {type: 'string', example: '123abc456'},
-          alvoTipo: {type: 'string', example: 'post'},
+          descricao: {type: 'string', minLength: 1, maxLength: 5000, example: 'Conteúdo ofensivo detectado'},
+          alvoId: {type: 'string', maxLength: 200, example: '123abc456'},
+          alvoTipo: {type: 'string', enum: ['post', 'usuario', 'outro'], example: 'post'},
         },
       },
       ChatRequest: {
         type: 'object',
         required: ['message'],
+        additionalProperties: false,
         properties: {
           message: {
             type: 'string',
+            minLength: 1,
+            maxLength: 5000,
             example: 'Quais são os cuidados básicos para um cachorro?',
           },
         },

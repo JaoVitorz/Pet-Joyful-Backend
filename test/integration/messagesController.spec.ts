@@ -44,10 +44,8 @@ describe('Testes das APIs de mensagens e denuncias', () => {
   describe('POST /api/messages/post', () => {
     it('deve salvar a mensagem e voltar 201', async () => {
       const {user, token} = await authenticatedUser();
-      // manda todos os campos preenchidos
+      // A autoria é derivada do token e não é aceita pelo corpo.
       const res = await request(app).post(`${MESSAGES_BASE}/post`).set('Authorization', `Bearer ${token}`).send({
-        nome: 'Pessoa falsa',
-        email: 'outra@email.com',
         mensagem: 'Quero adotar um gatinho!',
         postId: new mongoose.Types.ObjectId().toString(),
       });
@@ -67,11 +65,11 @@ describe('Testes das APIs de mensagens e denuncias', () => {
       const res = await request(app)
         .post(`${MESSAGES_BASE}/post`)
         .set('Authorization', `Bearer ${token}`)
-        .send({nome: 'so o nome'});
+        .send({});
 
       // a api tem que barrar e avisar o que ta faltando
       expect(res.status).toBe(400);
-      expect(res.body.error).toBe('Mensagem é obrigatória');
+      expect(res.body.error).toBe('Campos inválidos');
     });
 
     it('recusa mensagem sem autenticacao', async () => {
@@ -108,7 +106,6 @@ describe('Testes das APIs de mensagens e denuncias', () => {
       const {user, token} = await authenticatedUser();
       // manda uma denuncia completa
       const res = await request(app).post(`${MESSAGES_BASE}/denuncia`).set('Authorization', `Bearer ${token}`).send({
-        email: 'fiscal@email.com',
         descricao: 'vi um comentario ofensivo',
         alvoId: new mongoose.Types.ObjectId().toString(),
         alvoTipo: 'post',
@@ -126,10 +123,10 @@ describe('Testes das APIs de mensagens e denuncias', () => {
       const res = await request(app)
         .post(`${MESSAGES_BASE}/denuncia`)
         .set('Authorization', `Bearer ${token}`)
-        .send({email: 'qualquer@email.com'});
+        .send({});
 
       expect(res.status).toBe(400);
-      expect(res.body.error).toBe('Descrição é obrigatória');
+      expect(res.body.error).toBe('Campos inválidos');
     });
 
     it('recusa denuncia com token de usuario excluido', async () => {
@@ -162,7 +159,7 @@ describe('Testes das APIs de mensagens e denuncias', () => {
       const res = await request(app).get(`${MESSAGES_BASE}/denuncia`);
 
       expect(res.status).toBe(401);
-      expect(res.body.error).toBe('Admin key ausente');
+      expect(res.body.error).toBe('Autenticação administrativa obrigatória');
     });
   });
 
@@ -228,7 +225,7 @@ describe('Testes das APIs de mensagens e denuncias', () => {
         .set('x-admin-key', 'chave-errada');
 
       expect(res.status).toBe(403);
-      expect(res.body.error).toBe('Admin key inválida');
+      expect(res.body.error).toBe('Credencial administrativa inválida');
     });
 
     it('deve voltar 404 se a mensagem nao existir', async () => {
@@ -274,7 +271,7 @@ describe('Testes das APIs de mensagens e denuncias', () => {
         .send({descricao: 'tentando atualizar'});
 
       expect(res.status).toBe(403);
-      expect(res.body.error).toBe('Admin key inválida');
+      expect(res.body.error).toBe('Credencial administrativa inválida');
     });
 
     it('deve voltar 404 se a denuncia nao existir', async () => {
@@ -297,7 +294,7 @@ describe('Testes das APIs de mensagens e denuncias', () => {
       .set('x-admin-key', ADMIN_KEY)
       .send({mensagem: 'teste'});
 
-    expect(res.status).toBe(500);
+      expect(res.status).toBe(400);
   });
 
   it('deve voltar 500 ao deletar mensagem com id invalido', async () => {
@@ -305,7 +302,7 @@ describe('Testes das APIs de mensagens e denuncias', () => {
       .delete(`${MESSAGES_BASE}/post/id-invalido`)
       .set('x-admin-key', ADMIN_KEY);
 
-    expect(res.status).toBe(500);
+      expect(res.status).toBe(400);
   });
 
   it('deve voltar 500 ao atualizar denuncia com id invalido', async () => {
@@ -314,7 +311,7 @@ describe('Testes das APIs de mensagens e denuncias', () => {
       .set('x-admin-key', ADMIN_KEY)
       .send({descricao: 'teste'});
 
-    expect(res.status).toBe(500);
+      expect(res.status).toBe(400);
   });
 
   it('deve voltar 500 ao deletar denuncia com id invalido', async () => {
@@ -322,7 +319,7 @@ describe('Testes das APIs de mensagens e denuncias', () => {
       .delete(`${MESSAGES_BASE}/denuncia/id-invalido`)
       .set('x-admin-key', ADMIN_KEY);
 
-    expect(res.status).toBe(500);
+      expect(res.status).toBe(400);
   });
 });
 });

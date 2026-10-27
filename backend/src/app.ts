@@ -1,4 +1,6 @@
 import express from 'express';
+import mongoose from 'mongoose';
+import './config/mongooseSecurity.js';
 import cors from 'cors';
 import helmet from 'helmet';
 import path from 'path';
@@ -11,6 +13,7 @@ import {logger} from './logger/logger.js';
 import errorHandler from './middlewares/errorHandler.js';
 import {apiLimiter} from './middlewares/rateLimiter.js';
 import {allowedOrigins} from './config/allowedOrigins.js';
+import inputGuard from './middlewares/inputGuard.js';
 
 const app = express();
 
@@ -51,8 +54,27 @@ app.use(
   }),
 );
 app.use(express.json());
+app.use(inputGuard);
 
 app.use(requestLogger);
+
+app.get('/health/live', (_req, res) => res.status(200).json({status: 'ok'}));
+app.get('/health/ready', async (_req, res) => {
+  const dependencies: Record<string, 'ok' | 'unavailable'> = {
+    database: mongoose.connection.readyState === 1 ? 'ok' : 'unavailable',
+  };
+  const postsServiceUrl = process.env.POSTS_SERVICE_URL;
+  if (postsServiceUrl) {
+    try {
+      const response = await fetch(new URL('/health/ready', postsServiceUrl), {signal: AbortSignal.timeout(2000)});
+      dependencies.postsService = response.ok ? 'ok' : 'unavailable';
+    } catch {
+      dependencies.postsService = 'unavailable';
+    }
+  }
+  const ready = Object.values(dependencies).every(status => status === 'ok');
+  res.status(ready ? 200 : 503).json({status: ready ? 'ready' : 'unavailable', dependencies});
+});
 
 // Rota protegida de exemplo
 app.get('/api/protected', (req, res) => {
@@ -72,9 +94,9 @@ app.get('/api/slow', async (_req, res) => {
   throw new Error('Erro forçado para teste');
 });
 */
-app.use('/api/chat', chatRoutes);
 // Rotas principais
 app.use("/api", apiLimiter);
+app.use('/api/chat', chatRoutes);
 app.use('/api', routes);
 
 // Rota base (teste)

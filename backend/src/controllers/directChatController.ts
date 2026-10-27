@@ -23,12 +23,12 @@ export async function listChatUsers(req: AuthRequest, res: Response): Promise<Re
 
   const query = typeof req.query.q === 'string' ? req.query.q.trim() : '';
   const filter: Record<string, unknown> = {
-    _id: {$ne: currentUserId},
-    deletionRequestedAt: {$exists: false},
+    _id: mongoose.trusted({$ne: currentUserId}),
+    deletionRequestedAt: mongoose.trusted({$exists: false}),
   };
   if (query) {
     const safeQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    filter.nome = {$regex: safeQuery, $options: 'i'};
+    filter.nome = mongoose.trusted({$regex: safeQuery, $options: 'i'});
   }
 
   const users = await User.find(filter).select('nome tipo').sort({nome: 1}).limit(30).lean();
@@ -86,7 +86,7 @@ export async function createConversation(req: AuthRequest, res: Response): Promi
   if (!mongoose.isValidObjectId(targetUserId)) return res.status(400).json({error: 'ID do usuário inválido'});
   if (targetUserId === currentUserId) return res.status(400).json({error: 'Não é possível iniciar uma conversa consigo mesmo'});
 
-  const otherUser = await User.findOne({_id: targetUserId, deletionRequestedAt: {$exists: false}})
+  const otherUser = await User.findOne({_id: targetUserId, deletionRequestedAt: mongoose.trusted({$exists: false})})
     .select('nome tipo').lean();
   if (!otherUser) return res.status(404).json({error: 'Usuário não encontrado'});
 
@@ -153,7 +153,7 @@ export async function markConversationRead(req: AuthRequest, res: Response): Pro
 
   const userObjectId = new mongoose.Types.ObjectId(currentUserId);
   await DirectMessage.updateMany(
-    {conversationId, senderId: {$ne: userObjectId}, readBy: {$ne: userObjectId}},
+    {conversationId, senderId: mongoose.trusted({$ne: userObjectId}), readBy: mongoose.trusted({$ne: userObjectId})},
     {$addToSet: {readBy: userObjectId}},
   );
   return res.json({success: true});

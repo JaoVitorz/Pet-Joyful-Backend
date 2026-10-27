@@ -4,6 +4,9 @@ import User from '../models/userModel.js';
 import Post from '../models/postModel.js';
 import DirectConversation from '../models/directConversationModel.js';
 import DirectMessage from '../models/directMessageModel.js';
+import mongoose from 'mongoose';
+import {revokeUserRefreshTokens} from './refreshTokenService.js';
+import {revealCpf} from './cpfProtection.js';
 
 export class MediaCleanupError extends Error {}
 
@@ -19,7 +22,7 @@ export async function buildUserExport(userId: string) {
   ]);
   const conversationIds = conversations.map(conversation => conversation._id);
   const directMessages = conversationIds.length
-    ? await DirectMessage.find({conversationId: {$in: conversationIds}}).sort({createdAt: 1}).lean()
+    ? await DirectMessage.find({conversationId: mongoose.trusted({$in: conversationIds})}).sort({createdAt: 1}).lean()
     : [];
 
   return {
@@ -28,7 +31,7 @@ export async function buildUserExport(userId: string) {
       id: String(user._id),
       nome: user.nome,
       email: user.email,
-      cpf: user.cpf ?? null,
+      cpf: revealCpf(user.cpf),
       tipo: user.tipo,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
@@ -71,7 +74,7 @@ export async function buildUserExport(userId: string) {
 }
 
 async function removePostMedia(userId: string, bearerToken: string): Promise<void> {
-  const hasMedia = await Post.exists({userId, imageUrl: {$exists: true, $nin: [null, '']}});
+  const hasMedia = await Post.exists({userId, imageUrl: mongoose.trusted({$exists: true, $nin: [null, '']})});
   if (!hasMedia) return;
 
   const serviceUrl = process.env.POSTS_SERVICE_URL;
@@ -97,7 +100,7 @@ export async function eraseUserData(userId: string, bearerToken: string) {
 
   if (!user.deletionRequestedAt) {
     await User.updateOne(
-      {_id: userId, deletionRequestedAt: {$exists: false}},
+      {_id: userId, deletionRequestedAt: mongoose.trusted({$exists: false})},
       {$set: {deletionRequestedAt: new Date()}},
     );
   }
@@ -109,10 +112,10 @@ export async function eraseUserData(userId: string, bearerToken: string) {
   const conversations = await DirectConversation.find({participants: userId}).select('_id').lean();
   const conversationIds = conversations.map(conversation => conversation._id);
   const directMessages = conversationIds.length
-    ? await DirectMessage.deleteMany({conversationId: {$in: conversationIds}})
+    ? await DirectMessage.deleteMany({conversationId: mongoose.trusted({$in: conversationIds})})
     : {deletedCount: 0};
   const directConversations = conversationIds.length
-    ? await DirectConversation.deleteMany({_id: {$in: conversationIds}})
+    ? await DirectConversation.deleteMany({_id: mongoose.trusted({$in: conversationIds})})
     : {deletedCount: 0};
   let anonymizedPosts = 0;
   while (true) {
@@ -132,6 +135,7 @@ export async function eraseUserData(userId: string, bearerToken: string) {
     {$set: {descricao: 'Referência a conta excluída'}, $unset: {alvoId: ''}},
   );
 
+  await revokeUserRefreshTokens(userId);
   await User.findByIdAndDelete(userId);
   return {
     deleted: {

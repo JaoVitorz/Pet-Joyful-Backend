@@ -11,6 +11,7 @@
     "start": "node dist/server.js",
     "start:prod": "npm run build && npm start",
     "swagger": "tsx backend/src/swagger.ts",
+    "security:migrate-cpf": "tsx scripts/encrypt-existing-cpf.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"src/**/*.ts\"",

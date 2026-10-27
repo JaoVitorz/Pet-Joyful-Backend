@@ -19,6 +19,7 @@ export interface IUser {
   senha: string;
   tipo: UserTipo | string;
   cpf?: string;
+  cpfHash?: string;
   deletionRequestedAt?: Date;
   mfaEnabled?: boolean;
   mfaSecret?: string;

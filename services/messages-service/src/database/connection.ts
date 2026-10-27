@@ -1,19 +1,19 @@
 import mongoose from 'mongoose';
+import '../config/mongooseSecurity.js';
 
 const connectDB = async (): Promise<void> => {
   try {
     const mongoURL = process.env.MONGO_URI;
 
     if (!mongoURL || !mongoURL.startsWith('mongodb')) {
-      console.error('❌ MONGO_URI inválida or not provided:', mongoURL);
+      console.error('❌ MONGO_URI inválida or not provided');
       throw new Error('String de conexão inválida');
     }
 
     await mongoose.connect(mongoURL);
     console.log('✅ messages-service conectado ao MongoDB!');
   } catch (error: unknown) {
-  const message = error instanceof Error ? error.message : String(error);
-  console.error('❌ Erro ao conectar ao MongoDB:', message);
+  console.error('❌ Erro ao conectar ao MongoDB');
   process.exit(1);
   }
 };

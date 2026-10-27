@@ -5,6 +5,7 @@ import PostMessage from '../models/postMessageModel.js';
 import DenunciaMessage from '../models/denunciaMessageModel.js';
 import User from '../models/userModel.js';
 import type {AuthRequest} from '../types/index.js';
+import {recordAuditEvent} from '../services/auditLogService.js';
 
 // Criar mensagem em post
 export const createPostMessage = async (
@@ -42,8 +43,8 @@ export const createPostMessage = async (
     await msg.save();
     res.status(201).json({message: 'Mensagem salva com sucesso', data: msg});
   } catch (error) {
-    logger.error('Erro em createPostMessage:', error);
-    res.status(500).json({error: (error as Error).message});
+    logger.error('Falha interna ao criar mensagem');
+    res.status(500).json({error: 'Não foi possível processar a mensagem'});
   }
 };
 
@@ -56,8 +57,8 @@ export const getPostMessages = async (
     const messages = await PostMessage.find().sort({createdAt: -1});
     res.json(messages);
   } catch (error) {
-    logger.error('Erro em getPostMessages:', error);
-    res.status(500).json({error: (error as Error).message});
+    logger.error('Falha interna ao listar mensagens');
+    res.status(500).json({error: 'Não foi possível listar as mensagens'});
   }
 };
 
@@ -101,8 +102,8 @@ export const createDenuncia = async (
       .status(201)
       .json({message: 'Denúncia registrada com sucesso', data: den});
   } catch (error) {
-    logger.error('Erro em createDenuncia:', error);
-    res.status(500).json({error: (error as Error).message});
+    logger.error('Falha interna ao criar denúncia');
+    res.status(500).json({error: 'Não foi possível registrar a denúncia'});
   }
 };
 
@@ -115,8 +116,8 @@ export const getDenuncias = async (
     const items = await DenunciaMessage.find().sort({createdAt: -1});
     res.json(items);
   } catch (error) {
-    logger.error('Erro em getDenuncias:', error);
-    res.status(500).json({error: (error as Error).message});
+    logger.error('Falha interna ao listar denúncias');
+    res.status(500).json({error: 'Não foi possível listar as denúncias'});
   }
 };
 
@@ -139,21 +140,20 @@ export const updatePostMessage = async (
       postId?: string;
     };
 
-    const updated = await PostMessage.findByIdAndUpdate(
-      id,
-      {nome, email, mensagem, postId},
-      {new: true},
-    );
+    const update = Object.fromEntries(Object.entries({nome, email, mensagem, postId}).filter(([, value]) => value !== undefined));
+    const updated = await PostMessage.findByIdAndUpdate(id, {$set: update}, {new: true, runValidators: true});
 
     if (!updated) {
       res.status(404).json({error: 'Mensagem não encontrada'});
       return;
     }
 
+    await recordAuditEvent('post_message.updated', req.userId, String(updated._id), req.userRole ?? (req.isApiKeyValid ? 'admin' : 'unknown'));
+
     res.json({message: 'Mensagem atualizada', data: updated});
   } catch (error) {
-    logger.error('Erro em updatePostMessage:', error);
-    res.status(500).json({error: (error as Error).message});
+    logger.error('Falha interna ao atualizar mensagem');
+    res.status(500).json({error: 'Não foi possível atualizar a mensagem'});
   }
 };
 
@@ -174,10 +174,12 @@ export const deletePostMessage = async (
       return;
     }
 
+    await recordAuditEvent('post_message.deleted', req.userId, String(removed._id), req.userRole ?? (req.isApiKeyValid ? 'admin' : 'unknown'));
+
     res.json({message: 'Mensagem deletada'});
   } catch (error) {
-    logger.error('Erro em deletePostMessage:', error);
-    res.status(500).json({error: (error as Error).message});
+    logger.error('Falha interna ao excluir mensagem');
+    res.status(500).json({error: 'Não foi possível excluir a mensagem'});
   }
 };
 
@@ -201,21 +203,20 @@ export const updateDenuncia = async (
       alvoTipo?: string;
     };
 
-    const updated = await DenunciaMessage.findByIdAndUpdate(
-      id,
-      {nome, email, descricao, alvoId, alvoTipo},
-      {new: true},
-    );
+    const update = Object.fromEntries(Object.entries({nome, email, descricao, alvoId, alvoTipo}).filter(([, value]) => value !== undefined));
+    const updated = await DenunciaMessage.findByIdAndUpdate(id, {$set: update}, {new: true, runValidators: true});
 
     if (!updated) {
       res.status(404).json({error: 'Denúncia não encontrada'});
       return;
     }
 
+    await recordAuditEvent('report.updated', req.userId, String(updated._id), req.userRole ?? (req.isApiKeyValid ? 'admin' : 'unknown'));
+
     res.json({message: 'Denúncia atualizada', data: updated});
   } catch (error) {
-    logger.error('Erro em updateDenuncia:', error);
-    res.status(500).json({error: (error as Error).message});
+    logger.error('Falha interna ao atualizar denúncia');
+    res.status(500).json({error: 'Não foi possível atualizar a denúncia'});
   }
 };
 
@@ -236,9 +237,11 @@ export const deleteDenuncia = async (
       return;
     }
 
+    await recordAuditEvent('report.deleted', req.userId, String(removed._id), req.userRole ?? (req.isApiKeyValid ? 'admin' : 'unknown'));
+
     res.json({message: 'Denúncia deletada'});
   } catch (error) {
-    logger.error('Erro em deleteDenuncia:', error);
-    res.status(500).json({error: (error as Error).message});
+    logger.error('Falha interna ao excluir denúncia');
+    res.status(500).json({error: 'Não foi possível excluir a denúncia'});
   }
 };

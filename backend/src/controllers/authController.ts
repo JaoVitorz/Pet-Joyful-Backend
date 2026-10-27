@@ -7,6 +7,10 @@ import {logger} from '../logger/logger.js';
 import {normalizeCpf} from '../services/cpfService.js';
 import {eraseUserData, MediaCleanupError} from '../services/userDataService.js';
 import {signAccessToken, signChallengeToken} from '../services/mfaService.js';
+import {recordAuditEvent} from '../services/auditLogService.js';
+import {consumeRefreshToken, issueRefreshToken, revokeUserRefreshTokens} from '../services/refreshTokenService.js';
+import mongoose from 'mongoose';
+import {cpfLookupHash, encryptCpf} from '../services/cpfProtection.js';
 
 const loginFailures = new Map<string, {count: number; until: number}>();
 const loginWindowMs = 15 * 60_000;
@@ -71,21 +75,27 @@ export const register = async (
       res.status(cpfResult.status).json({error: cpfResult.error});
       return;
     }
-    if (await userModel.findOne({cpf: cpfResult.cpf})) {
+    if (await userModel.findOne({$or: [
+      {cpfHash: cpfLookupHash(cpfResult.cpf)},
+      {cpf: cpfResult.cpf},
+    ]})) {
       res.status(400).json({error: 'CPF já está em uso'});
       return;
     }
 
     const user = new userModel({
-      nome, email, senha, tipo, cpf: cpfResult.cpf,
+      nome, email, senha, tipo, cpf: encryptCpf(cpfResult.cpf), cpfHash: cpfLookupHash(cpfResult.cpf),
     });
     await user.save();
+    await recordAuditEvent('auth.registered', String(user._id), String(user._id), user.tipo);
 
     const token = signAccessToken(user);
+    const refreshToken = await issueRefreshToken(String(user._id), user.authVersion ?? 0);
 
     res.status(201).json({
       message: 'Cadastro criado com sucesso.',
       token,
+      refreshToken,
       user: {
         id: user._id,
         nome: user.nome,
@@ -94,7 +104,7 @@ export const register = async (
       },
     });
   } catch (error) {
-    logger.error('Erro no registro:', {message: (error as Error).message});
+    logger.error('Falha interna ao concluir cadastro');
     res.status(500).json({error: 'Não foi possível concluir o cadastro'});
   }
 };
@@ -121,12 +131,11 @@ export const login = async (
       return;
     }
 
-    logger.info('Tentativa de login', {email});
     const user = await userModel.findOne({email}).select('+deletionRequestedAt +mfaLockedUntil');
 
     if (!user) {
       recordLoginFailure(failureKey);
-      logger.info('Login falhou: usuário não encontrado', {email});
+      await recordAuditEvent('auth.login_failed');
       res.status(401).json({error: 'Credenciais inválidas'});
       return;
     }
@@ -136,13 +145,12 @@ export const login = async (
       return;
     }
 
-    logger.info('Login: usuário encontrado', {email: user.email, tipo: user.tipo});
 
     const senhaCorreta = await user.comparePassword(senha);
 
     if (!senhaCorreta) {
       recordLoginFailure(failureKey);
-      logger.info('Login falhou: senha incorreta', {email});
+      await recordAuditEvent('auth.login_failed', undefined, String(user._id));
       res.status(401).json({error: 'Credenciais inválidas'});
       return;
     }
@@ -156,15 +164,19 @@ export const login = async (
       await userModel.updateOne({_id: user._id, mfaEnabled: true},
         {$set: {mfaChallengeNonce: nonce}});
       res.json({mfaRequired: true, challengeToken: signChallengeToken(user, nonce)});
+      await recordAuditEvent('auth.mfa_challenge_issued', String(user._id), String(user._id), user.tipo);
       return;
     }
 
     loginFailures.delete(failureKey);
 
     const token = signAccessToken(user);
+    await recordAuditEvent('auth.login_succeeded', String(user._id), String(user._id), user.tipo);
 
+    const refreshToken = await issueRefreshToken(String(user._id), user.authVersion ?? 0);
     res.json({
       token,
+      refreshToken,
       user: {
         id: user._id,
         nome: user.nome,
@@ -173,7 +185,7 @@ export const login = async (
       },
     });
   } catch (error) {
-    logger.error('Erro no login:', {message: (error as Error).message});
+    logger.error('Erro interno no login');
     res.status(500).json({error: 'Não foi possível concluir o login'});
   }
 };
@@ -196,9 +208,11 @@ export const getProfile = async (
       return;
     }
 
+    await recordAuditEvent('user.profile_updated', userId, userId, req.userRole ?? 'user');
+
     res.json({user});
   } catch (error) {
-    logger.error('Erro em getProfile:', {message: (error as Error).message});
+    logger.error('Falha interna ao buscar perfil');
     res.status(500).json({error: (error as Error).message});
   }
 };
@@ -235,7 +249,7 @@ export const updateProfile = async (
     }
 
     const user = await userModel
-      .findByIdAndUpdate(userId, updateData, {new: true})
+      .findByIdAndUpdate(userId, {$set: updateData}, {new: true, runValidators: true})
       .select('-senha');
 
     if (!user) {
@@ -246,7 +260,7 @@ export const updateProfile = async (
 
     res.json({message: 'Perfil atualizado com sucesso', user});
   } catch (error) {
-    logger.error('Erro em updateProfile:', {message: (error as Error).message});
+    logger.error('Falha interna ao atualizar perfil');
     res.status(500).json({error: (error as Error).message});
   }
 };
@@ -269,9 +283,10 @@ export const deleteProfile = async (
       res.status(404).json({error: 'Usuário não encontrado'});
       return;
     }
+    await recordAuditEvent('user.deleted', userId, userId, req.userRole ?? 'user');
     res.json({message: 'Conta excluída com sucesso', ...result});
   } catch (error) {
-    logger.error('Erro em deleteProfile:', {message: (error as Error).message});
+    logger.error('Falha interna ao excluir perfil');
     res.status(error instanceof MediaCleanupError ? 503 : 500).json({
       error: 'Não foi possível concluir a exclusão. Tente novamente.',
     });
@@ -280,4 +295,34 @@ export const deleteProfile = async (
 
 export const getSession = (req: AuthRequest, res: Response): void => {
   res.json({active: true, userId: req.userId});
+};
+
+export const refreshSession = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const body = req.body as Record<string, unknown>;
+    const rotated = await consumeRefreshToken(body.refreshToken);
+    if (!rotated) { res.status(401).json({error: 'Refresh token inválido ou expirado'}); return; }
+    const user = await userModel.findOne({
+      _id: rotated.userId,
+      deletionRequestedAt: mongoose.trusted({$exists: false}),
+    });
+    if (!user || (user.authVersion ?? 0) !== rotated.authVersion) {
+      await revokeUserRefreshTokens(rotated.userId);
+      res.status(401).json({error: 'Sessão indisponível'}); return;
+    }
+    res.json({token: signAccessToken(user), refreshToken: rotated.token});
+  } catch {
+    logger.error('Falha interna ao renovar sessão');
+    res.status(500).json({error: 'Não foi possível renovar a sessão'});
+  }
+};
+
+export const logout = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    if (!req.userId) { res.status(401).json({error: 'Não autenticado'}); return; }
+    await revokeUserRefreshTokens(req.userId);
+    res.status(204).end();
+  } catch {
+    res.status(500).json({error: 'Não foi possível encerrar a sessão'});
+  }
 };

@@ -14,13 +14,11 @@ export default function errorHandler(
   void next;
 
   logger.error('Exceção não tratada capturada pelo middleware global', {
-    message: err.message,
-    stack: err.stack,
     method: req.method,
-    route: req.originalUrl,
+    route: req.path,
   });
 
-  const status = err.status ?? 500;
+  const status = err.status === 400 || err.status === 413 ? err.status : 500;
   res.status(status).json({
     success: false,
     message: 'Erro interno no servidor',

@@ -6,14 +6,21 @@ import type {AuthenticatedRequest} from '../middlewares/requireUser.js';
 import {uploadsDir} from '../uploads.js';
 
 export const createPost = async (req: AuthenticatedRequest, res: Response): Promise<Response> => {
+  let uploadedPath: string | undefined;
   try {
     if (!req.userId) {
       return res.status(401).json({ error: 'Usuário não autenticado' });
     }
     const { titulo, descricao } = req.body as { titulo?: string; descricao?: string };
-    if (!titulo) return res.status(400).json({ error: 'Título é obrigatório' });
+    if (typeof titulo !== 'string' || titulo.trim().length < 1 || titulo.length > 200 ||
+      (descricao !== undefined && (typeof descricao !== 'string' || descricao.length > 5000)) ||
+      Object.keys(req.body as object).some(key => !['titulo', 'descricao'].includes(key))) {
+      if (req.file?.path) await fs.unlink(req.file.path).catch(() => undefined);
+      return res.status(400).json({ error: 'Dados inválidos' });
+    }
 
     const file = req.file;
+    uploadedPath = file?.path;
     const imageUrl = file ? `/uploads/${file.filename}` : null;
 
     const post = new Post({ userId: req.userId, titulo, descricao, imageUrl, publishedAt: new Date() });
@@ -21,8 +28,8 @@ export const createPost = async (req: AuthenticatedRequest, res: Response): Prom
 
     return res.status(201).json({ message: 'Post criado com sucesso', post });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
-    return res.status(500).json({ error: message });
+    if (uploadedPath) await fs.unlink(uploadedPath).catch(() => undefined);
+    return res.status(500).json({ error: 'Não foi possível criar a publicação' });
   }
 };
 

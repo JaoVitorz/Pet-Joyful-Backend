@@ -155,10 +155,10 @@ export const sendMessage = async (req: Request, res: Response): Promise<Response
       .json({success: false, error: 'O campo "message" é obrigatório.'});
   }
 
-  if (message.length > 2000) {
+  if (message.length > 5000) {
     return res.status(400).json({
       success: false,
-      error: 'Mensagem muito longa. Máximo 2000 caracteres.',
+      error: 'Mensagem muito longa. Máximo 5000 caracteres.',
     });
   }
 
@@ -181,17 +181,12 @@ export const sendMessage = async (req: Request, res: Response): Promise<Response
 });
     const reply = response.text ?? 'Não consegui gerar resposta agora.';
 
-    logger.info('PetBot: resposta gerada', {
-      preview: message.substring(0, 50),
-    });
+    logger.info('PetBot: resposta gerada');
 
     return res.status(200).json({success: true, reply});
   } catch (err: unknown) {
     const error = err as Error;
-    logger.error('PetBot: erro ao gerar resposta', {
-      message: error.message,
-      stack: error.stack,
-    });
+    logger.error('PetBot: falha interna ao gerar resposta');
 
     if (error.message?.includes('429'))
       return res.status(429).json({

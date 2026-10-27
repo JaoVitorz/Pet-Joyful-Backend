@@ -10,6 +10,22 @@ import {
 
 import ensureAdminKey from "../middlewares/ensureAdminKey.js";
 import verifyToken, {verifyDeletionToken} from "../middlewares/verifyToken.js";
+import {validateObjectIdParam} from '../middlewares/inputGuard.js';
+
+const validateUserPayload = (required: string[] = []) => (req: import('express').Request, res: import('express').Response, next: import('express').NextFunction): void => {
+  const body = req.body as unknown;
+  if (!body || typeof body !== 'object' || Array.isArray(body)) { res.status(400).json({error: 'Dados inválidos'}); return; }
+  const data = body as Record<string, unknown>;
+  const validEmail = data.email === undefined || (typeof data.email === 'string' && data.email.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email));
+  const validName = data.nome === undefined || (typeof data.nome === 'string' && data.nome.trim().length > 0 && data.nome.length <= 120);
+  const validPassword = data.senha === undefined || (typeof data.senha === 'string' && data.senha.length >= 8 && Buffer.byteLength(data.senha, 'utf8') <= 72);
+  const validType = data.tipo === undefined || ['adotante', 'cliente', 'admin'].includes(String(data.tipo));
+  if (Object.keys(data).some(key => !['nome', 'email', 'senha', 'tipo'].includes(key)) || required.some(key => data[key] === undefined) ||
+      !validEmail || !validName || !validPassword || !validType || (!required.length && Object.keys(data).length === 0)) {
+    res.status(400).json({error: 'Dados inválidos'}); return;
+  }
+  next();
+};
 
 const router = Router();
 
@@ -42,7 +58,7 @@ const router = Router();
      }
    }
 */
-router.post("/", ensureAdminKey, createUser); // Apenas admin via x-admin-key
+router.post("/", ensureAdminKey, validateUserPayload(['nome', 'email', 'senha', 'tipo']), createUser); // Apenas admin via x-admin-key
 
 /*
   #swagger.tags = ['Users']
@@ -60,7 +76,7 @@ router.get("/", ensureAdminKey, getUsers);
      schema: { type: 'string' }
    }
 */
-router.get("/:id", ensureAdminKey, getUserById);
+router.get("/:id", ensureAdminKey, validateObjectIdParam(), getUserById);
 
 /* 
    #swagger.tags = ['Users']
@@ -79,14 +95,14 @@ router.get("/:id", ensureAdminKey, getUserById);
      }
    }
 */
-router.put("/:id", ensureAdminKey, updateUser);
+router.put("/:id", ensureAdminKey, validateObjectIdParam(), validateUserPayload(), updateUser);
 
 /* #swagger.tags = ['Users']
    #swagger.summary = 'Baixar JSON dos dados da própria conta'
    #swagger.security = [{ "BearerAuth": [] }]
    #swagger.produces = ['application/json']
 */
-router.get('/:id/data-export', verifyToken, exportUserData);
+router.get('/:id/data-export', verifyToken, validateObjectIdParam(), exportUserData);
 
 /* #swagger.tags = ['Users']
    #swagger.summary = 'Excluir a própria conta e tratar dados vinculados'
@@ -129,6 +145,6 @@ router.get('/:id/data-export', verifyToken, exportUserData);
      }
    }
 */
-router.delete("/:id", verifyDeletionToken, deleteUser);
+router.delete("/:id", verifyDeletionToken, validateObjectIdParam(), deleteUser);
 
 export default router;

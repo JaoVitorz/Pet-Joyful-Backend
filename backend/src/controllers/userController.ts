@@ -6,6 +6,7 @@ import {logger} from '../logger/logger.js';
 import User from '../models/userModel.js';
 import type {AuthRequest, JwtPayload} from '../types/index.js';
 import {buildUserExport, eraseUserData, MediaCleanupError} from '../services/userDataService.js';
+import {recordAuditEvent} from '../services/auditLogService.js';
 
 // CREATE
 export const createUser = async (
@@ -30,12 +31,10 @@ export const createUser = async (
       return;
     }
 
-    const hashedPassword = await bcrypt.hash(senha, 10);
 
     if (tipo === 'admin') {
       const adminKey =
-        (req.headers['x-admin-key'] as string) ||
-        (req.query['admin_key'] as string);
+        (req.headers['x-admin-key'] as string);
       const auth = req.headers['authorization'] as string;
       let allowed = false;
 
@@ -63,13 +62,14 @@ export const createUser = async (
       }
     }
 
-    const user = new User({nome, email, senha: hashedPassword, tipo});
+    const user = new User({nome, email, senha, tipo});
     await user.save();
+    await recordAuditEvent('user.created', req.userId, String(user._id), req.userRole ?? 'admin');
 
     res.status(201).json({message: 'Usuário criado com sucesso!', user});
   } catch (error) {
-    logger.error('Erro em createUser:', error);
-    res.status(500).json({error: (error as Error).message});
+    logger.error('Falha interna ao criar usuário');
+    res.status(500).json({error: 'Não foi possível criar o usuário'});
   }
 };
 
@@ -82,8 +82,8 @@ export const getUsers = async (
     const users = await User.find();
     res.json(users);
   } catch (error) {
-    logger.error('Erro em getUsers:', error);
-    res.status(500).json({error: (error as Error).message});
+    logger.error('Falha interna ao listar usuários');
+    res.status(500).json({error: 'Não foi possível listar os usuários'});
   }
 };
 
@@ -100,8 +100,8 @@ export const getUserById = async (
     }
     res.json(user);
   } catch (error) {
-    logger.error('Erro em getUserById:', error);
-    res.status(500).json({error: (error as Error).message});
+    logger.error('Falha interna ao buscar usuário');
+    res.status(500).json({error: 'Não foi possível buscar o usuário'});
   }
 };
 
@@ -138,19 +138,20 @@ export const updateUser = async (
       return;
     }
 
-    const user = await User.findByIdAndUpdate(req.params.id, updateData, {
-      new: true,
+    const user = await User.findByIdAndUpdate(req.params.id, {$set: updateData}, {
+      new: true, runValidators: true,
     });
 
     if (!user) {
       res.status(404).json({error: 'Usuário não encontrado!'});
       return;
     }
+    await recordAuditEvent('user.updated', req.userId, String(user._id), req.userRole ?? 'user');
 
     res.json({message: 'Usuário atualizado com sucesso!', user});
   } catch (error) {
-    logger.error('Erro em updateUser:', error);
-    res.status(500).json({error: (error as Error).message});
+    logger.error('Falha interna ao atualizar usuário');
+    res.status(500).json({error: 'Não foi possível atualizar o usuário'});
   }
 };
 
@@ -178,9 +179,10 @@ export const deleteUser = async (
       res.status(404).json({error: 'Usuário não encontrado!'});
       return;
     }
+    await recordAuditEvent('user.deleted', req.userId, req.params.id, req.userRole ?? 'user');
     res.json({message: 'Conta excluída com sucesso', ...result});
   } catch (error) {
-    logger.error('Erro em deleteUser:', error);
+    logger.error('Falha interna ao excluir usuário');
     res.status(error instanceof MediaCleanupError ? 503 : 500).json({
       error: 'Não foi possível concluir a exclusão. Tente novamente.',
     });
@@ -209,11 +211,12 @@ export const exportUserData = async (
       res.status(404).json({error: 'Conta não encontrada'});
       return;
     }
+    await recordAuditEvent('user.data_exported', req.userId, req.params.id, req.userRole ?? 'user');
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     res.setHeader('Content-Disposition', `attachment; filename="pet-joyful-data-${req.params.id}.json"`);
     res.status(200).json(data);
   } catch (error) {
-    logger.error('Erro em exportUserData:', error);
+    logger.error('Falha interna ao exportar dados');
     res.status(500).json({error: 'Não foi possível exportar os dados'});
   }
 };

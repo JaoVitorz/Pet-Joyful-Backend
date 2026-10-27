@@ -36,7 +36,7 @@ describe('Testes das APIs de usuarios', () => {
         .send({
           nome: 'João',
           email: 'joao@email.com',
-          senha: '123',
+          senha: 'senhaForte123',
           tipo: 'cliente',
         });
 
@@ -61,7 +61,7 @@ describe('Testes das APIs de usuarios', () => {
         .send({
           nome: 'Hack',
           email: 'hack@email.com',
-          senha: '123',
+          senha: 'senhaForte123',
           tipo: 'admin',
         });
 
@@ -75,11 +75,18 @@ describe('Testes das APIs de usuarios', () => {
         .send({
           nome: 'Admin1',
           email: 'admin1@email.com',
-          senha: '123',
+          senha: 'senhaForte123',
           tipo: 'admin',
         });
 
       expect(res.status).toBe(201);
+    });
+
+    it('autoriza administradores autenticados por papel e não aceita chave na query string', async () => {
+      const admin = await User.create({nome: 'Admin', email: 'rbac@example.com', senha: 'senhaForte123', tipo: 'admin'});
+      const token = jwt.sign({userId: String(admin._id), tokenUse: 'access', authVersion: admin.authVersion ?? 0, mfa: false}, process.env.JWT_SECRET as string);
+      expect((await request(app).get('/api/users').set('Authorization', `Bearer ${token}`)).status).toBe(200);
+      expect((await request(app).get('/api/users').query({admin_key: 'chave-admin-secreta'})).status).toBe(401);
     });
 
     it('deve voltar 400 se tentar cadastrar um email que ja existe', async () => {
@@ -87,7 +94,7 @@ describe('Testes das APIs de usuarios', () => {
       await User.create({
         nome: 'Duplicado',
         email: 'duplicado@email.com',
-        senha: '123',
+        senha: 'senhaForte123',
         tipo: 'cliente',
       });
 
@@ -98,7 +105,7 @@ describe('Testes das APIs de usuarios', () => {
         .send({
           nome: 'Outro',
           email: 'duplicado@email.com',
-          senha: '123',
+          senha: 'senhaForte123',
           tipo: 'cliente',
         });
 
@@ -158,7 +165,7 @@ describe('Testes das APIs de usuarios', () => {
         .get('/api/users/invalid-id')
         .set('x-admin-key', 'chave-admin-secreta');
 
-      expect(res.status).toBe(500);
+      expect(res.status).toBe(400);
     });
   });
 
@@ -177,7 +184,7 @@ describe('Testes das APIs de usuarios', () => {
         .send({
           nome: 'Depois',
           email: 'depois@email.com',
-          senha: 'nova123',
+          senha: 'novaSenha123',
           tipo: 'admin',
         });
 
@@ -209,7 +216,7 @@ describe('Testes das APIs de usuarios', () => {
         .set('x-admin-key', 'chave-admin-secreta')
         .send({nome: 'Invalido'});
 
-      expect(res.status).toBe(500);
+      expect(res.status).toBe(400);
     });
   });
 

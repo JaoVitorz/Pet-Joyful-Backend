@@ -3,8 +3,11 @@ import {MongoMemoryServer} from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 import app from '../../backend/src/app';
 import userModel from '../../backend/src/models/userModel';
+import {decryptCpf} from '../../backend/src/services/cpfProtection';
 
 process.env.JWT_SECRET = 'test-secret-key-for-tests';
+process.env.CPF_ENCRYPTION_KEY = '11'.repeat(32);
+process.env.CPF_HASH_KEY = '22'.repeat(32);
 jest.setTimeout(60_000);
 
 describe('Testes das APIs de autenticacao', () => {
@@ -34,8 +37,8 @@ describe('Testes das APIs de autenticacao', () => {
       const res = await request(app).post('/api/auth/register').send({
         nome: 'Admin',
         email: 'admin@email.com',
-        senha: '123',
-        tipo: 'admin',
+        senha: 'senhaForte123',
+        tipo: 'cliente',
         ...identity,
       });
 
@@ -44,7 +47,7 @@ describe('Testes das APIs de autenticacao', () => {
       expect(await userModel.findOne({email: 'admin@email.com'})).not.toBeNull();
 
       const login = await request(app).post('/api/auth/login').send({
-        email: 'admin@email.com', senha: '123',
+        email: 'admin@email.com', senha: 'senhaForte123',
       });
       expect(login.status).toBe(200);
     });
@@ -104,11 +107,13 @@ describe('Testes das APIs de autenticacao', () => {
 
     it('aceita CPF com dígitos válidos e o armazena sem devolvê-lo na resposta', async () => {
       const res = await request(app).post('/api/auth/register').send({
-        nome: 'A', email: 'a@email.com', senha: '123', tipo: 'cliente', ...identity,
+        nome: 'A', email: 'a@email.com', senha: 'senhaForte123', tipo: 'cliente', ...identity,
       });
       expect(res.status).toBe(201);
       expect(res.body.user.cpf).toBeUndefined();
-      expect((await userModel.findOne({email: 'a@email.com'}).select('+cpf'))?.cpf).toBe('40442820135');
+      const storedCpf = (await userModel.findOne({email: 'a@email.com'}).select('+cpf'))?.cpf;
+      expect(storedCpf).not.toBe('40442820135');
+      expect(decryptCpf(storedCpf as string)).toBe('40442820135');
     });
   });
 
@@ -314,7 +319,7 @@ describe('Testes das APIs de autenticacao', () => {
   const res = await request(app).post('/api/auth/register').send({
     nome: 'Test',
     email: 'test@email.com',
-    senha: '123',
+    senha: 'senhaForte123',
     tipo: 'cliente',
     ...identity,
   });

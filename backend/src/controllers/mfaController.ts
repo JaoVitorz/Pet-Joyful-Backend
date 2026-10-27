@@ -1,10 +1,13 @@
 import type {Response} from 'express';
+import mongoose from 'mongoose';
 import userModel from '../models/userModel.js';
 import type {AuthRequest} from '../types/index.js';
 import {logger} from '../logger/logger.js';
 import {decryptSecret, encryptSecret, generateRecoveryCodes, generateSecret,
   hashRecoveryCode, provisioningUri, signAccessToken, verifyChallengeToken,
   verifyTotp} from '../services/mfaService.js';
+import {recordAuditEvent} from '../services/auditLogService.js';
+import {issueRefreshToken} from '../services/refreshTokenService.js';
 
 const privateFields = '+mfaSecret +mfaPendingSecret +mfaPendingExpiresAt +mfaLastUsedStep +mfaRecoveryCodes +mfaChallengeNonce +mfaFailedAttempts +mfaLockedUntil';
 
@@ -42,17 +45,17 @@ export const setup = async (req: AuthRequest, res: Response): Promise<void> => {
     }
     const secret = generateSecret();
     const expiresAt = new Date(Date.now() + 10 * 60_000);
-    await userModel.updateOne({_id: user._id, mfaEnabled: {$ne: true}},
+    await userModel.updateOne({_id: user._id, mfaEnabled: mongoose.trusted({$ne: true})},
       {$set: {mfaPendingSecret: encryptSecret(secret), mfaPendingExpiresAt: expiresAt}});
     res.json({secret, otpauthUrl: provisioningUri(user.email, secret), expiresAt});
   } catch (error) {
-    logger.error('Erro ao iniciar MFA', {message: (error as Error).message});
+    logger.error('Falha interna ao iniciar MFA');
     res.status(503).json({error: 'MFA indisponível'});
   }
 };
 
 export const cancelSetup = async (req: AuthRequest, res: Response): Promise<void> => {
-  await userModel.updateOne({_id: req.userId, mfaEnabled: {$ne: true}},
+  await userModel.updateOne({_id: req.userId, mfaEnabled: mongoose.trusted({$ne: true})},
     {$unset: {mfaPendingSecret: '', mfaPendingExpiresAt: ''}});
   res.status(204).end();
 };
@@ -71,8 +74,8 @@ export const confirmSetup = async (req: AuthRequest, res: Response): Promise<voi
       res.status(401).json({error: 'Código inválido'}); return;
     }
     const {codes, hashes} = generateRecoveryCodes();
-    const updated = await userModel.findOneAndUpdate({_id: user._id, mfaEnabled: {$ne: true},
-      mfaPendingSecret: user.mfaPendingSecret, mfaPendingExpiresAt: {$gt: new Date()}},
+    const updated = await userModel.findOneAndUpdate({_id: user._id, mfaEnabled: mongoose.trusted({$ne: true}),
+      mfaPendingSecret: user.mfaPendingSecret, mfaPendingExpiresAt: mongoose.trusted({$gt: new Date()})},
     {$set: {mfaEnabled: true, mfaSecret: user.mfaPendingSecret,
       mfaLastUsedStep: step, mfaRecoveryCodes: hashes, mfaFailedAttempts: 0},
     $inc: {authVersion: 1},
@@ -80,9 +83,11 @@ export const confirmSetup = async (req: AuthRequest, res: Response): Promise<voi
     {new: true});
     if (!updated) { res.status(409).json({error: 'Configuração alterada'}); return; }
     logger.info('MFA ativado', {userId: String(user._id)});
-    res.json({enabled: true, recoveryCodes: codes, token: signAccessToken(updated)});
+    await recordAuditEvent('mfa.enabled', String(user._id), String(user._id), user.tipo);
+    res.json({enabled: true, recoveryCodes: codes, token: signAccessToken(updated),
+      refreshToken: await issueRefreshToken(String(updated._id), updated.authVersion ?? 0)});
   } catch (error) {
-    logger.error('Erro ao confirmar MFA', {message: (error as Error).message});
+    logger.error('Falha interna ao confirmar MFA');
     res.status(503).json({error: 'MFA indisponível'});
   }
 };
@@ -103,7 +108,7 @@ export const verifyChallenge = async (req: AuthRequest, res: Response): Promise<
     const code = bodyOf(req).code;
     const recoveryCode = bodyOf(req).recoveryCode;
     const base = {_id: user._id, mfaEnabled: true, authVersion: user.authVersion,
-      mfaChallengeNonce: payload.jti, mfaLockedUntil: {$not: {$gt: new Date()}}};
+      mfaChallengeNonce: payload.jti, mfaLockedUntil: mongoose.trusted({$not: {$gt: new Date()}})};
     let updated;
     if (typeof recoveryCode === 'string' && /^[A-Za-z0-9_-]{22}$/.test(recoveryCode)) {
       const hash = hashRecoveryCode(recoveryCode);
@@ -115,7 +120,7 @@ export const verifyChallenge = async (req: AuthRequest, res: Response): Promise<
       const step = verifyTotp(decryptSecret(user.mfaSecret), code);
       if (step !== null) {
         updated = await userModel.findOneAndUpdate({...base,
-          $or: [{mfaLastUsedStep: {$exists: false}}, {mfaLastUsedStep: {$lt: step}}]},
+          $or: [{mfaLastUsedStep: mongoose.trusted({$exists: false})}, {mfaLastUsedStep: mongoose.trusted({$lt: step})}]},
         {$set: {mfaLastUsedStep: step, mfaFailedAttempts: 0},
           $unset: {mfaChallengeNonce: '', mfaLockedUntil: ''}}, {new: true});
       }
@@ -124,11 +129,11 @@ export const verifyChallenge = async (req: AuthRequest, res: Response): Promise<
       await failedAttempt(String(user._id));
       res.status(401).json({error: 'Código inválido'}); return;
     }
-    res.json({token: signAccessToken(updated), user: {
+    res.json({token: signAccessToken(updated), refreshToken: await issueRefreshToken(String(updated._id), updated.authVersion ?? 0), user: {
       id: updated._id, nome: updated.nome, email: updated.email, tipo: updated.tipo,
     }});
   } catch (error) {
-    logger.error('Erro ao verificar MFA', {message: (error as Error).message});
+    logger.error('Falha interna ao verificar MFA');
     res.status(503).json({error: 'MFA indisponível'});
   }
 };
@@ -164,20 +169,22 @@ export const regenerateRecovery = async (req: AuthRequest, res: Response): Promi
     const {codes, hashes} = generateRecoveryCodes();
     const filter = proof.step !== undefined ?
       {_id: proof.userId, mfaEnabled: true, authVersion: proof.authVersion,
-        mfaSecret: proof.mfaSecret, mfaLockedUntil: {$not: {$gt: new Date()}},
-        $or: [{mfaLastUsedStep: {$exists: false}}, {mfaLastUsedStep: {$lt: proof.step}}]} :
+        mfaSecret: proof.mfaSecret, mfaLockedUntil: mongoose.trusted({$not: {$gt: new Date()}}),
+        $or: [{mfaLastUsedStep: mongoose.trusted({$exists: false})}, {mfaLastUsedStep: mongoose.trusted({$lt: proof.step})}]} :
       {_id: proof.userId, mfaEnabled: true, authVersion: proof.authVersion,
         mfaSecret: proof.mfaSecret, mfaRecoveryCodes: proof.recoveryHash,
-        mfaLockedUntil: {$not: {$gt: new Date()}}};
+        mfaLockedUntil: mongoose.trusted({$not: {$gt: new Date()}})};
     const updated = await userModel.findOneAndUpdate(filter,
       {$set: {mfaRecoveryCodes: hashes, ...(proof.step !== undefined ? {mfaLastUsedStep: proof.step} : {})},
         $inc: {authVersion: 1}},
       {new: true});
     if (!updated) { res.status(409).json({error: 'Confirmação já utilizada'}); return; }
     logger.info('Códigos de recuperação renovados', {userId: proof.userId});
-    res.json({recoveryCodes: codes, token: signAccessToken(updated)});
+    await recordAuditEvent('mfa.recovery_codes_regenerated', proof.userId, proof.userId);
+    res.json({recoveryCodes: codes, token: signAccessToken(updated),
+      refreshToken: await issueRefreshToken(String(updated._id), updated.authVersion ?? 0)});
   } catch (error) {
-    logger.error('Erro ao renovar códigos MFA', {message: (error as Error).message});
+    logger.error('Falha interna ao renovar códigos MFA');
     res.status(503).json({error: 'MFA indisponível'});
   }
 };
@@ -188,11 +195,11 @@ export const disable = async (req: AuthRequest, res: Response): Promise<void> =>
     if (!proof) { res.status(401).json({error: 'Confirmação inválida'}); return; }
     const filter = proof.step !== undefined ?
       {_id: proof.userId, mfaEnabled: true, authVersion: proof.authVersion,
-        mfaSecret: proof.mfaSecret, mfaLockedUntil: {$not: {$gt: new Date()}},
-        $or: [{mfaLastUsedStep: {$exists: false}}, {mfaLastUsedStep: {$lt: proof.step}}]} :
+        mfaSecret: proof.mfaSecret, mfaLockedUntil: mongoose.trusted({$not: {$gt: new Date()}}),
+        $or: [{mfaLastUsedStep: mongoose.trusted({$exists: false})}, {mfaLastUsedStep: mongoose.trusted({$lt: proof.step})}]} :
       {_id: proof.userId, mfaEnabled: true, authVersion: proof.authVersion,
         mfaSecret: proof.mfaSecret, mfaRecoveryCodes: proof.recoveryHash,
-        mfaLockedUntil: {$not: {$gt: new Date()}}};
+        mfaLockedUntil: mongoose.trusted({$not: {$gt: new Date()}})};
     const updated = await userModel.findOneAndUpdate(filter,
       {$set: {mfaEnabled: false, mfaRecoveryCodes: [], mfaFailedAttempts: 0},
       $inc: {authVersion: 1},
@@ -200,9 +207,11 @@ export const disable = async (req: AuthRequest, res: Response): Promise<void> =>
         mfaChallengeNonce: '', mfaLastUsedStep: '', mfaLockedUntil: ''}}, {new: true});
     if (!updated) { res.status(409).json({error: 'Confirmação já utilizada'}); return; }
     logger.info('MFA desativado', {userId: proof.userId});
-    res.json({enabled: false, token: signAccessToken(updated)});
+    await recordAuditEvent('mfa.disabled', proof.userId, proof.userId);
+    res.json({enabled: false, token: signAccessToken(updated),
+      refreshToken: await issueRefreshToken(String(updated._id), updated.authVersion ?? 0)});
   } catch (error) {
-    logger.error('Erro ao desativar MFA', {message: (error as Error).message});
+    logger.error('Falha interna ao desativar MFA');
     res.status(503).json({error: 'MFA indisponível'});
   }
 };

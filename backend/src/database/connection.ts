@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import '../config/mongooseSecurity.js';
 import 'dotenv/config';
 
 const connectDB = async (): Promise<void> => {

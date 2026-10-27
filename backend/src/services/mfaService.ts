@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import jwt from 'jsonwebtoken';
+import type {SignOptions} from 'jsonwebtoken';
 import type {IUserDocument, JwtPayload} from '../types/index.js';
 
 const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
@@ -107,7 +108,7 @@ export function hashRecoveryCode(code: string): string {
 export function signAccessToken(user: IUserDocument): string {
   return jwt.sign({userId: String(user._id), email: user.email, tipo: user.tipo,
     tokenUse: 'access', authVersion: user.authVersion ?? 0, mfa: !!user.mfaEnabled},
-  process.env.JWT_SECRET as string, {expiresIn: '7d'});
+  process.env.JWT_SECRET as string, {expiresIn: (process.env.JWT_ACCESS_TTL ?? '15m') as SignOptions['expiresIn']});
 }
 
 export function signChallengeToken(user: IUserDocument, nonce: string): string {
