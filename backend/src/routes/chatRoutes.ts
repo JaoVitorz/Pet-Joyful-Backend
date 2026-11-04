@@ -1,7 +1,6 @@
 import {Router} from 'express';
 import {sendMessage} from '../controllers/chatController.js';
 import verifyToken from '../middlewares/verifyToken.js';
-import {directChatLimiter} from '../middlewares/rateLimiter.js';
 import {validateBodyFields, validateObjectIdParam} from '../middlewares/inputGuard.js';
 import {
   createConversation,
@@ -58,12 +57,12 @@ router.post('/', validateBodyFields(['message'], ['message']), (req, res, next) 
 }, sendMessage);
 
 // Conversas individuais entre usuários autenticados. O chat IA acima permanece separado.
-router.get('/users', verifyToken, directChatLimiter, listChatUsers);
-router.get('/conversations', verifyToken, directChatLimiter, listConversations);
-router.post('/conversations', verifyToken, directChatLimiter, validateBodyFields(['userId'], ['userId']), createConversation);
-router.get('/conversations/:id/messages', verifyToken, directChatLimiter, validateObjectIdParam(), listConversationMessages);
-router.post('/conversations/:id/read', verifyToken, directChatLimiter, validateObjectIdParam(), validateBodyFields([]), markConversationRead);
-router.post('/conversations/:id/messages', verifyToken, directChatLimiter, validateObjectIdParam(), validateBodyFields(['text'], ['text']), sendConversationMessage);
+router.get('/users', verifyToken, listChatUsers);
+router.get('/conversations', verifyToken, listConversations);
+router.post('/conversations', verifyToken, validateBodyFields(['userId'], ['userId']), createConversation);
+router.get('/conversations/:id/messages', verifyToken, validateObjectIdParam(), listConversationMessages);
+router.post('/conversations/:id/read', verifyToken, validateObjectIdParam(), validateBodyFields([]), markConversationRead);
+router.post('/conversations/:id/messages', verifyToken, validateObjectIdParam(), validateBodyFields(['text'], ['text']), sendConversationMessage);
 
 /*
   #swagger.tags = ['Chat']

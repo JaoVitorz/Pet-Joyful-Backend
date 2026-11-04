@@ -95,8 +95,8 @@ app.get('/api/slow', async (_req, res) => {
 });
 */
 // Rotas principais
-app.use("/api", apiLimiter);
 app.use('/api/chat', chatRoutes);
+app.use("/api", apiLimiter);
 app.use('/api', routes);
 
 // Rota base (teste)
