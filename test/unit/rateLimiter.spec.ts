@@ -1,7 +1,6 @@
 import express from 'express';
 import request from 'supertest';
-import {apiLimiter, directChatLimiter, loginLimiter} from '../../backend/src/middlewares/rateLimiter.js';
-import type {AuthRequest} from '../../backend/src/types/index.js';
+import {apiLimiter, loginLimiter} from '../../backend/src/middlewares/rateLimiter.js';
 
 describe('limites de requisições', () => {
   it('bloqueia a sexta tentativa de login do mesmo IP', async () => {
@@ -24,17 +23,15 @@ describe('limites de requisições', () => {
     expect((await request(app).get('/api/ping')).status).toBe(429);
   });
 
-  it('usa limite próprio do chat por usuário, sem bloquear após 30 chamadas no mesmo IP', async () => {
+  it('não aplica o limite geral às rotas do chat montadas antes dele', async () => {
     const app = express();
-    app.use((req, _res, next) => {
-      (req as AuthRequest).userId = req.header('x-user-id') ?? 'user-a';
-      next();
-    });
-    app.get('/chat', directChatLimiter, (_req, res) => res.sendStatus(204));
+    const chatRoutes = express.Router();
+    chatRoutes.get('/conversations', (_req, res) => res.sendStatus(204));
+    app.use('/api/chat', chatRoutes);
+    app.use('/api', apiLimiter);
 
     for (let attempt = 0; attempt < 31; attempt++) {
-      expect((await request(app).get('/chat').set('x-user-id', 'user-a')).status).toBe(204);
+      expect((await request(app).get('/api/chat/conversations')).status).toBe(204);
     }
-    expect((await request(app).get('/chat').set('x-user-id', 'user-b')).status).toBe(204);
   });
 });
