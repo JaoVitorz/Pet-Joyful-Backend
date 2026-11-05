@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Inventário dos controles de segurança do backend Pet Joyful e instruções para testá-los.">
+  <title>Segurança do Backend | Pet Joyful</title>
+  <style>
+    :root{color-scheme:light;--ink:#17212b;--muted:#52616b;--line:#dbe3e8;--bg:#f4f7f8;--card:#fff;--brand:#126b59;--brand-soft:#e7f4f0;--warn:#8a4b08;--warn-soft:#fff4df;--blue:#244f78}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+    main{max-width:1050px;margin:0 auto;padding:40px 22px 72px}.hero{background:#123e38;color:#fff;border-radius:18px;padding:34px 38px;margin-bottom:24px}.eyebrow{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:#a9d8c9;font-weight:700}.hero h1{font-size:clamp(2rem,5vw,3.2rem);line-height:1.1;margin:.35em 0}.hero p{max-width:760px;color:#e0efea;margin:0}.meta{margin-top:20px;color:#b9d9cf;font-size:.9rem}
+    section,.notice{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;margin:18px 0}.notice{background:var(--warn-soft);border-color:#f0d7a8;color:#56370e}.notice strong{color:#713e08}h2{font-size:1.35rem;margin:0 0 12px}h3{font-size:1.05rem;margin:20px 0 6px}p{margin:.45em 0}.muted{color:var(--muted)}
+    .commands{background:#101a22;color:#e5edf2;border-radius:10px;padding:16px 18px;overflow:auto;font:14px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre-wrap}.tag{display:inline-block;border-radius:999px;padding:2px 9px;font-size:.75rem;font-weight:700;background:var(--brand-soft);color:var(--brand);white-space:nowrap}.tag.review{background:var(--warn-soft);color:var(--warn)}
+    table{width:100%;border-collapse:collapse;margin-top:14px}th,td{text-align:left;vertical-align:top;padding:13px 12px;border-bottom:1px solid var(--line)}th{font-size:.82rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}td:first-child{font-weight:650;min-width:160px}code{font: .9em ui-monospace,SFMono-Regular,Consolas,monospace;background:#eef2f4;padding:2px 5px;border-radius:4px;overflow-wrap:anywhere}.file{color:var(--blue)}ul{padding-left:22px}li{margin:.4em 0}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.card{border:1px solid var(--line);border-radius:10px;padding:16px}.card h3{margin:0 0 6px}.small{font-size:.92rem;color:var(--muted)}footer{color:var(--muted);font-size:.88rem;padding:20px 4px}
+    @media(max-width:720px){main{padding:18px 12px 40px}.hero{padding:25px 22px}section,.notice{padding:18px}table,tbody,tr,td{display:block}thead{display:none}tr{padding:12px 0;border-bottom:1px solid var(--line)}td{border:0;padding:5px 2px}td:first-child{min-width:0}.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<main>
+  <header class="hero">
+    <div class="eyebrow">Pet Joyful · Backend</div>
+    <h1>Controles de segurança<br>e como testá-los</h1>
+    <p>Inventário baseado na implementação e nos testes encontrados no repositório. A existência de um controle ou teste não equivale, por si só, a uma auditoria completa nem garante a segurança da configuração de produção.</p>
+    <div class="meta">Revisado em 4 de novembro de 2026 · Testes não executados durante a elaboração deste relatório</div>
+  </header>
+
+  <section>
+    <h2>Executar os testes</h2>
+    <p>Abra o PowerShell na raiz do projeto e rode a suíte completa:</p>
+    <pre class="commands">npm test -- --runInBand</pre>
+    <p>Para rodar apenas um teste, por exemplo:</p>
+    <pre class="commands">npm test -- --runInBand test/integration/noSqlInjection.spec.ts</pre>
+    <p class="muted">O comando de build também verifica a compilação TypeScript, mas não substitui os testes de segurança:</p>
+    <pre class="commands">npm run build</pre>
+  </section>
+
+  <aside class="notice">
+    <strong>Ponto crítico: rate limit e clientes diferentes.</strong>
+    <p>O login ainda tem limite de 5 tentativas por IP em 15 minutos; a validação de CPF usa 20 chamadas por IP por minuto. Se o proxy/hospedagem fizer todas as requisições parecerem vir do mesmo IP, pessoas em redes diferentes podem dividir o bloqueio. O limite geral da API usa o ID do JWT válido e, sem token válido, usa IP. É necessário validar o IP do cliente na hospedagem e testar com duas redes/contas. Não configure confiança em proxy sem conhecer a topologia.</p>
+    <p>Os limitadores usam armazenamento em memória, que não compartilha contadores entre processos/instâncias. As rotas de chat são montadas antes do limitador geral e não passam por ele.</p>
+  </aside>
+
+  <section>
+    <h2>Inventário dos controles</h2>
+    <table>
+      <thead><tr><th>Controle</th><th>Implementação</th><th>Como testar</th><th>Cobertura</th></tr></thead>
+      <tbody>
+        <tr><td>Cabeçalhos HTTP</td><td><code>helmet</code>, CSP, proteção contra framing e MIME sniffing.</td><td>Verifique cabeçalhos nas rotas normais, erros, Swagger e preflight.</td><td><span class="tag">Automatizado</span><br><code>test/integration/securityHeaders.spec.ts</code></td></tr>
+        <tr><td>CORS</td><td>Lista de origens permitidas em <code>backend/src/config/allowedOrigins.ts</code>. CORS não substitui autenticação.</td><td>Envie preflight de uma origem permitida e de uma origem não permitida; confirme os cabeçalhos de resposta.</td><td><span class="tag review">Ampliar casos</span><br><code>test/integration/securityHeaders.spec.ts</code></td></tr>
+        <tr><td>NoSQL injection</td><td>Mongoose <code>sanitizeFilter</code> e guards que rejeitam operadores/chaves perigosas em entradas.</td><td>Envie objetos com <code>$ne</code>, <code>$where</code>, chaves com ponto e valores aninhados; devem ser rejeitados sem alterar dados.</td><td><span class="tag">Automatizado</span><br><code>test/integration/noSqlInjection.spec.ts</code><br><code>test/integration/messagesServiceInjection.spec.ts</code></td></tr>
+        <tr><td>SQL injection</td><td>Não encontrei banco, driver ou consultas SQL no projeto atual; o controle não é aplicável ao código existente.</td><td>Se SQL for introduzido, use consultas parametrizadas e testes de integração com o banco real de teste. Não basta testar um filtro de texto.</td><td><span class="tag review">Não aplicável hoje</span></td></tr>
+        <tr><td>Validação de entrada</td><td>Listas de campos permitidos, tipos, formatos, tamanho e validação de ObjectId nos endpoints.</td><td>Teste campo inesperado, tipo errado, valor longo, corpo vazio e ID malformado; compare também entradas legítimas.</td><td><span class="tag">Automatizado</span><br>Testes de auth, mensagens, usuários e injeção</td></tr>
+        <tr><td>Senhas</td><td>Hash bcrypt no modelo de usuário, validação de tamanho e comparação via bcrypt.</td><td>Cadastre em banco de teste; confirme que o valor persistido não é a senha original e que login aceita a senha correta e rejeita a incorreta.</td><td><span class="tag">Parcial</span><br><code>test/integration/authController.spec.ts</code></td></tr>
+        <tr><td>JWT e sessões</td><td>Verificação de assinatura/validade; tokens de acesso e validação da sessão do usuário.</td><td>Teste token ausente, adulterado, expirado e válido; após revogar sessão, confirme rejeição.</td><td><span class="tag">Automatizado</span><br><code>test/unit/requireUser.spec.ts</code><br><code>test/integration/authController.spec.ts</code></td></tr>
+        <tr><td>Autorização e propriedade</td><td>Rotas exigem usuário/admin conforme a ação; verificações de autoria e propriedade em operações de dados.</td><td>Com usuário A, tente ler/editar/apagar recurso de B; espere 401/403/404 conforme o endpoint e confirme que o recurso não mudou.</td><td><span class="tag">Automatizado</span><br>Testes de usuários, mensagens, chat e autoria</td></tr>
+        <tr><td>MFA</td><td>TOTP, códigos de recuperação, desafio de login e proteção criptográfica de segredo.</td><td>Teste código correto/incorreto/fora da janela, reutilização e códigos de recuperação consumidos.</td><td><span class="tag">Automatizado</span><br><code>test/unit/mfaService.spec.ts</code><br><code>test/integration/mfa.spec.ts</code></td></tr>
+        <tr><td>Refresh token</td><td>Tokens aleatórios armazenados como hash, rotação e revogação.</td><td>Use token uma vez, tente reutilizá-lo, faça logout e tente renovar token revogado.</td><td><span class="tag">Automatizado</span><br><code>test/integration/refreshToken.spec.ts</code></td></tr>
+        <tr><td>CPF</td><td>Criptografia AES-GCM para armazenamento e HMAC para busca; campos sensíveis não são selecionados por padrão.</td><td>Teste criptografar/descriptografar, alteração do ciphertext, chaves ausentes e busca pelo hash.</td><td><span class="tag">Automatizado</span><br><code>test/unit/cpfProtection.spec.ts</code><br><code>test/unit/cpfService.spec.ts</code></td></tr>
+        <tr><td>Chave de API</td><td>Middleware confere a chave administrativa configurada no ambiente.</td><td>Teste chave ausente, incorreta e correta nas rotas protegidas.</td><td><span class="tag">Automatizado</span><br><code>test/unit/verifyApikey.spec.ts</code></td></tr>
+        <tr><td>Rate limit</td><td>Login: 5/15 min por IP. API geral: 30/min por usuário com JWT válido; fallback por IP. CPF: 20/min por IP.</td><td>Exceda o limite e espere 429; teste identidades/redes diferentes e o comportamento real atrás do proxy de produção.</td><td><span class="tag review">Isolamento incompleto</span><br><code>test/unit/rateLimiter.spec.ts</code> não demonstra isolamento entre clientes distintos.</td></tr>
+        <tr><td>Uploads</td><td>Multer limita a 10 MB e aceita MIME de JPEG, PNG, WebP e GIF; nome e corpo são validados.</td><td>Envie imagem aceita, tipo recusado, arquivo acima do limite e corpo inválido; confirme rejeição e limpeza de arquivo temporário.</td><td><span class="tag review">Sem teste dedicado completo</span><br><code>services/messages-service/src/routes/postsRoutes.ts</code></td></tr>
+        <tr><td>Auditoria</td><td>Registra eventos sem corpo, senha, token ou PII bruta; falha de gravação não expõe dados.</td><td>Confira evento gravado e confirme que segredos não aparecem no documento de auditoria/log.</td><td><span class="tag">Automatizado</span><br><code>test/unit/auditLogService.spec.ts</code></td></tr>
+        <tr><td>Erros</td><td>Resposta genérica para erros internos do backend principal e handler específico do serviço de mensagens.</td><td>Provoque erro controlado em ambiente de teste e confirme que stack trace, consulta e segredo não aparecem na resposta.</td><td><span class="tag review">Ampliar testes</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Testes automatizados por tema</h2>
+    <div class="grid">
+      <div class="card"><h3>Entradas e injeção</h3><p><code>npm test -- --runInBand test/integration/noSqlInjection.spec.ts</code></p><p><code>npm test -- --runInBand test/integration/messagesServiceInjection.spec.ts</code></p></div>
+      <div class="card"><h3>Rate limit</h3><p><code>npm test -- --runInBand test/unit/rateLimiter.spec.ts</code></p><p class="small">O teste atual verifica limite repetido no mesmo IP, não clientes independentes atrás do proxy.</p></div>
+      <div class="card"><h3>Autenticação e sessão</h3><p><code>npm test -- --runInBand test/integration/authController.spec.ts</code></p><p><code>npm test -- --runInBand test/integration/refreshToken.spec.ts</code></p></div>
+      <div class="card"><h3>MFA e dados pessoais</h3><p><code>npm test -- --runInBand test/integration/mfa.spec.ts</code></p><p><code>npm test -- --runInBand test/unit/cpfProtection.spec.ts</code></p></div>
+      <div class="card"><h3>Autorização e propriedade</h3><p><code>npm test -- --runInBand test/integration/userController.spec.ts</code></p><p><code>npm test -- --runInBand test/integration/directChat.spec.ts</code></p></div>
+      <div class="card"><h3>Cabeçalhos e API key</h3><p><code>npm test -- --runInBand test/integration/securityHeaders.spec.ts</code></p><p><code>npm test -- --runInBand test/unit/verifyApikey.spec.ts</code></p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Roteiro rápido de validação manual</h2>
+    <ol>
+      <li>Execute a suíte automatizada e anote os testes que falharem.</li>
+      <li>Use somente ambiente local/staging com banco e contas descartáveis.</li>
+      <li>Teste tentativas sem autenticação, token inválido e token válido de outra conta.</li>
+      <li>Para rate limit, use duas contas em redes distintas; exceda o limite em uma e confirme que a outra ainda consegue fazer login.</li>
+      <li>Não teste injeção destrutiva nem faça carga em produção. Confirme em staging que as entradas maliciosas são rejeitadas e que registros legítimos continuam funcionando.</li>
+      <li>Revise segredos de ambiente: chaves JWT, CPF/MFA e API keys devem ser fortes, distintas por ambiente e não versionadas no Git.</li>
+    </ol>
+  </section>
+  <footer>Relatório estático gerado a partir do código e dos testes presentes no repositório. A configuração de proxy, armazenamento distribuído do rate limit e comportamento da hospedagem precisam de validação no ambiente implantado.</footer>
+</main>
+</body>
+</html>
