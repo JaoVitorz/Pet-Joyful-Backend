@@ -4,15 +4,18 @@ import crypto from 'node:crypto';
 import {pathToFileURL} from 'node:url';
 const skillDir='C:/Users/Alunos/.codex/plugins/cache/openai-primary-runtime/presentations/26.1025.11240/skills/presentations';
 const runtime='C:/Users/Alunos/.cache/codex-runtimes/codex-primary-runtime/dependencies';
+process.env.RUNTIME_NODE_MODULES=path.join(runtime,'node/node_modules');
 const source='C:/Users/Alunos/Downloads/Pet-Joyful-Previa-15min-v5 (1) (1).pptx';
 const workspace=process.cwd();
-const build=path.join(workspace,'.codex/pptx-security-work');
+const build=path.join(workspace,'.pptx-security-work');
 const outDir=path.join(workspace,'deliverables');
 const final=path.join(outDir,'Pet-Joyful-Previa-15min-v6-seguranca.pptx');
 await fs.mkdir(build,{recursive:true}); await fs.mkdir(outDir,{recursive:true});
 const {PresentationFile,FileBlob}=await import(pathToFileURL(path.join(runtime,'node/node_modules/@oai/artifact-tool/dist/artifact_tool.mjs')));
 const p=await PresentationFile.importPptx(await FileBlob.load(source));
 const reference=p.slides.items[9];
+ p.resolve('sh/atwbelcn').text='Ativo nas rotas cobertas; compartilhar estado entre instâncias.';
+ p.resolve('sh/yxgbilcj').text='Também aceita admin_key na URL; restringir ao header.';
 const slide=p.slides.insert({after:reference,layout:'CONTENT'}).slide;
 slide.background.fill='#F6FBF7';
 function shape(name,geometry,pos,fill='none',stroke='none',strokeWidth=0){return slide.shapes.add({geometry,name,position:pos,fill,line:{style:'solid',fill:stroke,width:strokeWidth},insets:0});}
@@ -39,6 +42,7 @@ for(let i=0;i<cards.length;i++){
 shape('Faixa de limites','roundRect',{left:58,top:566,width:1164,height:88},'#E3F4E9','#B6E2C5',1);
 text('Atenção','Pontos de atenção',82,579,195,24,16,'#144A34',true);
 text('Limitações','Limitadores usam memória local; /api/chat não passa pelo limite global; Admin Key também aceita admin_key na URL.',276,578,920,54,15,'#263D32');
+shape('Fundo do rodapé','rect',{left:0,top:670,width:1280,height:50},'#F6FBF7','#F6FBF7',0);
 text('Rodapé','PET JOYFUL  ·  PRÉVIA  ·  15 MIN',58,683,500,20,12,'#63796C');
 text('Número do slide','11',1160,683,48,20,13,'#63796C');
 const preview=await slide.export({format:'png',scale:1});
@@ -54,7 +58,7 @@ const result=await finalizePresentation({
  integrityValidatorPath:path.join(skillDir,'container_tools/inspect_presentation_package_integrity.py'),
  layoutValidatorPath:path.join(skillDir,'container_tools/inspect_presentation_layout_geometry.py'),
  layoutArgs:['--expected-slide-size-emu','12192000,6858000','--validate-bullet-geometry','--validate-heading-fit'],
- fontPolicy:{basis:'reference',families:['Arial'],referencePath:source,referenceSha256:refSha},
+ fontPolicy:{basis:'reference',families:['Arial','Consolas'],referencePath:source,referenceSha256:refSha},
  verifyArtifactToolImport:true,receiptPath:receipt,
 });
 console.log(JSON.stringify({final,slideCount:p.slides.items.length,receipt,result},null,2));
